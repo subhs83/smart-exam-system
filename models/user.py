@@ -145,6 +145,32 @@ class User(UserMixin):
             db.session.rollback()
             raise e
 # ================= NEW SYSTEM =================
+    @staticmethod
+    def add_teacher_sa(name, email, password, school_id):
+        try:
+            # 🔍 Check if email already exists
+            existing = UserModel.query.filter_by(email=email).first()
+            if existing:
+                return None
+
+            teacher = UserModel(
+                name=name,
+                email=email,
+                password=hash_password(password),
+                role="teacher",
+                school_id=school_id,
+                is_active=True
+            )
+
+            db.session.add(teacher)
+            db.session.commit()
+
+            return teacher
+
+        except Exception as e:
+            db.session.rollback()
+            raise e
+# ================= NEW SYSTEM =================
 
 # ================= NEW SYSTEM =================
 

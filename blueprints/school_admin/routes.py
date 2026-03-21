@@ -36,29 +36,30 @@ def dashboard():
     )
 
 # --------------------------
-# Add Teacher
+# Add Teacher (SQLAlchemy)
 # --------------------------
 @school_admin_bp.route("/add_teacher", methods=["GET", "POST"])
 @login_required
 @school_admin_required
 def add_teacher():
     form = AddTeacherForm()
+
     if form.validate_on_submit():
-        conn = get_db()
-        conn.execute(
-            "INSERT INTO users (name, email, password, role, school_id, is_active) VALUES (?, ?, ?, ?, ?, ?)",
-            (
-                form.name.data,
-                form.email.data,
-                hash_password(form.password.data),
-                "teacher",
-                current_user.school_id,
-                1
-            )
+        teacher = User.add_teacher_sa(
+            name=form.name.data,
+            email=form.email.data,
+            password=form.password.data,
+            school_id=current_user.school_id
         )
-        conn.commit()
-        conn.close()
+
+        # 🚨 Handle duplicate email
+        if not teacher:
+            flash("Email already exists!", "danger")
+            return redirect(url_for("school_admin.add_teacher"))
+
+        flash("Teacher added successfully!", "success")
         return redirect(url_for("school_admin.view_teachers"))
+
     return render_template("add_teacher.html", form=form)
 
 # --------------------------
