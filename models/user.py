@@ -110,7 +110,6 @@ class User(UserMixin):
      # ================= NEW SYSTEM =================
     @staticmethod
     def count_teachers_by_school_sa(school_id):
-        from models.user import UserModel
         return UserModel.query.filter_by(
             role="teacher",
             school_id=school_id
@@ -120,7 +119,6 @@ class User(UserMixin):
 
     @staticmethod
     def get_teachers_by_school_sa(school_id):
-        from models.user import UserModel
         return UserModel.query.filter_by(
             role="teacher",
             school_id=school_id
