@@ -1,6 +1,6 @@
 from database import get_db
 from extensions import db
-
+from models.user import UserModel
 
 class Exam:
 
@@ -96,6 +96,26 @@ class Exam:
         ).all()
 
 # ================= NEW SYSTEM =================
+
+    @staticmethod
+    def get_teacher_id_by_exam_sa(exam_id):
+        exam = ExamModel.query.filter_by(id=exam_id).first()
+        return exam.teacher_id if exam else None
+ # ================= NEW SYSTEM =================
+    @staticmethod
+    def get_exam_info_sa(exam_id):
+        # Fetch exam object
+        exam = ExamModel.query.filter_by(id=exam_id).first()
+        if not exam:
+            return None, None  # safe if exam doesn't exist
+
+        # Fetch teacher object
+        teacher = UserModel.query.filter_by(id=exam.teacher_id).first()
+        teacher_name = teacher.name if teacher else None
+
+        # Return in same order as old function
+        return exam.title, teacher_name
+ # ================= NEW SYSTEM =================       
 
 class ExamModel(db.Model):
     __tablename__ = "exams"

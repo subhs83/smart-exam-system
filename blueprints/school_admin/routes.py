@@ -154,10 +154,10 @@ def teacher_exams(teacher_id):
 def admin_exam_results(exam_id):
     results = get_results(exam_id)
     # get teacher id from exam
-    teacher_id = Exam.get_teacher_id_by_exam(exam_id)
-    exam_info = Exam.get_exam_info(exam_id)
-    exam_title = exam_info[0]
-    teacher_name = exam_info[1]
+    teacher_id = Exam.get_teacher_id_by_exam_sa(exam_id)
+    exam_title, teacher_name = Exam.get_exam_info_sa(exam_id)
+    if not teacher_id:
+        abort(404)
     return render_template(
         'school_admin_results.html',
         exam_id=exam_id,
@@ -178,11 +178,8 @@ def admin_exam_leaderboard(exam_id):
 
     leaderboard = generate_leaderboard(exam_id)
      # get teacher id from exam
-    teacher_id = Exam.get_teacher_id_by_exam(exam_id)
-
-    exam_info = Exam.get_exam_info(exam_id)
-    exam_title = exam_info[0]
-    teacher_name = exam_info[1]
+    teacher_id = Exam.get_teacher_id_by_exam_sa(exam_id)
+    exam_title, teacher_name = Exam.get_exam_info_sa(exam_id)
     return render_template(
         'school_admin_leaderboard.html',
         exam_id=exam_id,
