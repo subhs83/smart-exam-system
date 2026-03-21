@@ -130,13 +130,14 @@ def teachers():
  
 @school_admin_bp.route('/teacher/<int:teacher_id>/exams')
 def teacher_exams(teacher_id):
-    exams = Exam.get_exams_by_teacher(teacher_id)
+    exams = Exam.get_exams_by_teacher_sa(teacher_id)
+
     exam_list = []
     for exam in exams:
-        attempts = Attempt.get_attempt_count(exam["id"])
+        attempts = Attempt.get_attempt_count(exam.id)
         exam_list.append({
-            "id": exam["id"],
-            "title": exam["title"],
+            "id": exam.id,
+            "title": exam.title,
             "student_attempts": attempts
         })
  

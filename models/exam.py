@@ -89,6 +89,13 @@ class Exam:
             school_id=school_id
         ).count()
 # ================= NEW SYSTEM =================
+    @staticmethod
+    def get_exams_by_teacher_sa(teacher_id):
+        return ExamModel.query.filter_by(
+            teacher_id=teacher_id
+        ).all()
+
+# ================= NEW SYSTEM =================
 
 class ExamModel(db.Model):
     __tablename__ = "exams"
@@ -105,6 +112,8 @@ class ExamModel(db.Model):
 
     school_id = db.Column(db.Integer, nullable=False)
     teacher_id = db.Column(db.Integer, nullable=False)
+
+     # ✅ ADD HER
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     published_at = db.Column(db.DateTime, nullable=True)
