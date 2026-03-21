@@ -106,7 +106,13 @@ def toggle_teacher(teacher_id):
 @login_required
 @school_admin_required
 def reset_teacher_password(teacher_id):
-    User.reset_teacher_password(teacher_id, current_user.school_id)
+    success = User.reset_teacher_password_sa(
+    teacher_id,
+    current_user.school_id
+    )
+
+    if not success:
+        abort(404)
     flash("Teacher password reset successfully!", "warning")
     return redirect(url_for("school_admin.view_teachers"))
 

@@ -171,7 +171,25 @@ class User(UserMixin):
             db.session.rollback()
             raise e
 # ================= NEW SYSTEM =================
+    @staticmethod
+    def reset_teacher_password_sa(teacher_id, school_id, new_password="default123"):
+        try:
+            teacher = UserModel.query.filter_by(
+                id=teacher_id,
+                role="teacher",
+                school_id=school_id
+            ).first()
 
+            if not teacher:
+                return False
+
+            teacher.password = hash_password(new_password)
+            db.session.commit()
+            return True
+
+        except Exception as e:
+            db.session.rollback()
+            raise e
 # ================= NEW SYSTEM =================
 
 class UserModel(db.Model):
