@@ -124,7 +124,7 @@ def reset_teacher_password(teacher_id):
 @school_admin_required
 def teachers():
     school_id = current_user.school_id
-    teachers = User.get_teachers_by_school(school_id)
+    teachers = User.get_teachers_by_school_sa(school_id)
     return render_template(
         'teachers.html',
         teachers=teachers,
