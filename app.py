@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from config import Config 
-from extensions import login_manager
+from extensions import login_manager,db
 from database import init_db
 import os
 
@@ -11,13 +11,14 @@ from blueprints.super_admin import super_admin_bp
 from blueprints.school_admin import school_admin_bp
 from blueprints.teacher import teacher_bp
 from blueprints.student import student_bp
-from blueprints.exam import exam_bp
+
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     login_manager.init_app(app)
+    db.init_app(app)
 
     if not os.path.exists(app.config["UPLOAD_FOLDER"]):
         os.makedirs(app.config["UPLOAD_FOLDER"])
@@ -34,7 +35,6 @@ def create_app():
     app.register_blueprint(school_admin_bp)
     app.register_blueprint(teacher_bp)
     app.register_blueprint(student_bp)
-    app.register_blueprint(exam_bp)
     with app.app_context():
         init_db()
 
