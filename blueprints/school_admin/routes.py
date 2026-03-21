@@ -87,20 +87,14 @@ def view_teachers():
 @login_required
 @school_admin_required
 def toggle_teacher(teacher_id):
-    conn = get_db()
-    teacher = conn.execute(
-        "SELECT * FROM users WHERE id = ? AND role = 'teacher' AND school_id = ?",
-        (teacher_id, current_user.school_id)
-    ).fetchone()
-    if not teacher:
-        abort(404)
-    new_status = 0 if teacher["is_active"] else 1
-    conn.execute(
-        "UPDATE users SET is_active = ? WHERE id = ? AND school_id = ?",
-        (new_status, teacher_id, current_user.school_id)
+    success = User.toggle_teacher_status_sa(
+    teacher_id,
+    current_user.school_id
     )
-    conn.commit()
-    conn.close()
+
+    if not success:
+        abort(404)
+
     flash("Teacher status updated!", "info")
     return redirect(url_for("school_admin.view_teachers"))
 

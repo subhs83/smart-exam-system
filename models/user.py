@@ -124,6 +124,30 @@ class User(UserMixin):
             school_id=school_id
         ).all()
 # ================= NEW SYSTEM =================
+
+    @staticmethod
+    def toggle_teacher_status_sa(teacher_id, school_id):
+        try:
+            teacher = UserModel.query.filter_by(
+                id=teacher_id,
+                role="teacher",
+                school_id=school_id
+            ).first()
+
+            if not teacher:
+                return False
+
+            teacher.is_active = not teacher.is_active
+            db.session.commit()
+            return True
+
+        except Exception as e:
+            db.session.rollback()
+            raise e
+# ================= NEW SYSTEM =================
+
+# ================= NEW SYSTEM =================
+
 class UserModel(db.Model):
     __tablename__ = "users"
 
