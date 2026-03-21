@@ -23,7 +23,7 @@ from utils.security import hash_password, verify_password
 def dashboard():
     school_id = current_user.school_id
 
-    total_teachers = User.count_teachers_by_school(school_id)
+    total_teachers = User.count_teachers_by_school_sa(school_id)
     total_exams = Exam.count_by_school(school_id)
     total_attempts = Attempt.count_by_school(school_id)
 

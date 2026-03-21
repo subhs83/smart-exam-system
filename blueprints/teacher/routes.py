@@ -119,7 +119,6 @@ def publish_exam_route(exam_id):
 @exam_owner_required
 def results_route(exam_id):
     results = get_results(exam_id)
-    print("TOTAL RESULTS:", len(results))
     return render_template('results.html', exam_id=exam_id, results=results)
 
 
