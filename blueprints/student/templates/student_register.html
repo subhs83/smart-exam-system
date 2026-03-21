@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5" style="max-width:700px;">
+
+    <!-- Exam Card -->
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white text-center">
+            <h4>{{ exam.title }}</h4>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Exam Info -->
+            <div class="mb-4">
+
+                <p>
+                    <strong>Duration:</strong>
+                    {{ exam.duration_minutes }} Minutes
+                </p>
+
+                <p>
+                    <strong>Marks per Question:</strong>
+                    {{ exam.marks_per_question }}
+                </p>
+
+                <p>
+                    <strong>Negative Marks:</strong>
+                    {{ exam.negative_marks }}
+                </p>
+
+            </div>
+
+            <hr>
+
+            <h5 class="mb-3">Student Registration</h5>
+
+            <form method="POST"
+      action="{{ url_for('student.start_quiz', quiz_code=quiz_code) }}">
+
+<div class="row">
+
+<!-- First Name -->
+<div class="col-md-6 mb-3">
+<label class="form-label">First Name</label>
+<input type="text"
+       name="first_name"
+       class="form-control"
+       required
+       pattern="[A-Za-z]+"
+       minlength="2"
+       maxlength="30">
+</div>
+
+<!-- Last Name -->
+<div class="col-md-6 mb-3">
+<label class="form-label">Last Name</label>
+<input type="text"
+       name="last_name"
+       class="form-control"
+       required
+       pattern="[A-Za-z]+"
+       minlength="2"
+       maxlength="30">
+</div>
+
+</div>
+
+<div class="row">
+
+<!-- Class -->
+<div class="col-md-6 mb-3">
+<label class="form-label">Class</label>
+<input type="text"
+       name="class_name"
+       class="form-control"
+       required
+       maxlength="10">
+</div>
+
+<!-- Roll Number -->
+<div class="col-md-6 mb-3">
+<label class="form-label">Roll Number</label>
+<input type="text"
+       name="roll_number"
+       class="form-control"
+       required
+       maxlength="10">
+</div>
+
+</div>
+
+<!-- Mobile -->
+<div class="mb-3">
+<label class="form-label">Mobile Number</label>
+<input type="tel"
+       name="mobile"
+       class="form-control"
+       required
+       pattern="[0-9]{10}"
+       maxlength="10"
+       placeholder="Enter 10 digit mobile number">
+</div>
+
+<hr>
+
+<div class="text-center">
+
+<button type="submit"
+        class="btn btn-success btn-lg">
+Start Quiz
+</button>
+
+</div>
+
+</form>
+
+        </div>
+
+    </div>
+
+</div>
+<script>
+
+    document.querySelectorAll("input[name='first_name'], input[name='last_name']")
+    .forEach(function(input){
+    
+    input.addEventListener("keypress", function(e){
+    if(!/[a-zA-Z]/.test(e.key)){
+    e.preventDefault();
+    }
+    });
+    
+    });
+    
+    </script>
+
+{% endblock %}

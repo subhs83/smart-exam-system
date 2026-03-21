@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Add School Admin - {{ school.name }}</h3>
+
+<form method="POST">
+
+    <div class="mb-3">
+        <label>Name</label>
+        <input type="text" name="name" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Email</label>
+        <input type="email" name="email" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Password</label>
+        <input type="password" name="password" class="form-control" required>
+    </div>
+
+    <button type="submit" class="btn btn-success">
+        Create Admin
+    </button>
+
+    <a href="{{ url_for('super_admin.view_school_admins', school_id=school.id) }}"
+       class="btn btn-secondary">
+        Cancel
+    </a>
+
+</form>
+
+{% endblock %}

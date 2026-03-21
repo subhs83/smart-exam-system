@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block admin_content %}
+
+<h3>Teachers</h3>
+
+<table class="table">
+<thead>
+<tr>
+<th>SN</th>
+<th>Name</th>
+<th>Email</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for teacher in teachers %}
+
+<tr>
+<td>{{ loop.index }}</td>   
+<td>{{ teacher.name }}</td>
+<td>{{ teacher.email }}</td>
+
+<td>
+    <a href="{{ url_for('school_admin.teacher_exams', teacher_id=teacher.id) }}"
+       class="btn btn-primary btn-sm">
+       View Exams
+    </a>
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+</table>
+
+{% endblock %}

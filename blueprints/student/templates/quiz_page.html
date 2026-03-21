@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h2>{{ exam.title }}</h2>
+
+    <p><strong>Duration:</strong> {{ exam.duration_minutes }} minutes</p>
+
+    <p><strong>Quiz Code:</strong> {{ quiz_code }}</p>
+
+    <hr>
+
+    <a href="#" class="btn btn-primary">
+        Start Quiz
+    </a>
+
+</div>
+
+{% endblock %}

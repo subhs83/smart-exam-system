@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block admin_content %}
+
+<div class="container mt-4">
+
+    <h3>Results: {{ exam_title }}</h3>
+    <h5><strong>Teacher:</strong> {{ teacher_name }}</h5>
+
+            <table class="table table-bordered">
+
+                <thead>
+                    <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Class</th>
+                    <th>Roll</th>
+                    <th>Mobile</th>
+                    <th>Score</th>
+                    <th>Percentage</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    {% for row in results %}
+
+                    <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ row.first_name }} {{ row.last_name }}</td>
+                    <td>{{ row.student_class }}</td>
+                    <td>{{ row.roll_number }}</td>
+                    <td>{{ row.mobile }}</td>
+                    <td>{{ row.score }} / {{ row.total_marks }}</td>
+                    <td>{{ row.percentage|round(2) }} %</td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+                    <a href="{{ url_for('school_admin.teacher_exams',teacher_id=teacher_id) }}" class="btn btn-secondary mt-2">Back to Dashboard</a>
+
+                    </div>
+
+{% endblock %}
+    
+ 

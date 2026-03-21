@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Admins - {{ school.name }}</h3>
+
+<a href="{{ url_for('super_admin.add_school_admin', school_id=school.id) }}"
+   class="btn btn-primary mb-3">
+    ➕ Add School Admin
+</a>
+
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Action</th>
+            <th>Password</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for admin in admins %}
+        <tr>
+            <td>{{ admin.id }}</td>
+            <td>{{ admin.name }}</td>
+            <td>{{ admin.email }}</td>
+            <td>
+                {% if admin.is_active == 1 %}
+                    <span class="badge bg-success">Active</span>
+                {% else %}
+                    <span class="badge bg-danger">Inactive</span>
+                {% endif %}
+            </td>
+            
+            <td>
+                <form method="POST"
+                      action="{{ url_for('super_admin.toggle_school_admin', user_id=admin.id) }}"
+                      style="display:inline;">
+                    <button type="submit"
+                            class="btn btn-sm {% if admin.is_active == 1 %}btn-danger{% else %}btn-success{% endif %}">
+                        {% if admin.is_active == 1 %}
+                            Deactivate
+                        {% else %}
+                            Activate
+                        {% endif %}
+                    </button>
+                </form>
+            </td>
+            <td>
+                <form method="POST"
+                      action="{{ url_for('super_admin.reset_school_admin_password', user_id=admin.id) }}"
+                      style="display:inline;">
+                    <button type="submit"
+                            class="btn btn-sm btn-secondary"
+                            onclick="return confirm('Reset password for this admin?')">
+                        Reset
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('super_admin.schools') }}" class="btn btn-secondary">
+    Back
+</a>
+
+{% endblock %}

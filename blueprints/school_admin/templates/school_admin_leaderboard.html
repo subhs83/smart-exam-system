@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+{% block title %}Leaderboard{% endblock %}
+{% block admin_content %}
+
+<div class="container mt-4">
+
+<h3>🏆 Leaderboard: {{ exam_title }}</h3>
+<h5><strong>Teacher:</strong> {{ teacher_name }}</h5>
+
+{% if leaderboard|length >= 3 %}
+
+<div class="row text-center mb-4">
+
+<!-- 2nd Place -->
+<div class="col-md-4">
+<div class="podium-card second">
+
+<div class="podium-rank silver">🏆</div>
+
+<h6>
+{{ leaderboard[1].first_name }} {{ leaderboard[1].last_name }}
+</h6>
+
+<p class="mb-1">
+Score: {{ leaderboard[1].score }}
+</p>
+
+<small>
+{{ "%.2f"|format(leaderboard[1].percentage) }}%
+</small>
+
+</div>
+</div>
+
+
+<!-- 1st Place -->
+<div class="col-md-4">
+<div class="podium-card first">
+
+<div class="podium-rank gold">🏆</div>
+
+<h5>
+{{ leaderboard[0].first_name }} {{ leaderboard[0].last_name }}
+</h5>
+
+<p class="mb-1">
+Score: {{ leaderboard[0].score }}
+</p>
+
+<small>
+{{ "%.2f"|format(leaderboard[0].percentage) }}%
+</small>
+
+</div>
+</div>
+
+
+<!-- 3rd Place -->
+<div class="col-md-4">
+<div class="podium-card third">
+
+<div class="podium-rank bronze">🏆</div>
+
+<h6>
+{{ leaderboard[2].first_name }} {{ leaderboard[2].last_name }}
+</h6>
+
+<p class="mb-1">
+Score: {{ leaderboard[2].score }}
+</p>
+
+<small>
+{{ "%.2f"|format(leaderboard[2].percentage) }}%
+</small>
+
+</div>
+</div>
+
+</div>
+
+{% endif %}
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Rank</th>
+<th>Name</th>
+<th>Class</th>
+<th>Roll</th>
+<th>Mobile</th>
+<th>Score</th>
+<th>Percentage</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for student in leaderboard %}
+
+<tr
+{% if loop.index == 1 %}
+class="table-warning"
+{% elif loop.index == 2 %}
+class="table-light"
+{% elif loop.index == 3 %}
+class="table-info"
+{% endif %}
+>
+
+<td>
+    {% if loop.index == 1 %}
+    <span class="rank-icon gold">
+    <i class="bi bi-trophy-fill"></i>
+    </span>
+    
+    {% elif loop.index == 2 %}
+    <span class="rank-icon silver">
+    <i class="bi bi-trophy-fill"></i>
+    </span>
+    
+    {% elif loop.index == 3 %}
+    <span class="rank-icon bronze">
+    <i class="bi bi-trophy-fill"></i>
+    </span>
+    
+    {% else %}
+    <span class="badge bg-light text-dark">{{ loop.index }}</span>
+    {% endif %}
+    </td>
+<td>{{ student.first_name }} {{ student.last_name }}</td>
+<td>{{ student.student_class }}</td>
+<td>{{ student.roll_number }}</td>
+<td>{{ student.mobile }}</td>
+<td>{{ student.score }} / {{ student.total_marks }}</td>
+<td>{{ "%.2f"|format(student.percentage) }}%</td>
+</tr>
+{% else %}
+
+<tr>
+<td colspan="10" class="text-center">No results yet.</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+    <a href="{{ url_for('school_admin.teacher_exams',teacher_id=teacher_id) }}" class="btn btn-secondary mt-2">Back to Dashboard</a>
+    </a>
+
+</div>
+
+{% endblock %}

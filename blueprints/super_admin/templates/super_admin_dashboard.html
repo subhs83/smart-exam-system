@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Super Admin Dashboard</h2>
+
+    <!-- Platform Stats -->
+    <div class="stats d-flex flex-wrap gap-3 mt-3">
+        <div class="stat-box bg-white p-3 rounded shadow flex-fill text-center">
+            <h4>Total Schools</h4>
+            <p class="fs-3 text-primary">{{ total_schools or 0 }}</p>
+        </div>
+
+        <div class="stat-box bg-white p-3 rounded shadow flex-fill text-center">
+            <h4>Total Exams Conducted</h4>
+            <p class="fs-3 text-primary">{{ total_exams or 0 }}</p>
+        </div>
+
+        <div class="stat-box bg-white p-3 rounded shadow flex-fill text-center">
+            <h4>Total Teachers</h4>
+            <p class="fs-3 text-primary">{{ total_teachers or 0 }}</p>
+        </div>
+
+        <div class="stat-box bg-white p-3 rounded shadow flex-fill text-center">
+            <h4>Total Students Assessed</h4>
+            <p class="fs-3 text-primary">{{ total_students or 0 }}</p>
+        </div>
+    </div>
+
+    <!-- Management Cards -->
+    <div class="cards row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mt-4">
+        <div class="col">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">🏫 Manage Schools</h5>
+                    <p class="card-text">Add, activate or deactivate schools.</p>
+                    <a href="{{ url_for('super_admin.schools') }}" class="btn btn-primary">
+                        Manage Schools
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">👤 Create School Admin</h5>
+                    <p class="card-text">Assign admin to newly created schools.</p>
+                    <a href="#" class="btn btn-primary">Create Admin</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">📊 Platform Statistics</h5>
+                    <p class="card-text">View overall system performance.</p>
+                    <a href="#" class="btn btn-primary">View Stats</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">⚙ System Health</h5>
+                    <p class="card-text">Monitor application status and logs.</p>
+                    <a href="#" class="btn btn-primary">View Status</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

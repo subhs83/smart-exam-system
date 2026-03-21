@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit School</h2>
+
+    <form method="POST">
+        <div class="mb-3">
+            <label class="form-label">School Name</label>
+            <input type="text" name="name" class="form-control" value="{{ school.name }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Address</label>
+            <input type="text" name="address" class="form-control" value="{{ school.address }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input type="text" name="phone" class="form-control" value="{{ school.phone }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ school.email }}">
+        </div>
+
+        <button type="submit" class="btn btn-success">Update School</button>
+        <a href="{{ url_for('super_admin.schools') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

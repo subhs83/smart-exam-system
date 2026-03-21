@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block admin_content %}
+
+<h2 class="mb-4 text-primary fw-bold">School Admin Dashboard</h2>
+
+<!-- Statistics -->
+<div class="row mb-4 g-3">
+
+  <div class="col-md-3">
+    <div class="card shadow-sm text-center">
+      <div class="card-body">
+        <i class="bi bi-person-badge fs-2 text-primary"></i>
+        <h3 class="fw-bold mt-2">{{ total_teachers }}</h3>
+        <p class="text-muted mb-0">Total Teachers</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm text-center">
+      <div class="card-body">
+        <i class="bi bi-journal-text fs-2 text-success"></i>
+        <h3 class="fw-bold mt-2">{{ total_exams }}</h3>
+        <p class="text-muted mb-0">Total Exams</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm text-center">
+      <div class="card-body">
+        <i class="bi bi-journal-text fs-2 text-success"></i>
+        <h3 class="fw-bold mt-2">{{ total_attempts }}</h3>
+        <p class="text-muted mb-0">Student Attempts</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cards -->
+<div class="row g-4">
+
+  <!-- Teachers -->
+  <div class="col-md-6 col-lg-3">
+    <div class="card shadow-sm text-center">
+      <div class="card-body">
+        <h6>Teachers</h6>
+        <a href="{{ url_for('school_admin.add_teacher') }}" class="btn btn-primary btn-sm">Add</a>
+        <a href="{{ url_for('school_admin.view_teachers') }}" class="btn btn-outline-secondary btn-sm">Manage</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
