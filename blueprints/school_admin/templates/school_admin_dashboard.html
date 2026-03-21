@@ -54,4 +54,45 @@
 
 </div>
 
+<!-- Download Report Card -->
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Download Report</h5>
+        <form action="{{ url_for('school_admin.download_report') }}" method="get" class="row g-2 align-items-center">
+          
+          <div class="col-auto">
+            <label for="report_type" class="form-label">Report Type:</label>
+            <select id="report_type" name="type" class="form-select" onchange="toggleExamDropdown()">
+              <option value="school">Entire School</option>
+              <option value="exam">Single Exam</option>
+            </select>
+          </div>
+
+          <div class="col-auto" id="exam_dropdown" style="display: none;">
+            <label for="exam_id" class="form-label">Select Exam:</label>
+            <select id="exam_id" name="exam_id" class="form-select">
+              {% for exam in exams %}
+                <option value="{{ exam.id }}">{{ exam.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-auto align-self-end">
+            <button type="submit" class="btn btn-success">Download Report</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleExamDropdown() {
+    var reportType = document.getElementById('report_type').value;
+    var examDiv = document.getElementById('exam_dropdown');
+    examDiv.style.display = reportType === 'exam' ? 'block' : 'none';
+}
+</script>
 {% endblock %}

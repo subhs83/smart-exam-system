@@ -1,5 +1,5 @@
 from . import school_admin_bp
-from flask import render_template, redirect, url_for, flash, abort, Response, request,session
+from flask import render_template, redirect, url_for, flash, abort, Response, request,session,send_file
 from flask_login import login_required, current_user
 from utils.decorators import school_admin_required
 from models.user import User
@@ -7,8 +7,8 @@ from models.exam import Exam
 from models.result import Result
 from models.attempt import Attempt
 from utils.services.result_service import get_results, generate_leaderboard
+from utils.services.report_service import generate_exam_report, generate_school_report
 from forms.teacher_forms import AddTeacherForm
-import io, csv
 from utils.security import hash_password, verify_password
 
 
@@ -21,15 +21,20 @@ from utils.security import hash_password, verify_password
 def dashboard():
     school_id = current_user.school_id
 
+    # Existing counts
     total_teachers = User.count_teachers_by_school_sa(school_id)
     total_exams = Exam.count_by_school_sa(school_id)
-    total_attempts = Attempt.count_by_school(school_id)
+    total_attempts = Attempt.count_by_school_sa(school_id)
+
+    # New: fetch exams for dropdown
+    exams = Exam.get_exams_by_school_sa(school_id)  # ✅ fixed
 
     return render_template(
         "school_admin_dashboard.html",
         total_teachers=total_teachers,
         total_exams=total_exams,
         total_attempts=total_attempts,
+        exams=exams,  # pass exams for report dropdown
         active_page="dashboard"
     )
 
@@ -134,7 +139,7 @@ def teacher_exams(teacher_id):
 
     exam_list = []
     for exam in exams:
-        attempts = Attempt.get_attempt_count(exam.id)
+        attempts = Attempt.get_attempt_count_sa(exam.id)
         exam_list.append({
             "id": exam.id,
             "title": exam.title,
@@ -192,16 +197,18 @@ def admin_exam_leaderboard(exam_id):
 # --------------------------
 # Download Reports (CSV)
 # --------------------------
-@school_admin_bp.route("/download_reports")
+@school_admin_bp.route("/download_report", methods=["GET"])
 @login_required
 @school_admin_required
-def download_reports():
-    results = Result.get_by_school(current_user.school_id)
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(["Student", "Exam", "Score"])
-    for r in results:
-        writer.writerow([r["student_name"], r["exam_name"], r["score"]])
-    response = Response(output.getvalue(), mimetype="text/csv")
-    response.headers["Content-Disposition"] = "attachment; filename=school_reports.csv"
-    return response
+def download_report():
+    report_type = request.args.get("type")  # "exam" or "school"
+    exam_id = request.args.get("exam_id")
+
+    if report_type == "exam" and exam_id:
+        file_path = generate_exam_report(int(exam_id))
+    elif report_type == "school":
+        file_path = generate_school_report(current_user.school_id)
+    else:
+        return "Invalid parameters", 400
+
+    return send_file(file_path, as_attachment=True)

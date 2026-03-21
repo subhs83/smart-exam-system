@@ -109,7 +109,7 @@ def init_db():
 
         first_name TEXT,
         last_name TEXT,
-        studen_class TEXT,
+        student_class TEXT,
         roll_number TEXT,
         mobile TEXT,
 
