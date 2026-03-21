@@ -7,8 +7,6 @@ from models.exam import Exam
 from models.result import Result
 from models.attempt import Attempt
 from utils.services.result_service import get_results, generate_leaderboard
-
-from database import get_db
 from forms.teacher_forms import AddTeacherForm
 import io, csv
 from utils.security import hash_password, verify_password
@@ -24,7 +22,7 @@ def dashboard():
     school_id = current_user.school_id
 
     total_teachers = User.count_teachers_by_school_sa(school_id)
-    total_exams = Exam.count_by_school(school_id)
+    total_exams = Exam.count_by_school_sa(school_id)
     total_attempts = Attempt.count_by_school(school_id)
 
     return render_template(
@@ -69,12 +67,7 @@ def add_teacher():
 @login_required
 @school_admin_required
 def view_teachers():
-    conn = get_db()
-    teachers = conn.execute(
-        "SELECT * FROM users WHERE role = 'teacher' AND school_id = ?",
-        (current_user.school_id,)
-    ).fetchall()
-    conn.close()
+    teachers = User.get_teachers_by_school_sa(current_user.school_id)
     return render_template(
         "view_teachers.html", 
         teachers=teachers,

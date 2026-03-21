@@ -1,4 +1,6 @@
 from database import get_db
+from extensions import db
+
 
 class Exam:
 
@@ -78,3 +80,34 @@ class Exam:
         """, (exam_id,))
 
         return cursor.fetchone()
+
+
+# ================= NEW SYSTEM =================
+    @staticmethod
+    def count_by_school_sa(school_id):
+        return ExamModel.query.filter_by(
+            school_id=school_id
+        ).count()
+# ================= NEW SYSTEM =================
+
+class ExamModel(db.Model):
+    __tablename__ = "exams"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    duration_minutes = db.Column(db.Integer, nullable=False)
+
+    marks_per_question = db.Column(db.Integer, default=1)
+    negative_marks = db.Column(db.Float, default=0)
+    max_attempts_per_mobile = db.Column(db.Integer, default=1)
+
+    status = db.Column(db.String, default="draft")
+
+    school_id = db.Column(db.Integer, nullable=False)
+    teacher_id = db.Column(db.Integer, nullable=False)
+
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    published_at = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<Exam {self.title}>"
