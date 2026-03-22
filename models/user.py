@@ -1,199 +1,9 @@
 from flask_login import UserMixin
-from database import get_db
 from extensions import db
 from utils.security import hash_password, verify_password
 
-
-class User(UserMixin):
-    def __init__(self, id, name, email, password, role, school_id, is_active=True):
-        self.id = id
-        self.name = name
-        self.email = email
-        self.password = password  # stored as scrypt hash
-        self.role = role
-        self.school_id = school_id
-        self.active = is_active
-
-
-
-    # --- Static DB fetch ---
-    @staticmethod
-    def get(user_id):
-        conn = get_db()
-        user = conn.execute(
-            "SELECT id, name, email, password, role, school_id, is_active FROM users WHERE id = ?",
-            (user_id,)
-        ).fetchone()
-        conn.close()
-
-        if user:
-            return User(
-                id=user["id"],
-                name=user["name"],
-                email=user["email"],
-                password=user["password"],
-                role=user["role"],
-                school_id=user["school_id"],
-                is_active=user["is_active"]
-            )
-        return None
-
-    # --- Teacher lifecycle actions (school-aware) ---
-    @staticmethod
-    def activate_teacher(teacher_id, school_id):
-        """
-        Activate teacher only if they belong to the current school.
-        """
-        conn = get_db()
-        conn.execute(
-            "UPDATE users SET is_active = 1 WHERE id = ? AND role = 'teacher' AND school_id = ?",
-            (teacher_id, school_id)
-        )
-        conn.commit()
-        conn.close()
-
-    @staticmethod
-    def deactivate_teacher(teacher_id, school_id):
-        """
-        Deactivate teacher only if they belong to the current school.
-        """
-        conn = get_db()
-        conn.execute(
-            "UPDATE users SET is_active = 0 WHERE id = ? AND role = 'teacher' AND school_id = ?",
-            (teacher_id, school_id)
-        )
-        conn.commit()
-        conn.close()
-
-    @staticmethod
-    def reset_teacher_password(teacher_id, school_id, new_password="default123"):
-        """
-        Reset teacher password only if they belong to the current school.
-        """
-        conn = get_db()
-        hashed = hash_password(new_password)
-        conn.execute(
-            "UPDATE users SET password = ? WHERE id = ? AND role = 'teacher' AND school_id = ?",
-            (hashed, teacher_id, school_id)
-        )
-        conn.commit()
-        conn.close()
-
-
-    @staticmethod
-    def count_teachers_by_school(school_id):
-        conn = get_db()
-        total = conn.execute(
-            "SELECT COUNT(*) FROM users WHERE role = 'teacher' AND school_id = ?",
-            (school_id,)
-        ).fetchone()[0]
-
-        conn.close()
-        return total
-
-    @staticmethod
-    def get_teachers_by_school(school_id):
-        conn = get_db()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT id, name, email
-            FROM users
-            WHERE role='teacher' AND school_id=?
-        """, (school_id,))
-
-        teachers = cursor.fetchall()
-        conn.close()
-
-        return teachers
-    
-     # ================= NEW SYSTEM =================
-    @staticmethod
-    def count_teachers_by_school_sa(school_id):
-        return UserModel.query.filter_by(
-            role="teacher",
-            school_id=school_id
-        ).count()
-
-    # ================= NEW SYSTEM =================
-
-    @staticmethod
-    def get_teachers_by_school_sa(school_id):
-        return UserModel.query.filter_by(
-            role="teacher",
-            school_id=school_id
-        ).all()
-# ================= NEW SYSTEM =================
-
-    @staticmethod
-    def toggle_teacher_status_sa(teacher_id, school_id):
-        try:
-            teacher = UserModel.query.filter_by(
-                id=teacher_id,
-                role="teacher",
-                school_id=school_id
-            ).first()
-
-            if not teacher:
-                return False
-
-            teacher.is_active = not teacher.is_active
-            db.session.commit()
-            return True
-
-        except Exception as e:
-            db.session.rollback()
-            raise e
-# ================= NEW SYSTEM =================
-    @staticmethod
-    def add_teacher_sa(name, email, password, school_id):
-        try:
-            # 🔍 Check if email already exists
-            existing = UserModel.query.filter_by(email=email).first()
-            if existing:
-                return None
-
-            teacher = UserModel(
-                name=name,
-                email=email,
-                password=hash_password(password),
-                role="teacher",
-                school_id=school_id,
-                is_active=True
-            )
-
-            db.session.add(teacher)
-            db.session.commit()
-
-            return teacher
-
-        except Exception as e:
-            db.session.rollback()
-            raise e
-# ================= NEW SYSTEM =================
-    @staticmethod
-    def reset_teacher_password_sa(teacher_id, school_id, new_password="default123"):
-        try:
-            teacher = UserModel.query.filter_by(
-                id=teacher_id,
-                role="teacher",
-                school_id=school_id
-            ).first()
-
-            if not teacher:
-                return False
-
-            teacher.password = hash_password(new_password)
-            db.session.commit()
-            return True
-
-        except Exception as e:
-            db.session.rollback()
-            raise e
-# ================= NEW SYSTEM =================
-
 # =========================
-# User Model
+# User Model (SQLAlchemy)
 # =========================
 class UserModel(UserMixin, db.Model):
     __tablename__ = "users"
@@ -208,6 +18,78 @@ class UserModel(UserMixin, db.Model):
     force_password_change = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
-    
-    
-   
+    # --- Static DB fetch ---
+    @staticmethod
+    def get(user_id):
+        return UserModel.query.get(user_id)
+
+    # --- Teacher lifecycle actions (school-aware) ---
+    @staticmethod
+    def activate_teacher(teacher_id, school_id):
+        teacher = UserModel.query.filter_by(
+            id=teacher_id, role="teacher", school_id=school_id
+        ).first()
+        if teacher:
+            teacher.is_active = True
+            db.session.commit()
+            return True
+        return False
+
+    @staticmethod
+    def deactivate_teacher(teacher_id, school_id):
+        teacher = UserModel.query.filter_by(
+            id=teacher_id, role="teacher", school_id=school_id
+        ).first()
+        if teacher:
+            teacher.is_active = False
+            db.session.commit()
+            return True
+        return False
+
+    @staticmethod
+    def reset_teacher_password(teacher_id, school_id, new_password="default123"):
+        teacher = UserModel.query.filter_by(
+            id=teacher_id, role="teacher", school_id=school_id
+        ).first()
+        if teacher:
+            teacher.password = hash_password(new_password)
+            db.session.commit()
+            return True
+        return False
+
+    @staticmethod
+    def count_teachers_by_school(school_id):
+        return UserModel.query.filter_by(role="teacher", school_id=school_id).count()
+
+    @staticmethod
+    def get_teachers_by_school(school_id):
+        return UserModel.query.filter_by(role="teacher", school_id=school_id).all()
+
+    @staticmethod
+    def toggle_teacher_status(teacher_id, school_id):
+        teacher = UserModel.query.filter_by(
+            id=teacher_id, role="teacher", school_id=school_id
+        ).first()
+        if teacher:
+            teacher.is_active = not teacher.is_active
+            db.session.commit()
+            return True
+        return False
+
+    @staticmethod
+    def add_teacher(name, email, password, school_id):
+        existing = UserModel.query.filter_by(email=email).first()
+        if existing:
+            return None
+
+        teacher = UserModel(
+            name=name,
+            email=email,
+            password=hash_password(password),
+            role="teacher",
+            school_id=school_id,
+            is_active=True
+        )
+        db.session.add(teacher)
+        db.session.commit()
+        return teacher

@@ -1,15 +1,12 @@
-from database import get_db
 from extensions import db
-
 class School:
     @staticmethod
     def get(school_id):
-        conn = get_db()
-        school = conn.execute(
-            "SELECT id, name FROM schools WHERE id = ?", (school_id,)
-        ).fetchone()
-        conn.close()
-        return school
+        school = SchoolModel.query.get(school_id)
+        if school:
+            # Return a dictionary similar to what raw SQL returned
+            return {"id": school.id, "name": school.name}
+        return None
 
 
 # =========================

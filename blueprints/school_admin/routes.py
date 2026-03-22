@@ -2,7 +2,7 @@ from . import school_admin_bp
 from flask import render_template, redirect, url_for, flash, abort, Response, request,session,send_file
 from flask_login import login_required, current_user
 from utils.decorators import school_admin_required
-from models.user import User
+from models.user import UserModel
 from models.exam import Exam
 from models.result import Result
 from models.attempt import Attempt
@@ -22,12 +22,12 @@ def dashboard():
     school_id = current_user.school_id
 
     # Existing counts
-    total_teachers = User.count_teachers_by_school_sa(school_id)
-    total_exams = Exam.count_by_school_sa(school_id)
-    total_attempts = Attempt.count_by_school_sa(school_id)
+    total_teachers = UserModel.count_teachers_by_school(school_id)
+    total_exams = Exam.count_by_school(school_id)
+    total_attempts = Attempt.count_by_school(school_id)
 
     # New: fetch exams for dropdown
-    exams = Exam.get_exams_by_school_sa(school_id)  # ✅ fixed
+    exams = Exam.get_exams_by_school(school_id)  # ✅ fixed
 
     return render_template(
         "school_admin_dashboard.html",
@@ -48,7 +48,7 @@ def add_teacher():
     form = AddTeacherForm()
 
     if form.validate_on_submit():
-        teacher = User.add_teacher_sa(
+        teacher = UserModel.add_teacher(
             name=form.name.data,
             email=form.email.data,
             password=form.password.data,
@@ -72,7 +72,7 @@ def add_teacher():
 @login_required
 @school_admin_required
 def view_teachers():
-    teachers = User.get_teachers_by_school_sa(current_user.school_id)
+    teachers = UserModel.get_teachers_by_school(current_user.school_id)
     return render_template(
         "view_teachers.html", 
         teachers=teachers,
@@ -86,7 +86,7 @@ def view_teachers():
 @login_required
 @school_admin_required
 def toggle_teacher(teacher_id):
-    success = User.toggle_teacher_status_sa(
+    success = UserModel.toggle_teacher_status(
     teacher_id,
     current_user.school_id
     )
@@ -104,7 +104,7 @@ def toggle_teacher(teacher_id):
 @login_required
 @school_admin_required
 def reset_teacher_password(teacher_id):
-    success = User.reset_teacher_password_sa(
+    success = UserModel.reset_teacher_password(
     teacher_id,
     current_user.school_id
     )
@@ -123,7 +123,7 @@ def reset_teacher_password(teacher_id):
 @school_admin_required
 def teachers():
     school_id = current_user.school_id
-    teachers = User.get_teachers_by_school_sa(school_id)
+    teachers = UserModel.get_teachers_by_school(school_id)
     return render_template(
         'teachers.html',
         teachers=teachers,
@@ -135,11 +135,11 @@ def teachers():
  
 @school_admin_bp.route('/teacher/<int:teacher_id>/exams')
 def teacher_exams(teacher_id):
-    exams = Exam.get_exams_by_teacher_sa(teacher_id)
+    exams = Exam.get_exams_by_teacher(teacher_id)
 
     exam_list = []
     for exam in exams:
-        attempts = Attempt.get_attempt_count_sa(exam.id)
+        attempts = Attempt.get_attempt_count(exam.id)
         exam_list.append({
             "id": exam.id,
             "title": exam.title,
@@ -159,8 +159,8 @@ def teacher_exams(teacher_id):
 def admin_exam_results(exam_id):
     results = get_results(exam_id)
     # get teacher id from exam
-    teacher_id = Exam.get_teacher_id_by_exam_sa(exam_id)
-    exam_title, teacher_name = Exam.get_exam_info_sa(exam_id)
+    teacher_id = Exam.get_teacher_id_by_exam(exam_id)
+    exam_title, teacher_name = Exam.get_exam_info(exam_id)
     if not teacher_id:
         abort(404)
     return render_template(
@@ -183,8 +183,8 @@ def admin_exam_leaderboard(exam_id):
 
     leaderboard = generate_leaderboard(exam_id)
      # get teacher id from exam
-    teacher_id = Exam.get_teacher_id_by_exam_sa(exam_id)
-    exam_title, teacher_name = Exam.get_exam_info_sa(exam_id)
+    teacher_id = Exam.get_teacher_id_by_exam(exam_id)
+    exam_title, teacher_name = Exam.get_exam_info(exam_id)
     return render_template(
         'school_admin_leaderboard.html',
         exam_id=exam_id,
