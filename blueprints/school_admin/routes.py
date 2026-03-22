@@ -3,7 +3,7 @@ from flask import render_template, redirect, url_for, flash, abort, Response, re
 from flask_login import login_required, current_user
 from utils.decorators import school_admin_required
 from models.user import UserModel
-from models.exam import Exam
+from models.exam import Exam,ExamModel
 from models.result import Result
 from models.attempt import Attempt
 from utils.services.result_service import get_results, generate_leaderboard
@@ -212,3 +212,11 @@ def download_report():
         return "Invalid parameters", 400
 
     return send_file(file_path, as_attachment=True)
+
+
+@school_admin_bp.route("/reports")
+@login_required
+@school_admin_required
+def reports():
+    exams = ExamModel.query.all()
+    return render_template("reports.html", exams=exams, active_page="reports")

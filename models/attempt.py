@@ -31,16 +31,16 @@ class AttemptModel(db.Model):
 class Attempt:
 
     @staticmethod
-    def get_all_by_student_sa(student_name):
+    def get_all_by_student(student_name):
         return AttemptModel.query.filter_by(student_name=student_name).all()
 
     @staticmethod
-    def get_by_id_sa(attempt_id):
+    def get_by_id(attempt_id):
         return AttemptModel.query.get(attempt_id)
  
 
     @staticmethod
-    def count_by_school_sa(school_id):
+    def count_by_school(school_id):
         total = db.session.query(db.func.count(AttemptModel.id))\
             .join(ExamModel, AttemptModel.exam_id == ExamModel.id)\
             .filter(ExamModel.school_id == school_id)\
@@ -48,6 +48,6 @@ class Attempt:
         return total
  
     @staticmethod
-    def get_attempt_count_sa(exam_id):
+    def get_attempt_count(exam_id):
         return db.session.query(db.func.count(AttemptModel.id))\
             .filter_by(exam_id=exam_id).scalar()
