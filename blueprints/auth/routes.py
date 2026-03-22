@@ -1,8 +1,8 @@
 from . import auth_bp
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required,current_user
-from models.user import User
-from database import get_db
+from models.user import UserModel
+from extensions import db
 from utils.security import hash_password, verify_password,validate_password_strength
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -11,32 +11,18 @@ def login():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        conn = get_db()
-        user_data = conn.execute(
-            "SELECT * FROM users WHERE email = ?", (email,)
-        ).fetchone()
-        conn.close()
+        user = UserModel.query.filter_by(email=email).first()
 
-        if user_data and verify_password(password, user_data["password"]):
+        if user and verify_password(password, user.password):
 
             # 🚫 Block inactive users
-            if user_data["is_active"] == 0:
+            if not user.is_active:
                 flash("Account is inactive. Contact Super Admin.", "danger")
                 return redirect(url_for("auth.login"))
-
-            user = User(
-                user_data["id"],
-                user_data["name"],
-                user_data["email"],
-                user_data["password"],
-                user_data["role"],
-                user_data["school_id"],
-            )
-
             login_user(user)
 
             # 🔐 FORCE PASSWORD CHANGE CHECK
-            if user_data["force_password_change"] == 1:
+            if user.force_password_change:
                 return redirect(url_for("auth.change_password"))
 
             # Role-based redirect
@@ -66,14 +52,9 @@ def change_password():
 
         hashed_password = hash_password(new_password)
 
-        conn = get_db()
-        conn.execute("""
-            UPDATE users
-            SET password = ?, force_password_change = 0
-            WHERE id = ?
-        """, (hashed_password, current_user.id))
-        conn.commit()
-        conn.close()
+        current_user.password = hash_password(new_password)
+        current_user.force_password_change = False
+        db.session.commit()
 
         flash("Password changed successfully.", "success")
 

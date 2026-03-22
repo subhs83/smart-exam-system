@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2>⚙ System Health</h2>
+
+```
+<div class="row mt-4">
+    
+    <!-- Server Status -->
+    <div class="col-md-4">
+        <div class="card shadow rounded h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Server</h5>
+                <p class="fs-4 text-success">Running ✅</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Status -->
+    <div class="col-md-4">
+        <div class="card shadow rounded h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Database</h5>
+                <p class="fs-4 text-success">Connected ✅</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Environment -->
+    <div class="col-md-4">
+        <div class="card shadow rounded h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Environment</h5>
+                <p class="fs-5 text-primary">
+                    {{ config.ENV or "Development" }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Extra Info Section -->
+<div class="card shadow rounded mt-4">
+    <div class="card-body">
+        <h5 class="card-title">Additional Info</h5>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                Debug Mode: 
+                <strong>{{ config.DEBUG }}</strong>
+            </li>
+            <li class="list-group-item">
+                SQLAlchemy DB URI: 
+                <small>{{ config.SQLALCHEMY_DATABASE_URI }}</small>
+            </li>
+            <li class="list-group-item">
+                App Time: 
+                <strong>{{ current_time if current_time else "N/A" }}</strong>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- Back Button -->
+<div class="mt-4">
+    <a href="{{ url_for('super_admin.dashboard') }}" class="btn btn-secondary">
+        ← Back to Dashboard
+    </a>
+</div>
+```
+
+</div>
+{% endblock %}

@@ -1,6 +1,5 @@
 from database import get_db
 from extensions import db
-from models.school import SchoolModel
 from models.exam import ExamModel
 
 class Attempt:

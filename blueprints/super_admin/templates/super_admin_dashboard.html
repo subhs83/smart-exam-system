@@ -46,7 +46,9 @@
                 <div class="card-body">
                     <h5 class="card-title">👤 Create School Admin</h5>
                     <p class="card-text">Assign admin to newly created schools.</p>
-                    <a href="#" class="btn btn-primary">Create Admin</a>
+                    <a href="{{ url_for('super_admin.schools') }}" class="btn btn-primary">
+                        Create Admin
+                    </a>
                 </div>
             </div>
         </div>
@@ -56,7 +58,9 @@
                 <div class="card-body">
                     <h5 class="card-title">📊 Platform Statistics</h5>
                     <p class="card-text">View overall system performance.</p>
-                    <a href="#" class="btn btn-primary">View Stats</a>
+                    <a href="{{ url_for('super_admin.platform_stats') }}" class="btn btn-primary">
+                        View Stats
+                    </a>
                 </div>
             </div>
         </div>
@@ -66,7 +70,9 @@
                 <div class="card-body">
                     <h5 class="card-title">⚙ System Health</h5>
                     <p class="card-text">Monitor application status and logs.</p>
-                    <a href="#" class="btn btn-primary">View Status</a>
+                    <a href="{{ url_for('super_admin.system_health') }}" class="btn btn-primary">
+                        View Status
+                    </a>
                 </div>
             </div>
         </div>
