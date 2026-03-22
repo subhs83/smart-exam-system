@@ -31,7 +31,7 @@
                     <td>{{ row.roll_number }}</td>
                     <td>{{ row.mobile }}</td>
                     <td>{{ row.score }} / {{ row.total_marks }}</td>
-                    <td>{{ row.percentage|round(2) }} %</td>
+                    <td>{{ "%.2f"|format(row.percentage or 0) }}%</td>
                     </tr>
 
                     {% endfor %}

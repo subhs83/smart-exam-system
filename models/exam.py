@@ -2,6 +2,8 @@ from database import get_db
 from extensions import db
 from models.user import UserModel
 
+from extensions import db
+
 class ExamModel(db.Model):
     __tablename__ = "exams"
 
@@ -18,7 +20,8 @@ class ExamModel(db.Model):
     school_id = db.Column(db.Integer, nullable=False)
     teacher_id = db.Column(db.Integer, nullable=False)
 
-     # ✅ ADD HER
+    # ✅ ADD THIS
+    quiz_code = db.Column(db.String(20), unique=True, nullable=True)
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     published_at = db.Column(db.DateTime, nullable=True)

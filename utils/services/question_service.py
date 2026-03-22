@@ -1,24 +1,19 @@
-from database import get_db
+from extensions import db
+from models.question import QuestionModel
 from openpyxl import load_workbook
 
 
 # -------------------------------
 # Upload Questions from Excel
 # -------------------------------
+
 def upload_questions(exam_id, excel_file):
-    
     try:
         workbook = load_workbook(excel_file)
         sheet = workbook.active
 
-        db = get_db()
-        cursor = db.cursor()
-
         # 🔥 DELETE OLD QUESTIONS FIRST
-        cursor.execute("""
-            DELETE FROM questions
-            WHERE exam_id = ?
-        """, (exam_id,))
+        QuestionModel.query.filter_by(exam_id=exam_id).delete()
 
         row_count = 0
 
@@ -32,50 +27,37 @@ def upload_questions(exam_id, excel_file):
 
             question, option_a, option_b, option_c, option_d, correct_option = row[:6]
 
-            cursor.execute("""
-                INSERT INTO questions (
-                    exam_id,
-                    question_text,
-                    option_a,
-                    option_b,
-                    option_c,
-                    option_d,
-                    correct_option
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (
-                exam_id,
-                question,
-                option_a,
-                option_b,
-                option_c,
-                option_d,
-                correct_option.upper()
-            ))
+            new_question = QuestionModel(
+                exam_id=exam_id,
+                question_text=question,
+                option_a=option_a,
+                option_b=option_b,
+                option_c=option_c,
+                option_d=option_d,
+                correct_option=correct_option.upper()
+            )
 
+            db.session.add(new_question)
             row_count += 1
 
-        db.commit()
+        db.session.commit()
 
         return True, f"{row_count} questions uploaded successfully."
 
     except Exception as e:
+        db.session.rollback()
         return False, f"Error uploading questions: {str(e)}"
 
 # -------------------------------
 # Get all questions for an exam
 # -------------------------------
+
 def get_exam_questions(exam_id):
     """
     Returns all questions for given exam
     """
-    db = get_db()
-    cursor = db.cursor()
 
-    cursor.execute("""
-        SELECT * FROM questions
-        WHERE exam_id = ?
-        ORDER BY id ASC
-    """, (exam_id,))
-
-    return cursor.fetchall()
+    return QuestionModel.query\
+        .filter_by(exam_id=exam_id)\
+        .order_by(QuestionModel.id.asc())\
+        .all()

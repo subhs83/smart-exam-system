@@ -133,7 +133,7 @@ class="table-info"
 <td>{{ student.roll_number }}</td>
 <td>{{ student.mobile }}</td>
 <td>{{ student.score }} / {{ student.total_marks }}</td>
-<td>{{ "%.2f"|format(student.percentage) }}%</td>
+<td>{{ "%.2f"|format(student.percentage or 0) }}%</td>
 </tr>
 {% else %}
 

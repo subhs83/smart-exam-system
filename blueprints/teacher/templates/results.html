@@ -42,7 +42,7 @@
 
         <td>{{ r.score }} / {{ r.total_marks }}</td>
 
-        <td>{{ "%.2f"|format(r.percentage) }}%</td>
+        <td>{{ "%.2f"|format(r.percentage or 0) }}%</td>
 
         <td>{{ r.start_time }}</td>
 

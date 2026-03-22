@@ -1,22 +1,22 @@
-from database import get_db
+from extensions import db
 
-class Question:
-    @staticmethod
-    def get_all_by_exam(exam_id):
-        conn = get_db()
-        questions = conn.execute(
-            "SELECT id, exam_id, text, options, correct_answer FROM questions WHERE exam_id = ?",
-            (exam_id,)
-        ).fetchall()
-        conn.close()
-        return questions
+class QuestionModel(db.Model):
+    __tablename__ = "questions"
 
-    @staticmethod
-    def get_by_id(question_id):
-        conn = get_db()
-        question = conn.execute(
-            "SELECT id, exam_id, text, options, correct_answer FROM questions WHERE id = ?",
-            (question_id,)
-        ).fetchone()
-        conn.close()
-        return question
+    id = db.Column(db.Integer, primary_key=True)
+    exam_id = db.Column(db.Integer, db.ForeignKey("exams.id"), nullable=False)
+
+    question_text = db.Column(db.Text, nullable=False)
+    option_a = db.Column(db.Text, nullable=False)
+    option_b = db.Column(db.Text, nullable=False)
+    option_c = db.Column(db.Text, nullable=False)
+    option_d = db.Column(db.Text, nullable=False)
+
+    correct_option = db.Column(db.String(1), nullable=False)
+
+    marks = db.Column(db.Integer, default=1)
+    negative_marks = db.Column(db.Integer, default=0)
+
+    ai_generated = db.Column(db.Integer, default=0)
+
+    created_at = db.Column(db.DateTime)

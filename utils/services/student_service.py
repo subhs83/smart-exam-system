@@ -1,226 +1,194 @@
 from flask import session
+import random
+from sqlalchemy import func
 from datetime import datetime, timezone, timedelta
-from database import get_db
-
-
+from extensions import db
+from models.attempt import AttemptModel
+from models.exam import ExamModel
+from models.question import QuestionModel
+from models.answer import StudentAnswerModel
+ 
 # -------------------------------
 # Get Exam by Quiz Code
 # -------------------------------
+
 def get_exam_by_quiz_code(quiz_code):
 
-    db = get_db()
-    cursor = db.cursor()
-
-    cursor.execute("""
-        SELECT id, 
-        school_id,
-        duration_minutes,
-        marks_per_question,
-        negative_marks, 
-        max_attempts_per_mobile
-        FROM exams
-        WHERE quiz_code=?
-    """, (quiz_code,))
-
-    exam = cursor.fetchone()
-
-    return exam
-
+    return ExamModel.query.with_entities(
+        ExamModel.id,
+        ExamModel.school_id,
+        ExamModel.duration_minutes,
+        ExamModel.marks_per_question,
+        ExamModel.negative_marks,
+        ExamModel.max_attempts_per_mobile
+    ).filter(
+        ExamModel.quiz_code == quiz_code
+    ).first()
 
 # -------------------------------
 # Start Student Attempt
 # -------------------------------
 
 
-
 def start_student_attempt(quiz_code, form_data, ip_address):
-    db = get_db()
-    cursor = db.cursor()
 
-    # Get exam
-    cursor.execute("""
-        SELECT id, school_id, max_attempts_per_mobile
-        FROM exams
-        WHERE quiz_code=?
-    """, (quiz_code,))
-    exam = cursor.fetchone()
+    exam = ExamModel.query.with_entities(
+        ExamModel.id,
+        ExamModel.school_id,
+        ExamModel.max_attempts_per_mobile
+    ).filter(
+        ExamModel.quiz_code == quiz_code
+    ).first()
+
     if not exam:
         return False, "Invalid quiz link"
 
-    exam_id = exam["id"]
-    school_id = exam["school_id"]
-    max_attempts = exam["max_attempts_per_mobile"]
+    exam_id = exam.id
+    school_id = exam.school_id
+    max_attempts = exam.max_attempts_per_mobile
 
-    # Extract student info from form
-    first_name = form_data.get("first_name")
-    last_name = form_data.get("last_name")
-    student_class = form_data.get("class_name")
-    roll_number = form_data.get("roll_number")
     mobile = form_data.get("mobile")
 
-    # Validate max attempts
-    cursor.execute("""
-        SELECT COUNT(*) as attempts
-        FROM student_attempts
-        WHERE exam_id=? AND mobile=?
-    """, (exam_id, mobile))
-    attempts = cursor.fetchone()["attempts"]
+    # count attempts
+    attempts = db.session.query(func.count(AttemptModel.id))\
+        .filter(
+            AttemptModel.exam_id == exam_id,
+            AttemptModel.mobile == mobile
+        ).scalar()
 
     if attempts >= max_attempts:
         return False, "Maximum attempts reached"
 
-    # Determine attempt number
     attempt_number = attempts + 1
 
-    # Store start_time in UTC
-    start_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    new_attempt = AttemptModel(
+        exam_id=exam_id,
+        school_id=school_id,
+        first_name=form_data.get("first_name"),
+        last_name=form_data.get("last_name"),
+        student_class=form_data.get("class_name"),
+        roll_number=form_data.get("roll_number"),
+        mobile=mobile,
+        ip_address=ip_address,
+        start_time=datetime.utcnow(),
+        attempt_number=attempt_number
+    )
 
-    # Insert attempt
-    cursor.execute("""
-        INSERT INTO student_attempts
-        (exam_id, school_id, first_name, last_name, student_class, roll_number,
-         mobile, ip_address, start_time, attempt_number)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        exam_id,
-        school_id,
-        first_name,
-        last_name,
-        student_class,
-        roll_number,
-        mobile,
-        ip_address,
-        start_time,
-        attempt_number
-    ))
-    db.commit()
+    db.session.add(new_attempt)
+    db.session.commit()
 
-    attempt_id = cursor.lastrowid
-    return True, attempt_id
+    return True, new_attempt.id
 # -------------------------------
 # Get Question by Index
 # -------------------------------
+ 
 def get_question_for_attempt(attempt_id, q_index):
-    db = get_db()
-    cursor = db.cursor()
 
-    cursor.execute("SELECT exam_id FROM student_attempts WHERE id=?", (attempt_id,))
-    attempt = cursor.fetchone()
+    attempt = AttemptModel.query.get(attempt_id)
     if not attempt:
         return None
-    exam_id = attempt["exam_id"]
 
-    # get question
-    cursor.execute("""
-        SELECT id, question_text, option_a, option_b, option_c, option_d, correct_option
-        FROM questions
-        WHERE exam_id=?
-        ORDER BY id ASC
-        LIMIT 1 OFFSET ?
-    """, (exam_id, q_index))
-    question = cursor.fetchone()
+    exam_id = attempt.exam_id
+
+    question = QuestionModel.query\
+        .filter_by(exam_id=exam_id)\
+        .order_by(QuestionModel.id.asc())\
+        .offset(q_index)\
+        .limit(1)\
+        .first()
+
     if not question:
         return None
 
-    # get selected option
-    cursor.execute("""
-        SELECT selected_option
-        FROM student_answers
-        WHERE attempt_id=? AND question_id=?
-    """, (attempt_id, question["id"]))
-    answer = cursor.fetchone()
-    selected_option = answer["selected_option"] if answer else None
+    answer = StudentAnswerModel.query.filter_by(
+        attempt_id=attempt_id,
+        question_id=question.id
+    ).first()
 
-    # shuffle options once using session
-    session_key = f"question_{question['id']}_options"
+    selected_option = answer.selected_option if answer else None
+
+    session_key = f"question_{question.id}_options"
+
     if session_key in session:
         options = session[session_key]
     else:
         options = [
-            ("A", question["option_a"]),
-            ("B", question["option_b"]),
-            ("C", question["option_c"]),
-            ("D", question["option_d"])
+            ("A", question.option_a),
+            ("B", question.option_b),
+            ("C", question.option_c),
+            ("D", question.option_d)
         ]
-        import random
         random.shuffle(options)
         session[session_key] = options
 
     return {
-        "question_id": question["id"],
-        "question_text": question["question_text"],
+        "question_id": question.id,
+        "question_text": question.question_text,
         "options": options,
-        "correct_option": question["correct_option"],
+        "correct_option": question.correct_option,
         "selected_option": selected_option
     }
-
 # -------------------------------
 # Save Answer
 # -------------------------------
+ 
 def save_student_answer(attempt_id, question_id, selected_option):
-    db = get_db()
-    cursor = db.cursor()
 
-    # check if answer exists
-    cursor.execute("""
-        SELECT id FROM student_answers
-        WHERE attempt_id=? AND question_id=?
-    """, (attempt_id, question_id))
+    answer = StudentAnswerModel.query.filter_by(
+        attempt_id=attempt_id,
+        question_id=question_id
+    ).first()
 
-    exists = cursor.fetchone()
+    correct_option = QuestionModel.query.with_entities(
+        QuestionModel.correct_option
+    ).filter_by(id=question_id).scalar()
 
-    # is correct?
-    cursor.execute("SELECT correct_option FROM questions WHERE id=?", (question_id,))
-    correct_option = cursor.fetchone()["correct_option"]
     is_correct = 1 if selected_option == correct_option else 0
 
-    if exists:
-        # update existing
-        cursor.execute("""
-            UPDATE student_answers
-            SET selected_option=?, is_correct=?, answered_at=CURRENT_TIMESTAMP
-            WHERE id=?
-        """, (selected_option, is_correct, exists["id"]))
+    if answer:
+        answer.selected_option = selected_option
+        answer.is_correct = is_correct
     else:
-        # insert new
-        cursor.execute("""
-            INSERT INTO student_answers
-            (attempt_id, question_id, selected_option, is_correct)
-            VALUES (?, ?, ?, ?)
-        """, (attempt_id, question_id, selected_option, is_correct))
+        new_answer = StudentAnswerModel(
+            attempt_id=attempt_id,
+            question_id=question_id,
+            selected_option=selected_option,
+            is_correct=is_correct
+        )
+        db.session.add(new_answer)
 
-    db.commit()
+    db.session.commit()
 
 
 # ----------------------------------
 # Get exam end timestamp
 # ----------------------------------
 def get_exam_end_timestamp(attempt_id):
+    attempt = AttemptModel.query.get(attempt_id)
+    if not attempt:
+        return None, None
 
-    db = get_db()
-    cursor = db.cursor()
+    exam = ExamModel.query.get(attempt.exam_id)
+    if not exam:
+        return None, None
 
-    cursor.execute("""
-        SELECT start_time, exam_id
-        FROM student_attempts
-        WHERE id=?
-    """, (attempt_id,))
-    attempt = cursor.fetchone()
+    start_time = attempt.start_time
 
-    cursor.execute("""
-        SELECT duration_minutes
-        FROM exams
-        WHERE id=?
-    """, (attempt["exam_id"],))
-    exam = cursor.fetchone()
+    # If start_time is string (legacy data), parse it
+    if isinstance(start_time, str):
+        try:
+            start_time = datetime.fromisoformat(start_time)
+        except ValueError:
+            # fallback for older format: "YYYY-MM-DD HH:MM:SS"
+            start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+    
+    # Make sure it's timezone aware (UTC)
+    if start_time.tzinfo is None:
+        start_time = start_time.replace(tzinfo=timezone.utc)
 
-    start_time = datetime.fromisoformat(attempt["start_time"])
-    start_time = start_time.replace(tzinfo=timezone.utc)
-
-    end_time = start_time + timedelta(minutes=exam["duration_minutes"])
+    end_time = start_time + timedelta(minutes=exam.duration_minutes)
 
     return int(end_time.timestamp()), end_time
-
 
 # ----------------------------------
 # Check if exam expired
@@ -234,49 +202,36 @@ def is_exam_expired(end_time):
 # ----------------------------------
 # Get total questions in exam
 # ----------------------------------
+
 def get_total_questions(exam_id):
 
-    db = get_db()
-    cursor = db.cursor()
-
-    cursor.execute("""
-        SELECT COUNT(*) as total
-        FROM questions
-        WHERE exam_id=?
-    """, (exam_id,))
-
-    return cursor.fetchone()["total"]
+    return db.session.query(func.count(QuestionModel.id))\
+        .filter(QuestionModel.exam_id == exam_id)\
+        .scalar()
 
 
 # ----------------------------------
 # Get student score
 # ----------------------------------
+
+
 def get_student_score(attempt_id):
 
-    db = get_db()
-    cursor = db.cursor()
-
-    cursor.execute("""
-        SELECT COUNT(*) as score
-        FROM student_answers
-        WHERE attempt_id=? AND is_correct=1
-    """, (attempt_id,))
-
-    return cursor.fetchone()["score"]
+    return db.session.query(func.count(StudentAnswerModel.id))\
+        .filter(
+            StudentAnswerModel.attempt_id == attempt_id,
+            StudentAnswerModel.is_correct == 1
+        ).scalar()
 # ----------------------------------
 # Get student Results
 # ----------------------------------
+
+
 def get_student_result(attempt_id):
 
-    db = get_db()
-    cursor = db.cursor()
+    attempt = AttemptModel.query.get(attempt_id)
 
-    cursor.execute(
-        "SELECT exam_id FROM student_attempts WHERE id=?",
-        (attempt_id,)
-    )
-
-    exam_id = cursor.fetchone()["exam_id"]
+    exam_id = attempt.exam_id
 
     total = get_total_questions(exam_id)
     score = get_student_score(attempt_id)
@@ -296,46 +251,47 @@ def get_student_result(attempt_id):
 # ----------------------------------
 # Finalize attempt (update DB)
 # ----------------------------------
+
 def finalize_attempt(attempt_id, score, total):
 
-    db = get_db()
-    cursor = db.cursor()
+    attempt = AttemptModel.query.get(attempt_id)
 
     percentage = (score / total * 100) if total else 0
 
-    cursor.execute("""
-        UPDATE student_attempts
-        SET score=?, total_marks=?, percentage=?, end_time=CURRENT_TIMESTAMP
-        WHERE id=?
-    """, (score, total, percentage, attempt_id))
+    attempt.score = score
+    attempt.total_marks = total
+    attempt.percentage = percentage
+    attempt.end_time = datetime.utcnow()
 
-    db.commit()
+    db.session.commit()
 
     return percentage
 #---------------------
 #Question Palette
 #-------------------
+
+
 def get_question_palette(attempt_id, exam_id):
-    db = get_db()
-    cursor = db.cursor()
 
-    cursor.execute("""
-        SELECT q.id,
-               CASE WHEN sa.selected_option IS NOT NULL THEN 1 ELSE 0 END as answered
-        FROM questions q
-        LEFT JOIN student_answers sa
-            ON q.id = sa.question_id AND sa.attempt_id = ?
-        WHERE q.exam_id = ?
-        ORDER BY q.id
-    """, (attempt_id, exam_id))
-
-    rows = cursor.fetchall()
+    rows = db.session.query(
+        QuestionModel.id,
+        StudentAnswerModel.selected_option
+    ).outerjoin(
+        StudentAnswerModel,
+        (QuestionModel.id == StudentAnswerModel.question_id) &
+        (StudentAnswerModel.attempt_id == attempt_id)
+    ).filter(
+        QuestionModel.exam_id == exam_id
+    ).order_by(
+        QuestionModel.id
+    ).all()
 
     palette = []
+
     for index, row in enumerate(rows):
         palette.append({
             "index": index,
-            "answered": row["answered"]
+            "answered": 1 if row.selected_option else 0
         })
 
     return palette

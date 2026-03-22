@@ -14,23 +14,9 @@ from . import teacher_bp
 @login_required
 @teacher_required
 def dashboard():
-  
-    db = get_db()
-    cursor = db.cursor()
-
-    cursor.execute("SELECT * FROM exams")
-    all_exams = cursor.fetchall()
-
-    print("ALL EXAMS:")
-    for exam in all_exams:
-        print(dict(exam))
-
-    print("Current User ID:", current_user.id)
-    print("Current School ID:", current_user.school_id)
 
     exams = get_teacher_exams(current_user.id)
-    # Optional: aggregate recent results or attempts
-    
+
     return render_template('teacher_dashboard.html', exams=exams)
 
 
@@ -40,23 +26,19 @@ def dashboard():
 @teacher_bp.route('/teacher/exams/create', methods=['GET', 'POST'])
 @teacher_required
 def create_exam_route():
+
     if request.method == 'POST':
-        # Get form data
-        title = request.form.get('title')
-        duration = request.form.get('duration')
-        marks = request.form.get('marks')
-        negative = request.form.get('negative')
-        max_attempts = request.form.get('max_attempts')
 
         success, msg = create_exam(
             teacher_id=current_user.id,
             school_id=current_user.school_id,
-            title=title,
-            duration=duration,
-            marks=marks,
-            negative=negative,
-            max_attempts=max_attempts
+            title=request.form.get('title'),
+            duration=request.form.get('duration'),
+            marks=request.form.get('marks'),
+            negative=request.form.get('negative'),
+            max_attempts=request.form.get('max_attempts')
         )
+
         flash(msg, 'success' if success else 'danger')
         return redirect(url_for('teacher.dashboard'))
 

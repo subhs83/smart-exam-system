@@ -1,5 +1,6 @@
 from database import get_db
 from extensions import db
+from datetime import datetime 
 from models.exam import ExamModel
 
 class Attempt:
@@ -97,9 +98,8 @@ class AttemptModel(db.Model):
 
     ip_address = db.Column(db.String(45))  # for IPv4/IPv6
 
-    start_time = db.Column(db.DateTime)
-    end_time = db.Column(db.DateTime)
-
+    start_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    end_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     score = db.Column(db.Float)
     total_marks = db.Column(db.Float)
     percentage = db.Column(db.Float)
