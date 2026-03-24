@@ -2,6 +2,7 @@
 from flask import Flask, render_template
 from config import Config
 from extensions import login_manager, db
+from utils.init_data import create_default_super_admin
 import os
 
 # Blueprints
@@ -39,7 +40,8 @@ def create_app():
     app.register_blueprint(student_bp)
 
     # Optional: Create tables if not using migrations
-    # with app.app_context():
+    with app.app_context():
+         create_default_super_admin()
     #     db.create_all()
 
     @app.route("/")

@@ -3,7 +3,6 @@
 from functools import wraps
 from flask import redirect, url_for, flash
 from flask_login import current_user
-from database import get_db
 from models.exam import ExamModel
 
 # -----------------------------------------

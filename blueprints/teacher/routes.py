@@ -4,7 +4,6 @@ from utils.decorators import teacher_required, exam_owner_required
 from utils.services.exam_service import create_exam, get_teacher_exams, publish_exam, delete_exam
 from utils.services.question_service import upload_questions, get_exam_questions
 from utils.services.result_service import get_results, generate_leaderboard
-from database import get_db
 from . import teacher_bp
 
 # ---------------------------------

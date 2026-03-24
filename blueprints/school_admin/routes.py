@@ -218,5 +218,6 @@ def download_report():
 @login_required
 @school_admin_required
 def reports():
-    exams = ExamModel.query.all()
+    school_id = current_user.school_id
+    exams = Exam.get_exams_by_school(school_id)  # ✅ fixed
     return render_template("reports.html", exams=exams, active_page="reports")
