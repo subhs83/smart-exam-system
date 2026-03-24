@@ -1,7 +1,10 @@
+# extensions.py
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
 
-db = SQLAlchemy()   # ✅ ADD THIS
+db = SQLAlchemy()   # SQLAlchemy instance
+migrate = Migrate()  # Flask-Migrate instance
