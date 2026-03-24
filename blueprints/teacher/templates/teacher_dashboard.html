@@ -4,179 +4,155 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Welcome, {{ current_user.name }}</h2>
 
-    <!-- Cards -->
-    <div class="row my-3">
-        <div class="col-md-4">
-            <div class="card text-white bg-primary mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Total Exams</h5>
-                    <p class="card-text">{{ exams|length }}</p>
-                </div>
-            </div>
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary">👩‍🏫 Welcome, {{ current_user.name }}</h2>
+    <a href="{{ url_for('teacher.create_exam_route') }}" class="btn btn-outline-primary">
+      ➕ Create Exam
+    </a>
+  </div>
+
+  <!-- Metrics Cards -->
+  <div class="row g-4 mb-4">
+    <!-- Total Exams -->
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body text-center">
+          <div class="text-primary mb-2">
+            <i class="bi bi-journal-text display-5"></i>
+          </div>
+          <h3 class="fw-bold">{{ exams|length }}</h3>
+          <p class="text-muted">Total Exams</p>
         </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-success mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Total Student Attempts</h5>
-                    <p class="card-text">
-                        {{ exams|sum(attribute='total_attempts') }}
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-warning mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">Quick Actions</h5>
-                    <a href="{{ url_for('teacher.create_exam_route') }}" class="btn btn-light btn-sm mb-1 w-100">Manual Create Exam</a>
-                    <button class="btn btn-light btn-sm w-100" disabled>AI Generated Exam (Coming Soon)</button>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- Recent Exams Table -->
-    <div class="card mt-3">
-        <div class="card-header">
-            Recent Exams
+    <!-- Total Attempts -->
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body text-center">
+          <div class="text-success mb-2">
+            <i class="bi bi-bar-chart-line display-5"></i>
+          </div>
+          <h3 class="fw-bold">{{ exams|sum(attribute='total_attempts') }}</h3>
+          <p class="text-muted">Total Student Attempts</p>
         </div>
-        <div class="card-body">
-            <table class="table table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Exam Title</th>
-                        <th>Status</th>
-                        <th>Total Questions</th>
-                        <th>Total Time (mins)</th>
-                        <th>Open Link</th>
-                        <th>Copy Link</th>
-                        <th>Actions</th>
-                    
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for exam in exams %}
-                    <tr>
-                        <!-- ID -->
-                        <td>{{ exam.id }}</td>
-    
-                        <!-- Title -->
-                        <td class="text-center">{{ exam.title }}</td>
-    
-                        <!-- Status -->
-                        <td class="text-center">
-                            {% if exam.status == 'published' %}
-                                <span class="badge bg-success">Published</span>
-                            {% else %}
-                                <span class="badge bg-secondary">Draft</span>
-                            {% endif %}
-                            </td>
-    
-                        <!-- Total Questions -->
-                        <td class="text-center">{{ exam.total_questions or 0 }}</td>
-    
-                        <!-- Total Time -->
-                        <td class="text-center">{{ exam.duration_minutes }}</td>
-                     
-                         <!-- OPEN LINK -->
-                        <td class="text-center">
-                            {% if exam.quiz_code %}
-                            <a href="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code) }}"
-                            target="_blank"
-                            class="btn btn-sm btn-outline-primary">
-                            Open
-                            </a>
-                            {% else %}
-                            <span class="text-muted">-</span>
-                            {% endif %}
-                            </td>
-                            
-                            <!-- COPY LINK -->
-                            <td class="text-center">
-                            {% if exam.quiz_code %}
-                            <button class="btn btn-sm btn-outline-secondary"
-                                    data-link="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code, _external=True) }}"
-                                    onclick="copyQuizLink(this)">
-                            Copy
-                            </button>
-                            {% else %}
-                            <span class="text-muted">-</span>
-                            {% endif %}
-                        </td>
-                        <!-- Actions -->
-                        <td>
-                            <div class="d-flex flex-wrap gap-2">
-                        
-                                <!-- Review -->
-                                <a href="{{ url_for('teacher.review_questions_route', exam_id=exam.id) }}"
-                                   class="btn btn-sm btn-info">
-                                    Review
-                                </a>
-                                    <!-- Delete -->
-                                    <form method="POST"
-                                          action="{{ url_for('teacher.delete_exam_route', exam_id=exam.id) }}"
-                                          style="display:inline;"
-                                          onsubmit="return confirm('⚠ Warning: This will permanently delete the quiz and all its questions.\nDo you want to continue?');">
-                        
-                                        <button type="submit"
-                                                class="btn btn-sm btn-danger"
-                                                {% if exam.total_attempts > 0 %} disabled {% endif %}>
-                                            Delete
-                                        </button>
-                        
-                                    </form>
-                                {% if exam.status != 'published' %}
-                        
-                                    <!-- Upload -->
-                                    <a href="{{ url_for('teacher.upload_questions_route', exam_id=exam.id) }}"
-                                       class="btn btn-sm btn-secondary">
-                                        Upload
-                                    </a>
-                        
-                                    <!-- Publish -->
-                                    <form action="{{ url_for('teacher.publish_exam_route', exam_id=exam.id) }}"
-                                          method="POST"
-                                          style="display:inline;">
-                                        <button class="btn btn-sm btn-success">
-                                            Publish
-                                        </button>
-                                    </form>
-                        
-                                {% else %}
-                        
-                                    <!-- Results -->
-                                    <a href="{{ url_for('teacher.results_route', exam_id=exam.id) }}"
-                                       class="btn btn-sm btn-primary">
-                                        Results
-                                    </a>
-                        
-                                    <!-- Leaderboard -->
-                                    <a href="{{ url_for('teacher.leaderboard_route', exam_id=exam.id) }}"
-                                       class="btn btn-sm btn-warning">
-                                        Leaderboard
-                                    </a>
-                        
-                                {% endif %}
-                        
-                            </div>
-                        </td>
-                        
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+      </div>
     </div>
+
+    <!-- Quick Actions -->
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body text-center">
+          <div class="text-warning mb-2">
+            <i class="bi bi-lightning-charge-fill display-5"></i>
+          </div>
+          <h5 class="fw-bold mb-3">Quick Actions</h5>
+          <a href="{{ url_for('teacher.create_exam_route') }}" 
+             class="btn btn-primary btn-sm w-100 mb-2">Manual Create Exam</a>
+          <button class="btn btn-secondary btn-sm w-100" disabled>
+            AI Generated Exam (Coming Soon)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Exams Table -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-dark text-white fw-bold">
+      Recent Exams
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-striped table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Exam Title</th>
+            <th>Status</th>
+            <th>Total Questions</th>
+            <th>Total Time (mins)</th>
+            <th>Open Link</th>
+            <th>Copy Link</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for exam in exams %}
+          <tr>
+            <td>{{ exam.id }}</td>
+            <td>{{ exam.title }}</td>
+            <td>
+              {% if exam.status == 'published' %}
+                <span class="badge bg-success">Published</span>
+              {% else %}
+                <span class="badge bg-secondary">Draft</span>
+              {% endif %}
+            </td>
+            <td>{{ exam.total_questions or 0 }}</td>
+            <td>{{ exam.duration_minutes }}</td>
+            <td>
+              {% if exam.quiz_code %}
+                <a href="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code) }}" 
+                   target="_blank" class="btn btn-sm btn-outline-primary">Open</a>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if exam.quiz_code %}
+                <button class="btn btn-sm btn-outline-secondary"
+                        data-link="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code, _external=True) }}"
+                        onclick="copyQuizLink(this)">
+                  Copy
+                </button>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('teacher.review_questions_route', exam_id=exam.id) }}" 
+                   class="btn btn-sm btn-info">Review</a>
+
+                <form method="POST" action="{{ url_for('teacher.delete_exam_route', exam_id=exam.id) }}"
+                      onsubmit="return confirm('⚠ Warning: This will permanently delete the quiz and all its questions.\nDo you want to continue?');">
+                  <button type="submit" class="btn btn-sm btn-danger"
+                          {% if exam.total_attempts > 0 %} disabled {% endif %}>
+                    Delete
+                  </button>
+                </form>
+
+                {% if exam.status != 'published' %}
+                  <a href="{{ url_for('teacher.upload_questions_route', exam_id=exam.id) }}" 
+                     class="btn btn-sm btn-secondary">Upload</a>
+                  <form action="{{ url_for('teacher.publish_exam_route', exam_id=exam.id) }}" method="POST">
+                    <button class="btn btn-sm btn-success">Publish</button>
+                  </form>
+                {% else %}
+                  <a href="{{ url_for('teacher.results_route', exam_id=exam.id) }}" 
+                     class="btn btn-sm btn-primary">Results</a>
+                  <a href="{{ url_for('teacher.leaderboard_route', exam_id=exam.id) }}" 
+                     class="btn btn-sm btn-warning">Leaderboard</a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
+
 <script>
-    function copyQuizLink(btn) {
-        const link = btn.getAttribute("data-link");
-        navigator.clipboard.writeText(link).then(function () {
-            alert("Quiz link copied!");
-        });
-    }
-    </script>
+function copyQuizLink(btn) {
+  const link = btn.getAttribute("data-link");
+  navigator.clipboard.writeText(link).then(() => {
+    alert("Quiz link copied!");
+  });
+}
+</script>
 {% endblock %}

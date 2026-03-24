@@ -17,7 +17,7 @@ def dashboard():
 
     exams = get_teacher_exams(current_user.id)
 
-    return render_template('teacher_dashboard.html', exams=exams)
+    return render_template('teacher_dashboard.html', exams=exams,active_page='dashboard')
 
 
 # ---------------------------------
@@ -42,7 +42,7 @@ def create_exam_route():
         flash(msg, 'success' if success else 'danger')
         return redirect(url_for('teacher.dashboard'))
 
-    return render_template('exams_create.html')
+    return render_template('exams_create.html',active_page='exams_create')
 
 
 # ---------------------------------
@@ -62,7 +62,7 @@ def upload_questions_route(exam_id):
         flash(msg, 'success' if success else 'danger')
         return redirect(url_for('teacher.review_questions_route', exam_id=exam_id))
 
-    return render_template('questions_upload.html', exam_id=exam_id)
+    return render_template('questions_upload.html', exam_id=exam_id,active_page='exams')
 
 
 # ---------------------------------
@@ -73,7 +73,7 @@ def upload_questions_route(exam_id):
 @exam_owner_required
 def review_questions_route(exam_id):
     questions = get_exam_questions(exam_id)
-    return render_template('exam_review.html', exam_id=exam_id, questions=questions)
+    return render_template('exam_review.html', exam_id=exam_id, questions=questions,active_page='exams')
 
 
 # ---------------------------------
@@ -101,7 +101,7 @@ def publish_exam_route(exam_id):
 @exam_owner_required
 def results_route(exam_id):
     results = get_results(exam_id)
-    return render_template('results.html', exam_id=exam_id, results=results)
+    return render_template('results.html', exam_id=exam_id, results=results,active_page='exams')
 
 
 # ---------------------------------
@@ -113,7 +113,7 @@ def results_route(exam_id):
 def leaderboard_route(exam_id):
     leaderboard = generate_leaderboard(exam_id)
     print (leaderboard, "leaderboard")
-    return render_template('leaderboard.html', exam_id=exam_id, leaderboard=leaderboard)
+    return render_template('leaderboard.html', exam_id=exam_id, leaderboard=leaderboard,active_page='exams')
 
 
 # ---------------------------------
