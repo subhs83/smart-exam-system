@@ -1,46 +1,69 @@
-<!-- teacher_sidebar.html -->
-<nav class="bg-dark text-white p-3" style="width:240px;">
-    <h4 class="mb-4 fw-bold">Teacher Panel</h4>
-    <ul class="nav flex-column">
-      <!-- Dashboard -->
-      <li class="nav-item mb-2">
-        <a href="{{ url_for('teacher.dashboard') }}"
-           class="nav-link d-flex align-items-center {% if active_page=='dashboard' %}active bg-light text-dark border-start border-3 border-primary{% else %}text-white{% endif %}">
-           <i class="bi bi-speedometer2 me-2"></i> Dashboard
-        </a>
-      </li>
-  
-      <!-- Create Exam -->
-      <li class="nav-item mb-2">
-        <a href="{{ url_for('teacher.create_exam_route') }}"
-           class="nav-link d-flex align-items-center {% if active_page=='create_exam' %}active bg-light text-dark border-start border-3 border-primary{% else %}text-white{% endif %}">
-           <i class="bi bi-plus-circle me-2"></i> Create Exam
-        </a>
-      </li>
-  
-      <!-- My Exams -->
-      <li class="nav-item mb-2">
-        <a href="{{ url_for('teacher.dashboard') }}"
-           class="nav-link d-flex align-items-center {% if active_page=='exams' %}active bg-light text-dark border-start border-3 border-primary{% else %}text-white{% endif %}">
-           <i class="bi bi-journal-text me-2"></i> My Exams
-        </a>
-      </li>
-  
-      <!-- Reports (placeholder until you add a route) -->
-      <li class="nav-item mb-2">
-        <a href="{{ url_for('teacher.dashboard') }}"
-           class="nav-link d-flex align-items-center {% if active_page=='reports' %}active bg-light text-dark border-start border-3 border-primary{% else %}text-white{% endif %}">
-           <i class="bi bi-bar-chart me-2"></i> Reports
-        </a>
-      </li>
-  
-      <!-- Logout -->
-      <li class="nav-item mt-4">
-        <a href="{{ url_for('auth.logout') }}"
-           class="nav-link d-flex align-items-center text-danger fw-bold">
-           <i class="bi bi-box-arrow-right me-2"></i> Logout
-        </a>
-      </li>
+<div class="sidebar bg-dark text-white d-flex flex-column p-3"
+     style="width: 250px; min-height: 100%; position: sticky; top: 40px;">
+
+    <!-- User Info -->
+    <div class="text-center mb-4">
+        <div class="mb-2">
+            <i class="bi bi-person-circle" style="font-size: 40px;"></i>
+        </div>
+        <h6 class="mb-0">{{ current_user.name }}</h6>
+        <small class="text-muted">Teacher</small>
+    </div>
+
+    <hr class="border-secondary">
+
+    <!-- Navigation -->
+    <ul class="nav nav-pills flex-column mb-auto">
+
+        <li class="nav-item mb-1">
+            <a href="{{ url_for('teacher.dashboard') }}"
+               class="nav-link text-white {% if active_page=='dashboard' %}active bg-primary{% endif %}">
+                <i class="bi bi-speedometer2 me-2"></i>
+                Dashboard
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a href="{{ url_for('teacher.create_exam_route') }}"
+               class="nav-link text-white {% if active_page=='exams_create' %}active bg-primary{% endif %}">
+                <i class="bi bi-plus-circle me-2"></i>
+                Create Exam
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a href="{{ url_for('teacher.manage_questions_overview') }}"
+               class="nav-link text-white {% if active_page=='manage_questions' %}active bg-primary{% endif %}">
+                <i class="bi bi-journal-text me-2"></i>
+                Manage Questions
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a href="{{ url_for('teacher.results_overview') }}"
+               class="nav-link text-white {% if active_page=='results_overview' %}active bg-primary{% endif %}">
+                <i class="bi bi-bar-chart me-2"></i>
+                Results
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a href="{{ url_for('teacher.leaderboard_overview') }}"
+               class="nav-link text-white {% if active_page=='leaderboard_overview' %}active bg-primary{% endif %}">
+                <i class="bi bi-trophy me-2"></i>
+                Leaderboard
+            </a>
+        </li>
+
     </ul>
-  </nav>
-  
+
+    <!-- Bottom Section -->
+    <div class="mt-auto">
+        <hr class="border-secondary">
+        <a href="{{ url_for('auth.logout') }}" class="nav-link text-danger">
+            <i class="bi bi-box-arrow-right me-2"></i>
+            Logout
+        </a>
+    </div>
+
+</div>

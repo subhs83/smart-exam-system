@@ -51,6 +51,7 @@ def create_exam_route():
 @teacher_required
 @exam_owner_required
 def upload_questions_route(exam_id):
+
     if request.method == 'POST':
         excel_file = request.files.get('excel_file')
         if not excel_file:
@@ -59,9 +60,10 @@ def upload_questions_route(exam_id):
 
         success, msg = upload_questions(exam_id, excel_file)
         flash(msg, 'success' if success else 'danger')
+        
         return redirect(url_for('teacher.review_questions_route', exam_id=exam_id))
 
-    return render_template('questions_upload.html', exam_id=exam_id,active_page='exams')
+    return render_template('questions_upload.html', exam_id=exam_id,active_page='manage_questions')
 
 
 # ---------------------------------
@@ -72,7 +74,7 @@ def upload_questions_route(exam_id):
 @exam_owner_required
 def review_questions_route(exam_id):
     questions = get_exam_questions(exam_id)
-    return render_template('exam_review.html', exam_id=exam_id, questions=questions,active_page='exams')
+    return render_template('exam_review.html', exam_id=exam_id, questions=questions,active_page='manage_questions')
 
 
 # ---------------------------------
@@ -100,7 +102,7 @@ def publish_exam_route(exam_id):
 @exam_owner_required
 def results_route(exam_id):
     results = get_results(exam_id)
-    return render_template('results.html', exam_id=exam_id, results=results,active_page='exams')
+    return render_template('results.html', exam_id=exam_id, results=results,active_page='results_overview')
 
 
 # ---------------------------------
@@ -112,7 +114,7 @@ def results_route(exam_id):
 def leaderboard_route(exam_id):
     leaderboard = generate_leaderboard(exam_id)
     print (leaderboard, "leaderboard")
-    return render_template('leaderboard.html', exam_id=exam_id, leaderboard=leaderboard,active_page='exams')
+    return render_template('leaderboard.html', exam_id=exam_id, leaderboard=leaderboard,active_page='leaderboard_overview')
 
 
 # ---------------------------------
@@ -125,3 +127,47 @@ def delete_exam_route(exam_id):
     success, msg = delete_exam(exam_id)
     flash(msg, 'success' if success else 'danger')
     return redirect(url_for('teacher.dashboard'))
+
+
+# Sidebar Link Routes
+
+# ---------------------------------
+# Manage Questions Overview
+# ---------------------------------
+@teacher_bp.route('/teacher/manage_questions')
+@teacher_required
+def manage_questions_overview():
+    exams = get_teacher_exams(current_user.id)
+    return render_template(
+        'manage_questions_overview.html',
+        exams=exams,
+        active_page='manage_questions'
+    )
+
+
+# ---------------------------------
+# Results Overview
+# ---------------------------------
+@teacher_bp.route('/teacher/results')
+@teacher_required
+def results_overview():
+    exams = get_teacher_exams(current_user.id)
+    return render_template(
+        'results_overview.html',
+        exams=exams,
+        active_page='results_overview'
+    )
+
+
+# ---------------------------------
+# Leaderboard Overview
+# ---------------------------------
+@teacher_bp.route('/teacher/leaderboard')
+@teacher_required
+def leaderboard_overview():
+    exams = get_teacher_exams(current_user.id)
+    return render_template(
+        'leaderboard_overview.html',
+        exams=exams,
+        active_page='leaderboard_overview'
+    )

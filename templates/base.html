@@ -107,7 +107,32 @@
             position:relative;
             z-index:1;
          }
-         
+
+         .sidebar {
+            min-width: 220px;
+            max-width: 220px;
+        }
+        .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        .sidebar .nav-link {
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .sidebar .nav-link.active {
+            font-weight: 500;
+        }
+
+        .sidebar hr {
+            opacity: 0.2;
+        }
+                
     </style>
 </head>
 <body >
@@ -163,23 +188,33 @@
 </nav>
 
 <!-- Container for Page Content -->
-<main class="container py-2">
+<div class="d-flex" style="min-height: calc(100vh - 70px);">
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ 'success' if category=='success' else 'danger' }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <!-- Sidebar -->
+    {% if current_user.is_authenticated and current_user.role == 'teacher' %}
+        {% include 'teacher_sidebar.html' %}
+    {% endif %}
 
-    {% block content %}{% endblock %}
-</main>
+    <!-- Main Content -->
+    <div class="flex-grow-1 p-4">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category=='success' else 'danger' }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+</div>
 <!-- Footer -->
-<footer class="bg-dark text-white text-center py-2">
+<footer class="bg-dark text-white text-center fixed-bottom py-2">
     <div class="container">
         <small>
             © 2026 Smart Exam System | Developed for Schools
