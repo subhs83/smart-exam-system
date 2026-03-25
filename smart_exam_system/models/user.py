@@ -1,0 +1,95 @@
+from flask_login import UserMixin
+from smart_exam_system.extensions import db
+from smart_exam_system.utils.security import hash_password, verify_password
+
+# =========================
+# User Model (SQLAlchemy)
+# =========================
+class UserModel(UserMixin, db.Model):
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+    school_id = db.Column(db.Integer, db.ForeignKey("schools.id"))
+    is_active = db.Column(db.Boolean, default=True)
+    force_password_change = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    # --- Static DB fetch ---
+    @staticmethod
+    def get(user_id):
+        return UserModel.query.get(user_id)
+
+    # --- Teacher lifecycle actions (school-aware) ---
+    @staticmethod
+    def activate_teacher(teacher_id, school_id):
+        teacher = UserModel.query.filter_by(
+            id=teacher_id, role="teacher", school_id=school_id
+        ).first()
+        if teacher:
+            teacher.is_active = True
+            db.session.commit()
+            return True
+        return False
+
+    @staticmethod
+    def deactivate_teacher(teacher_id, school_id):
+        teacher = UserModel.query.filter_by(
+            id=teacher_id, role="teacher", school_id=school_id
+        ).first()
+        if teacher:
+            teacher.is_active = False
+            db.session.commit()
+            return True
+        return False
+
+    @staticmethod
+    def reset_teacher_password(teacher_id, school_id, new_password="default123"):
+        teacher = UserModel.query.filter_by(
+            id=teacher_id, role="teacher", school_id=school_id
+        ).first()
+        if teacher:
+            teacher.password = hash_password(new_password)
+            db.session.commit()
+            return True
+        return False
+
+    @staticmethod
+    def count_teachers_by_school(school_id):
+        return UserModel.query.filter_by(role="teacher", school_id=school_id).count()
+
+    @staticmethod
+    def get_teachers_by_school(school_id):
+        return UserModel.query.filter_by(role="teacher", school_id=school_id).all()
+
+    @staticmethod
+    def toggle_teacher_status(teacher_id, school_id):
+        teacher = UserModel.query.filter_by(
+            id=teacher_id, role="teacher", school_id=school_id
+        ).first()
+        if teacher:
+            teacher.is_active = not teacher.is_active
+            db.session.commit()
+            return True
+        return False
+
+    @staticmethod
+    def add_teacher(name, email, password, school_id):
+        existing = UserModel.query.filter_by(email=email).first()
+        if existing:
+            return None
+
+        teacher = UserModel(
+            name=name,
+            email=email,
+            password=hash_password(password),
+            role="teacher",
+            school_id=school_id,
+            is_active=True
+        )
+        db.session.add(teacher)
+        db.session.commit()
+        return teacher

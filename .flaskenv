@@ -1,2 +1,2 @@
-FLASK_APP=app:create_app
-PYTHONPATH=.
+FLASK_APP=manage
+FLASK_ENV=development
