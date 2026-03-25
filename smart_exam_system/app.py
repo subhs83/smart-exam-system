@@ -34,11 +34,11 @@ def create_app():
         return UserModel.query.get(int(user_id))
 
     # Register blueprints with URL prefixes
-    app.register_blueprint(auth_bp, url_prefix="/auth")
-    app.register_blueprint(super_admin_bp, url_prefix="/super-admin")
-    app.register_blueprint(school_admin_bp, url_prefix="/school-admin")
-    app.register_blueprint(teacher_bp, url_prefix="/teacher")
-    app.register_blueprint(student_bp, url_prefix="/student")
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(super_admin_bp)
+    app.register_blueprint(school_admin_bp)
+    app.register_blueprint(teacher_bp)
+    app.register_blueprint(student_bp)
 
     # Home route
     @app.route("/")

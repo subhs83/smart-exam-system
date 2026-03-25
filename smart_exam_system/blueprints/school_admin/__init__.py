@@ -6,4 +6,4 @@ school_admin_bp = Blueprint(
     url_prefix="/school_admin"
 )
 
-from smart_exam_system.blueprints.super_admin import routes
+from smart_exam_system.blueprints.school_admin import routes

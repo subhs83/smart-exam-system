@@ -32,9 +32,18 @@ Smart Exam System
 
 </form>
 
-<p class="text-center small text-muted mt-3">
-    Forgot password? Contact your School Admin 
-</p>
+<!-- Somewhere below the login form -->
+<p class="text-muted small text-center mt-3">
+    {% if role == "teacher" %}
+        Forgot password? Contact your School Admin.
+    {% elif role == "school_admin" %}
+        Forgot password? Contact your service provider.
+    {% elif role == "super_admin" %}
+        Forgot password? Contact system support.
+    {% else %}
+        Forgot password? Contact support.
+    {% endif %}
+    </p>
 
 </div>
 

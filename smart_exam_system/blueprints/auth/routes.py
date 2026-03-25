@@ -7,6 +7,9 @@ from smart_exam_system.utils.security import hash_password, verify_password,vali
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    # Get expected role from query param (optional)
+    expected_role = request.args.get("role")  # e.g., "teacher", "school_admin"
+
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -18,7 +21,13 @@ def login():
             # 🚫 Block inactive users
             if not user.is_active:
                 flash("Account is inactive. Contact Super Admin.", "danger")
-                return redirect(url_for("auth.login"))
+                return redirect(url_for("auth.login", role=expected_role))
+
+            # 1️⃣ Check role if expected_role provided
+            if expected_role and user.role != expected_role:
+                flash(f"This account is not a {expected_role.replace('_',' ').title()}.", "danger")
+                return redirect(url_for("auth.login", role=expected_role))
+
             login_user(user)
 
             # 🔐 FORCE PASSWORD CHANGE CHECK
@@ -33,9 +42,11 @@ def login():
             elif user.role == "teacher":
                 return redirect(url_for("teacher.dashboard"))
 
-        flash("Invalid credentials", "danger")
+        else:
+            flash("Invalid credentials", "danger")
+            return redirect(url_for("auth.login", role=expected_role))
 
-    return render_template("login.html")
+    return render_template("login.html", role=expected_role)
 
 @auth_bp.route("/change-password", methods=["GET", "POST"])
 @login_required
@@ -73,4 +84,4 @@ def change_password():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("auth.login"))
+    return render_template("home.html")
