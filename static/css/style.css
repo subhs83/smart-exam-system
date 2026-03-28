@@ -15,19 +15,27 @@ body {
 main { flex: 1; }
 
 /* ============================
-   Sidebar
+   Sidebar (Teacher & Admin)
 ============================ */
 .sidebar {
     width: 240px;
-    height: calc(100vh - 70px);
+    height: 100vh; /* full height */
     background: #0f172a;
     position: sticky;
-    top: 70px;
+    top: 0;
     display: flex;
     flex-direction: column;
     padding: 1rem;
     transition: transform 0.3s ease;
 }
+
+.sidebar-title {
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
 .sidebar .nav-link {
     display: flex;
     align-items: center;
@@ -39,11 +47,71 @@ main { flex: 1; }
 }
 .sidebar .nav-link.active { background: #1d4ed8; color: #fff; }
 .sidebar .nav-link:hover { background: #1e293b; color: #fff; }
+
 .sidebar .user-icon { font-size: 40px; color: #60a5fa; }
 .logout { color: #f87171; }
 .logout:hover { background: rgba(248,113,113,0.1); }
 .sidebar hr { border-color: rgba(255,255,255,0.1); }
-.sidebar-title { font-weight: bold; margin-bottom: 20px; }
+
+/* ============================
+   Sidebar Profile Section
+============================ */
+.sidebar-profile {
+    margin-top: auto; /* pushes profile to bottom */
+    text-align: center;
+    padding: 1rem 0;
+    color: #fff;
+}
+
+.sidebar-profile img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-profile .profile-info strong {
+    display: block;
+    font-size: 1rem;
+    color: #fff;
+}
+.sidebar-profile .profile-info small {
+    display: block;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+}
+ 
+/* ============================
+   Sidebar Profile / User Box
+============================ */
+.sidebar .user-box {
+    margin-top: auto; /* push to bottom */
+    text-align: center;
+    padding: 1rem 0;
+    color: #fff; /* make all text white */
+}
+
+.sidebar .user-box .user-icon {
+    font-size: 40px;
+    color: #60a5fa; /* icon color */
+}
+
+.sidebar-muted {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+}
+.sidebar .user-box .text-muted h6 {
+    margin: 0.5rem 0 0;
+    color: #fff; /* name color */
+}
+
+.sidebar .user-box small {
+    display: block;
+    color: #cbd5e1; /* role color */
+} small {
+    display: block;
+    color: #cbd5e1; /* role color */
+}
 
 /* ============================
    Cards & Features
@@ -108,17 +176,34 @@ section { padding: 80px 0; }
     font-size: 18px; 
     color: #60a5fa; 
 }
+/* Custom Upload Button */
 
+/* Upload Button */
+.btn-upload {
+    background-color: #f97316; /* orange */
+    color: #fff;
+    border: none;
+    transition: all 0.2s ease;
+}
+.btn-upload:hover {
+    background-color: #ea580c; /* darker orange on hover */
+    color: #fff;
+}
+/* Upload button icon color */
+.btn-upload i {
+    color: #fff; /* same as button text */
+}
 /* ============================
    Responsive
 ============================ */
 @media (max-width: 991px) {
     .sidebar {
         position: fixed;
-        top: 70px;
+        top: 0;
         left: 0;
         transform: translateX(-100%);
         z-index: 1050;
+        height: 100vh;
     }
     .sidebar.show { transform: translateX(0); }
     main > .d-flex { flex-direction: column; }

@@ -3,7 +3,7 @@
   <div class="user-box text-center mb-4">
       <i class="fas fa-user-circle user-icon"></i>
       <h6 class="mt-2 mb-0 fw-semibold">{{ current_user.name }}</h6>
-      <small class="text-muted">Admin</small>
+      <small class="sidebar-muted">Admin</small>
   </div>
 
   <hr class="border-secondary">
@@ -54,65 +54,3 @@
       </a>
   </div>
 </div>
-
-<style>
-/* Sidebar Styling */
-.sidebar {
-  width: 240px;
-  height: 100%;
-  background: #0f172a;
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  transition: transform 0.3s ease;
-}
-
-.sidebar .nav-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  color: #cbd5e1;
-  transition: all 0.2s ease;
-}
-
-.sidebar .nav-link.active {
-  background: #1d4ed8;
-  color: #fff;
-}
-
-.sidebar .nav-link:hover {
-  background: #1e293b;
-  color: #fff;
-}
-
-.sidebar .user-icon {
-  font-size: 48px;
-  color: #60a5fa;
-}
-
-.logout {
-  color: #f87171;
-}
-
-.logout:hover {
-  background: rgba(248,113,113,0.1);
-}
-
-.sidebar hr {
-  border-color: rgba(255,255,255,0.1);
-}
-
-/* Responsive */
-@media (max-width: 991px) {
-  .sidebar {
-      position: fixed;
-      top: 70px;
-      left: 0;
-      transform: translateX(-100%);
-      z-index: 1050;
-  }
-  .sidebar.show { transform: translateX(0); }
-}
-</style>

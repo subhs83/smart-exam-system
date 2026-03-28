@@ -72,7 +72,9 @@ def start_quiz(quiz_code):
 
 @student_bp.route("/quiz/<quiz_code>/<int:q_index>", methods=["GET", "POST"])
 def quiz_question(quiz_code, q_index):
-    
+    # -------------------------------
+    # 🔹 Check if attempt exists in session
+    # -------------------------------
     if "attempt_id" not in session:
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
@@ -82,7 +84,7 @@ def quiz_question(quiz_code, q_index):
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
     # -------------------------------
-    # ✅ Prevent answering after submit
+    # 🔹 Prevent answering after submit
     # -------------------------------
     if attempt.is_submitted:
         flash("This attempt has been submitted and cannot be modified.", "warning")
@@ -96,59 +98,52 @@ def quiz_question(quiz_code, q_index):
         return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
 
     # -------------------------------
-    # TOTAL QUESTIONS (FROM ORDER)
+    # 🔹 Get question list and safety for index
     # -------------------------------
     import json
     question_order = json.loads(attempt.question_order)
     total_questions = len(question_order)
 
-    # Safety for q_index
     if q_index < 0:
         q_index = 0
     if q_index >= total_questions:
         return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
 
     # -------------------------------
-    # POST (SAVE ANSWER + NAVIGATION)
+    # 🔹 POST - Save answer and navigate
     # -------------------------------
     if request.method == "POST":
-
-        # 🔒 Re-check time (important)
-        if datetime.utcnow() > end_time:
-            return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
-
-        # Jump via palette
-      
-        if request.form.get("goto_question"):
-            return redirect(url_for(
-                "student.quiz_question",
-                quiz_code=quiz_code,
-                q_index=int(request.form.get("goto_question"))
-            ))
-
         question_id = request.form.get("question_id")
         selected_option = request.form.get("option")
 
-        if question_id:
+        # Save current answer before any navigation
+        if question_id and selected_option:
             save_student_answer(attempt_id, question_id, selected_option)
 
-        
+        # Palette jump
+        if request.form.get("goto_question"):
+            target_index = int(request.form.get("goto_question"))
+            # Safety
+            target_index = max(0, min(target_index, total_questions - 1))
+            return redirect(url_for(
+                "student.quiz_question",
+                quiz_code=quiz_code,
+                q_index=target_index
+            ))
 
-        # Navigation
+        # Navigation buttons
         if "next" in request.form:
             return redirect(url_for(
                 "student.quiz_question",
                 quiz_code=quiz_code,
                 q_index=min(q_index + 1, total_questions - 1)
             ))
-
         elif "prev" in request.form:
             return redirect(url_for(
                 "student.quiz_question",
                 quiz_code=quiz_code,
                 q_index=max(q_index - 1, 0)
             ))
-
         elif "submit" in request.form:
             return redirect(url_for(
                 "student.submit_quiz",
@@ -156,22 +151,21 @@ def quiz_question(quiz_code, q_index):
             ))
 
     # -------------------------------
-    # GET (LOAD QUESTION)
+    # 🔹 GET - Load question and palette
     # -------------------------------
     question = get_question_for_attempt(attempt_id, q_index)
     palette = get_question_palette(attempt_id, exam.id)
-    print(question,"q_index=", palette)
 
     if not question:
         return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
-    
+
     return render_template(
         "student_quiz.html",
         question=question,
         q_index=q_index,
         palette=palette,
         total_questions=total_questions,
-        remaining_time=remaining_time   # ✅ NEW (replace end_timestamp)
+        remaining_time=remaining_time
     )
 
 # -----------------------------

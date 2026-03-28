@@ -126,8 +126,9 @@
                                     {% endif %}
 
                                     {% if exam.status != 'published' and exam.total_attempts == 0 %}
-                                        <a href="{{ url_for('teacher.upload_questions_route', exam_id=exam.id) }}"
-                                           class="btn btn-sm btn-secondary"><i class="fas fa-upload me-1"></i>Upload</a>
+                                    <!-- Upload Button -->
+                                    <a href="{{ url_for('teacher.upload_questions_route', exam_id=exam.id) }}"
+                                    class="btn btn-sm btn-upload"><i class="fas fa-upload me-1"></i>Upload</a>
                                         <form action="{{ url_for('teacher.publish_exam_route', exam_id=exam.id) }}" method="POST">
                                             <button class="btn btn-sm btn-success"><i class="fas fa-check me-1"></i>Publish</button>
                                         </form>
