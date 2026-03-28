@@ -11,7 +11,7 @@
             <small class="text-muted">Manage your exams and track performance</small>
         </div>
         <a href="{{ url_for('teacher.create_exam_route') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Create Exam
+            <i class="fas fa-plus-circle me-1"></i> Create Exam
         </a>
     </div>
 
@@ -19,9 +19,9 @@
     <div class="row g-4 mb-4">
 
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-center">
+            <div class="card border-0 shadow-sm text-center h-100">
                 <div class="card-body">
-                    <i class="bi bi-journal-text fs-2 text-primary"></i>
+                    <i class="fas fa-book-open fs-2 text-primary"></i>
                     <h3 class="mt-2">{{ exams|length }}</h3>
                     <p class="text-muted mb-0">Total Exams</p>
                 </div>
@@ -29,9 +29,9 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-center">
+            <div class="card border-0 shadow-sm text-center h-100">
                 <div class="card-body">
-                    <i class="bi bi-bar-chart-line fs-2 text-success"></i>
+                    <i class="fas fa-chart-line fs-2 text-success"></i>
                     <h3 class="mt-2">{{ exams|sum(attribute='total_attempts') }}</h3>
                     <p class="text-muted mb-0">Total Attempts</p>
                 </div>
@@ -39,10 +39,10 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm text-center">
+            <div class="card border-0 shadow-sm text-center h-100">
                 <div class="card-body">
-                    <i class="bi bi-lightning-charge fs-2 text-warning"></i>
-                    <h6 class="mt-2">Quick Actions</h6>
+                    <i class="fas fa-bolt fs-2 text-warning"></i>
+                    <h3 class="mt-2">Quick Actions</h3>
                     <a href="{{ url_for('teacher.create_exam_route') }}" 
                        class="btn btn-sm btn-primary w-100 mb-2">
                         Create Exam
@@ -58,19 +58,18 @@
 
     <!-- Exams Table -->
     <div class="card border-0 shadow-sm">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded"
-            style="background-color: #f8f9fa;">
-           
-           <div class="d-flex align-items-center gap-2">
-               <i class="bi bi-table text-primary"></i>
-               <h5 class="mb-0 fw-semibold">Recent Exams</h5>
-           </div>
-       
-       </div>
+        <div class="card-body p-0">
+
+            <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded-top">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-table text-primary"></i>
+                    <h5 class="mb-0 fw-semibold">Recent Exams</h5>
+                </div>
+            </div>
+
             {% if exams %}
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="table table-hover align-middle mb-0">
 
                     <thead class="table-light">
                         <tr>
@@ -90,33 +89,23 @@
                         <tr>
                             <td>{{ loop.index }}</td>
                             <td>{{ exam.id }}</td>
-
                             <td><strong>{{ exam.title }}</strong></td>
-
                             <td>
                                 <span class="badge bg-{{ 'success' if exam.status=='published' else 'secondary' }}">
                                     {{ exam.status }}
                                 </span>
                             </td>
-
                             <td>{{ exam.total_questions or 0 }}</td>
-
                             <td>{{ exam.duration_minutes }} min</td>
-
                             <td>
                                 {% if exam.quiz_code %}
-                                    <div class="d-flex gap-1">
-                                        <a href="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code) }}"
-                                           target="_blank"
-                                           class="btn btn-sm btn-outline-primary">
-                                            Open
-                                        </a>
-                                        <button class="btn btn-sm btn-outline-secondary"
-                                                data-link="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code, _external=True) }}"
-                                                onclick="copyQuizLink(this)">
-                                            Copy
-                                        </button>
-                                    </div>
+                                <div class="d-flex gap-1">
+                                    <a href="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code) }}" target="_blank"
+                                       class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt me-1"></i>Open</a>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            data-link="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code, _external=True) }}"
+                                            onclick="copyQuizLink(this)"><i class="fas fa-copy me-1"></i>Copy</button>
+                                </div>
                                 {% else %}
                                     <span class="text-muted">-</span>
                                 {% endif %}
@@ -124,51 +113,33 @@
 
                             <td class="text-end">
                                 <div class="d-flex justify-content-end gap-2 flex-wrap">
-
                                     <a href="{{ url_for('teacher.review_questions_route', exam_id=exam.id) }}"
                                        class="btn btn-sm btn-info text-white">
-                                       <i class="bi bi-eye"></i>
+                                       <i class="fas fa-eye"></i>
                                     </a>
 
                                     {% if exam.total_attempts == 0 %}
-                                    <form method="POST"
-                                          action="{{ url_for('teacher.delete_exam_route', exam_id=exam.id) }}"
+                                    <form method="POST" action="{{ url_for('teacher.delete_exam_route', exam_id=exam.id) }}"
                                           onsubmit="return confirm('Delete this exam?');">
-                                        <button class="btn btn-sm btn-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
+                                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
                                     </form>
                                     {% endif %}
 
                                     {% if exam.status != 'published' and exam.total_attempts == 0 %}
                                         <a href="{{ url_for('teacher.upload_questions_route', exam_id=exam.id) }}"
-                                           class="btn btn-sm btn-secondary">
-                                           Upload
-                                        </a>
-
+                                           class="btn btn-sm btn-secondary"><i class="fas fa-upload me-1"></i>Upload</a>
                                         <form action="{{ url_for('teacher.publish_exam_route', exam_id=exam.id) }}" method="POST">
-                                            <button class="btn btn-sm btn-success">
-                                                Publish
-                                            </button>
+                                            <button class="btn btn-sm btn-success"><i class="fas fa-check me-1"></i>Publish</button>
                                         </form>
 
                                     {% elif exam.status == 'published' %}
                                         <a href="{{ url_for('teacher.results_route', exam_id=exam.id) }}"
-                                           class="btn btn-sm btn-primary">
-                                           Results
-                                        </a>
-
+                                           class="btn btn-sm btn-primary"><i class="fas fa-chart-bar me-1"></i>Results</a>
                                         <a href="{{ url_for('teacher.leaderboard_route', exam_id=exam.id) }}"
-                                           class="btn btn-sm btn-warning text-dark">
-                                           Leaderboard
-                                        </a>
-
+                                           class="btn btn-sm btn-warning text-dark"><i class="fas fa-trophy me-1"></i>Leaderboard</a>
                                     {% else %}
-                                        <button class="btn btn-sm btn-outline-secondary" disabled>
-                                            Locked
-                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" disabled>Locked</button>
                                     {% endif %}
-
                                 </div>
                             </td>
 
@@ -180,16 +151,11 @@
             </div>
 
             {% else %}
-
-            <!-- Empty -->
             <div class="text-center py-5">
-                <i class="bi bi-journal-text fs-1"></i>
+                <i class="fas fa-book-open fs-1"></i>
                 <p class="mt-3 text-muted">No exams yet</p>
-                <a href="{{ url_for('teacher.create_exam_route') }}" class="btn btn-primary">
-                    Create First Exam
-                </a>
+                <a href="{{ url_for('teacher.create_exam_route') }}" class="btn btn-primary">Create First Exam</a>
             </div>
-
             {% endif %}
 
         </div>
@@ -197,7 +163,6 @@
 
 </div>
 
-<!-- Copy Script -->
 <script>
 function copyQuizLink(btn) {
     const link = btn.getAttribute("data-link");
@@ -207,5 +172,4 @@ function copyQuizLink(btn) {
     });
 }
 </script>
-
 {% endblock %}

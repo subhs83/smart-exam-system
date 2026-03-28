@@ -1,64 +1,167 @@
 {% extends "base.html" %}
+
 {% block content %}
 
-<div class="container mt-5">
+<style>
+body {
+    background: #f4f6fb;
+}
 
-<div class="card shadow-lg border-0">
+/* Header */
+.result-header {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    padding: 25px;
+    text-align: center;
+    border-radius: 0 0 20px 20px;
+}
 
-<div class="card-header bg-success text-white text-center">
-<h3>Quiz Result</h3>
+/* Cards */
+.result-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: -40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+/* Stats */
+.stat-box {
+    text-align: center;
+    padding: 15px;
+}
+
+.stat-box h3 {
+    font-weight: bold;
+}
+
+/* Grade Badge */
+.grade {
+    font-size: 28px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 10px;
+    display: inline-block;
+}
+
+/* Message */
+.message {
+    font-size: 18px;
+    margin-top: 10px;
+}
+</style>
+
+<!-- ================= HEADER ================= -->
+<div class="result-header">
+    <h2>Quiz Completed 🎉</h2>
+    <p>{{ exam.title }}</p>
 </div>
 
-<div class="card-body">
+<div class="container">
 
-<div class="row text-center">
+<!-- ================= MAIN CARD ================= -->
+<div class="result-card">
 
-<div class="col-md-3">
-<h5>Total Questions</h5>
-<h3 class="text-primary">{{ total }}</h3>
+    <!-- Student Info -->
+    <div class="row text-center mb-4">
+
+        <div class="col-md-3">
+            <strong>Name</strong>
+            <p>{{ student_name }}</p>
+        </div>
+
+        <div class="col-md-3">
+            <strong>Class</strong>
+            <p>{{ student_class }}</p>
+        </div>
+
+        <div class="col-md-3">
+            <strong>Roll</strong>
+            <p>{{ roll_number }}</p>
+        </div>
+
+        <div class="col-md-3">
+            <strong>Total Questions</strong>
+            <p>{{ total }}</p>
+        </div>
+
+    </div>
+
+    <hr>
+
+    <!-- Stats -->
+    <div class="row text-center">
+
+        <div class="col-md-3 stat-box">
+            <h5>Score</h5>
+            <h3 class="text-success">{{ score }}</h3>
+        </div>
+
+        <div class="col-md-3 stat-box">
+            <h5>Correct</h5>
+            <h3 class="text-success">{{ correct_answers }}</h3>
+        </div>
+
+        <div class="col-md-3 stat-box">
+            <h5>Wrong</h5>
+            <h3 class="text-danger">{{ wrong_answers }}</h3>
+        </div>
+
+        <div class="col-md-3 stat-box">
+            <h5>Percentage</h5>
+            <h3 class="text-primary">{{ "%.2f"|format(percentage) }}%</h3>
+        </div>
+
+    </div>
+
+    <hr>
+
+    <!-- Progress -->
+    <div class="mb-4">
+        <div class="progress" style="height: 25px;">
+            <div class="progress-bar bg-info"
+                 role="progressbar"
+                 style="width: {{ percentage }}%">
+                {{ "%.1f"|format(percentage) }}%
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Logic -->
+    {% if percentage >= 80 %}
+        {% set grade = "A" %}
+        {% set message = "Excellent Performance 🎉" %}
+        {% set color = "bg-success text-white" %}
+    {% elif percentage >= 50 %}
+        {% set grade = "B" %}
+        {% set message = "Good Job 👍" %}
+        {% set color = "bg-warning text-dark" %}
+    {% else %}
+        {% set grade = "C" %}
+        {% set message = "Needs Improvement 📘" %}
+        {% set color = "bg-danger text-white" %}
+    {% endif %}
+
+    <!-- Grade + Message -->
+    <div class="text-center mt-4">
+        <div class="grade {{ color }}">
+            Grade {{ grade }}
+        </div>
+
+        <div class="message">
+            {{ message }}
+        </div>
+    </div>
+
 </div>
 
-<div class="col-md-3">
-<h5>Your Score</h5>
-<h3 class="text-success">{{ score }}</h3>
-</div>
-
-<div class="col-md-3">
-<h5>Correct</h5>
-<h3 class="text-success">{{ correct_answers }}</h3>
-</div>
-
-<div class="col-md-3">
-<h5>Wrong</h5>
-<h3 class="text-danger">{{ wrong_answers }}</h3>
-</div>
-
-</div>
-
-<hr>
-
-<div class="text-center">
-
-<h5>Percentage</h5>
-
-<div class="progress" style="height:25px">
-
-<div class="progress-bar bg-info"
-role="progressbar"
-style="width: {{ percentage }}%">
-{{ "%.2f"|format(percentage) }}%
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
+<!-- ================= ACTION BUTTONS ================= -->
 <div class="text-center mt-4">
-<a href="/" class="btn btn-primary">Finish</a>
+
+    <a href="/" class="btn btn-primary btn-lg">
+        Finish
+    </a>
+
 </div>
 
 </div>

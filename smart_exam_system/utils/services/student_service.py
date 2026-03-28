@@ -7,6 +7,7 @@ from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.models.exam import ExamModel
 from smart_exam_system.models.question import QuestionModel
 from smart_exam_system.models.answer import StudentAnswerModel
+import json
  
 # -------------------------------
 # Get Exam by Quiz Code
@@ -30,96 +31,129 @@ def get_exam_by_quiz_code(quiz_code):
 # -------------------------------
 
 
-def start_student_attempt(quiz_code, form_data, ip_address):
+def start_student_attempt(exam_id, school_id, form_data, ip_address):
+    import json
+    from datetime import datetime
 
-    exam = ExamModel.query.with_entities(
-        ExamModel.id,
-        ExamModel.school_id,
-        ExamModel.max_attempts_per_mobile
-    ).filter(
-        ExamModel.quiz_code == quiz_code
-    ).first()
-
-    if not exam:
-        return False, "Invalid quiz link"
-
-    exam_id = exam.id
-    school_id = exam.school_id
-    max_attempts = exam.max_attempts_per_mobile
-
+    # -------------------------------
+    # Extract student data
+    # -------------------------------
+    first_name = form_data.get("first_name")
+    last_name = form_data.get("last_name")
+    student_class = form_data.get("class_name")
+    roll_number = form_data.get("roll_number")
     mobile = form_data.get("mobile")
 
-    # count attempts
-    attempts = db.session.query(func.count(AttemptModel.id))\
-        .filter(
-            AttemptModel.exam_id == exam_id,
-            AttemptModel.mobile == mobile
-        ).scalar()
+    # -------------------------------
+    # Check attempt limit (by mobile)
+    # -------------------------------
+    previous_attempts = AttemptModel.query.filter_by(
+        exam_id=exam_id,
+        mobile=mobile
+    ).count()
 
-    if attempts >= max_attempts:
-        return False, "Maximum attempts reached"
+    exam = ExamModel.query.get(exam_id)
 
-    attempt_number = attempts + 1
+    if exam.max_attempts_per_mobile and previous_attempts >= exam.max_attempts_per_mobile:
+        return None, "Maximum attempts reached"
 
+    attempt_number = previous_attempts + 1
+
+    # -------------------------------
+    # Get all questions
+    # -------------------------------
+    questions = QuestionModel.query.filter_by(exam_id=exam_id).all()
+
+    if not questions:
+        return None, "No questions available"
+
+    # -------------------------------
+    # Question Order
+    # -------------------------------
+    question_ids = [q.id for q in questions]
+    random.shuffle(question_ids)
+    question_order = json.dumps(question_ids)
+
+    # -------------------------------
+    # Option Order
+    # -------------------------------
+    option_order_map = {}
+
+    for q in questions:
+        options = ["A", "B", "C", "D"]
+        random.shuffle(options)
+        option_order_map[str(q.id)] = options
+
+    option_order = json.dumps(option_order_map)
+
+    # -------------------------------
+    # Create Attempt
+    # -------------------------------
     new_attempt = AttemptModel(
         exam_id=exam_id,
         school_id=school_id,
-        first_name=form_data.get("first_name"),
-        last_name=form_data.get("last_name"),
-        student_class=form_data.get("class_name"),
-        roll_number=form_data.get("roll_number"),
+        first_name=first_name,
+        last_name=last_name,
+        student_class=student_class,
+        roll_number=roll_number,
         mobile=mobile,
         ip_address=ip_address,
         start_time=datetime.utcnow(),
-        attempt_number=attempt_number
+        end_time=datetime.utcnow(),  # will update later
+        attempt_number=attempt_number,
+        question_order=question_order,
+        option_order=option_order
     )
 
     db.session.add(new_attempt)
     db.session.commit()
 
-    return True, new_attempt.id
+    return new_attempt, None
 # -------------------------------
 # Get Question by Index
 # -------------------------------
  
 def get_question_for_attempt(attempt_id, q_index):
+    import json
 
     attempt = AttemptModel.query.get(attempt_id)
-    if not attempt:
+    if not attempt or not attempt.question_order or not attempt.option_order:
         return None
 
-    exam_id = attempt.exam_id
+    question_order = json.loads(attempt.question_order)
+    option_order_map = json.loads(attempt.option_order)
 
-    question = QuestionModel.query\
-        .filter_by(exam_id=exam_id)\
-        .order_by(QuestionModel.id.asc())\
-        .offset(q_index)\
-        .limit(1)\
-        .first()
+    # Safety
+    if q_index < 0 or q_index >= len(question_order):
+        return None
+
+    question_id = question_order[q_index]
+    question = QuestionModel.query.get(question_id)
 
     if not question:
         return None
 
+    # Get saved answer
     answer = StudentAnswerModel.query.filter_by(
         attempt_id=attempt_id,
-        question_id=question.id
+        question_id=question_id
     ).first()
 
     selected_option = answer.selected_option if answer else None
 
-    session_key = f"question_{question.id}_options"
+    # -------------------------------
+    # Apply OPTION ORDER
+    # -------------------------------
+    order = option_order_map.get(str(question_id), ["A", "B", "C", "D"])
 
-    if session_key in session:
-        options = session[session_key]
-    else:
-        options = [
-            ("A", question.option_a),
-            ("B", question.option_b),
-            ("C", question.option_c),
-            ("D", question.option_d)
-        ]
-        random.shuffle(options)
-        session[session_key] = options
+    option_text_map = {
+        "A": question.option_a,
+        "B": question.option_b,
+        "C": question.option_c,
+        "D": question.option_d
+    }
+
+    options = [(opt, option_text_map[opt]) for opt in order]
 
     return {
         "question_id": question.id,
@@ -134,6 +168,35 @@ def get_question_for_attempt(attempt_id, q_index):
  
 def save_student_answer(attempt_id, question_id, selected_option):
 
+    attempt = AttemptModel.query.get(attempt_id)
+    if not attempt:
+        return
+
+    # -------------------------------
+    # 🔒 Prevent saving after submission
+    # -------------------------------
+    if attempt.is_submitted:
+        return
+
+    # -------------------------------
+    # ⏱️ Enforce time expiry (BACKEND)
+    # -------------------------------
+    exam = ExamModel.query.get(attempt.exam_id)
+    end_time = attempt.start_time + timedelta(minutes=exam.duration_minutes)
+
+    if datetime.utcnow() > end_time:
+        return  # Block saving after time ends
+
+    # -------------------------------
+    # ✅ Validate question belongs to attempt
+    # -------------------------------
+    question_order = json.loads(attempt.question_order or "[]")
+    if int(question_id) not in question_order:
+        return  # Invalid request
+
+    # -------------------------------
+    # Save / Update Answer
+    # -------------------------------
     answer = StudentAnswerModel.query.filter_by(
         attempt_id=attempt_id,
         question_id=question_id
@@ -231,13 +294,35 @@ def get_student_result(attempt_id):
 
     attempt = AttemptModel.query.get(attempt_id)
 
-    exam_id = attempt.exam_id
+    if not attempt:
+        return None
 
-    total = get_total_questions(exam_id)
+    exam = attempt.exam
+
+    total = get_total_questions(exam.id)
     score = get_student_score(attempt_id)
 
-    percentage = finalize_attempt(attempt_id, score, total)
+    # ⏱️ TIME CHECK
+    end_time = attempt.start_time + timedelta(minutes=exam.duration_minutes)
+    is_time_up = datetime.utcnow() > end_time
 
+    # ✅ HANDLE SUBMISSION (BOTH CASES)
+    if not attempt.is_submitted:
+
+        percentage = (score / total) * 100 if total > 0 else 0
+
+        attempt.score = score
+        attempt.total_marks = total
+        attempt.percentage = percentage
+        attempt.is_submitted = True
+        attempt.end_time = datetime.utcnow()
+
+        db.session.commit()
+
+    else:
+        percentage = attempt.percentage or 0
+
+    # 📊 STATS
     correct_answers = score
     wrong_answers = total - score
 
@@ -246,7 +331,13 @@ def get_student_result(attempt_id):
         "total": total,
         "percentage": percentage,
         "correct_answers": correct_answers,
-        "wrong_answers": wrong_answers
+        "wrong_answers": wrong_answers,
+
+        "student_name": f"{attempt.first_name} {attempt.last_name}",
+        "student_class": attempt.student_class,
+        "roll_number": attempt.roll_number,
+
+        "exam": exam
     }
 # ----------------------------------
 # Finalize attempt (update DB)
@@ -272,26 +363,25 @@ def finalize_attempt(attempt_id, score, total):
 
 
 def get_question_palette(attempt_id, exam_id):
+    import json
 
-    rows = db.session.query(
-        QuestionModel.id,
-        StudentAnswerModel.selected_option
-    ).outerjoin(
-        StudentAnswerModel,
-        (QuestionModel.id == StudentAnswerModel.question_id) &
-        (StudentAnswerModel.attempt_id == attempt_id)
-    ).filter(
-        QuestionModel.exam_id == exam_id
-    ).order_by(
-        QuestionModel.id
-    ).all()
+    attempt = AttemptModel.query.get(attempt_id)
+    if not attempt or not attempt.question_order:
+        return []
+
+    order = json.loads(attempt.question_order)
 
     palette = []
 
-    for index, row in enumerate(rows):
+    for index, q_id in enumerate(order):
+        answer = StudentAnswerModel.query.filter_by(
+            attempt_id=attempt_id,
+            question_id=q_id
+        ).first()
+
         palette.append({
             "index": index,
-            "answered": 1 if row.selected_option else 0
+            "answered": 1 if answer and answer.selected_option else 0
         })
 
     return palette

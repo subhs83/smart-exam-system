@@ -63,7 +63,7 @@ def add_teacher():
         flash("Teacher added successfully!", "success")
         return redirect(url_for("school_admin.view_teachers"))
 
-    return render_template("add_teacher.html", form=form)
+    return render_template("add_teacher.html", form=form, active_page="add_teacher")
 
 # --------------------------
 # View Teachers
@@ -127,7 +127,7 @@ def teachers():
     return render_template(
         'teachers.html',
         teachers=teachers,
-       active_page="exams"
+       active_page="teachers"
     )
 # --------------------------
 # View Exams
@@ -170,6 +170,7 @@ def admin_exam_results(exam_id):
         teacher_id=teacher_id,
         exam_title = exam_title,
         teacher_name = teacher_name,
+        active_page="results"
     )
 # --------------------------
 # Leaderboard
@@ -191,7 +192,8 @@ def admin_exam_leaderboard(exam_id):
         teacher_id=teacher_id,
         exam_title = exam_title,
         teacher_name = teacher_name,
-        leaderboard=leaderboard
+        leaderboard=leaderboard,
+        active_page="leaderboard"
     )
 
 # --------------------------

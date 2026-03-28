@@ -24,6 +24,10 @@ class AttemptModel(db.Model):
     percentage = db.Column(db.Float)
 
     attempt_number = db.Column(db.Integer)
+    question_order = db.Column(db.Text)  # ✅ ADD THIS
+    option_order = db.Column(db.Text)  # JSON mapping per question
+        # ✅ NEW
+    is_submitted = db.Column(db.Boolean, default=False)
 
     # Relationships
     exam = db.relationship(ExamModel, backref="attempts")

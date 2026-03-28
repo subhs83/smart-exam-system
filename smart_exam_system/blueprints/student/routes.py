@@ -1,5 +1,6 @@
 from flask import render_template, session, redirect, url_for, request, flash
 from smart_exam_system.blueprints.student import student_bp
+from smart_exam_system.extensions import db
 from smart_exam_system.utils.services.student_service import (
     get_exam_by_quiz_code,
     start_student_attempt,
@@ -12,6 +13,8 @@ from smart_exam_system.utils.services.student_service import (
     get_question_palette,
 )
 from smart_exam_system.models.attempt import AttemptModel
+from smart_exam_system.models.exam import ExamModel
+from datetime import datetime, timedelta
 
 
 # -----------------------------
@@ -38,17 +41,27 @@ def quiz_page(quiz_code):
 @student_bp.route("/quiz/<quiz_code>/start", methods=["POST"])
 def start_quiz(quiz_code):
 
-    success, result = start_student_attempt(
-        quiz_code,
+    # 🔹 Get exam using quiz_code
+    exam = ExamModel.query.filter_by(quiz_code=quiz_code).first()
+
+    if not exam:
+        flash("Invalid quiz link", "danger")
+        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+
+    # 🔹 Call correct function
+    attempt, error = start_student_attempt(
+        exam.id,
+        exam.school_id,
         request.form,
         request.remote_addr
     )
 
-    if not success:
-        flash(result, "danger")
+    if error:
+        flash(error, "danger")
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
-    session["attempt_id"] = result
+    # 🔹 Store attempt
+    session["attempt_id"] = attempt.id
 
     return redirect(url_for(
         "student.quiz_question",
@@ -57,38 +70,55 @@ def start_quiz(quiz_code):
     ))
 
 
-# -----------------------------
-# Quiz Question Page
-# -----------------------------
 @student_bp.route("/quiz/<quiz_code>/<int:q_index>", methods=["GET", "POST"])
 def quiz_question(quiz_code, q_index):
-
+    
     if "attempt_id" not in session:
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
     attempt_id = session["attempt_id"]
-
-    # ✅ ORM instead of raw SQL
     attempt = AttemptModel.query.get(attempt_id)
     if not attempt:
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
-    exam_id = attempt.exam_id
-
-    end_timestamp, end_time = get_exam_end_timestamp(attempt_id)
-
-    if is_exam_expired(end_time):
+    # -------------------------------
+    # ✅ Prevent answering after submit
+    # -------------------------------
+    if attempt.is_submitted:
+        flash("This attempt has been submitted and cannot be modified.", "warning")
         return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
 
-    # ---------------- POST ----------------
+    exam = attempt.exam
+    end_time = attempt.start_time + timedelta(minutes=exam.duration_minutes)
+    remaining_time = int((end_time - datetime.utcnow()).total_seconds())
+
+    if remaining_time <= 0:
+        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
+
+    # -------------------------------
+    # TOTAL QUESTIONS (FROM ORDER)
+    # -------------------------------
+    import json
+    question_order = json.loads(attempt.question_order)
+    total_questions = len(question_order)
+
+    # Safety for q_index
+    if q_index < 0:
+        q_index = 0
+    if q_index >= total_questions:
+        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
+
+    # -------------------------------
+    # POST (SAVE ANSWER + NAVIGATION)
+    # -------------------------------
     if request.method == "POST":
 
-        question_id = request.form.get("question_id")
-        selected_option = request.form.get("option")
+        # 🔒 Re-check time (important)
+        if datetime.utcnow() > end_time:
+            return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
 
-        if question_id:
-            save_student_answer(attempt_id, question_id, selected_option)
-
+        # Jump via palette
+      
         if request.form.get("goto_question"):
             return redirect(url_for(
                 "student.quiz_question",
@@ -96,11 +126,20 @@ def quiz_question(quiz_code, q_index):
                 q_index=int(request.form.get("goto_question"))
             ))
 
+        question_id = request.form.get("question_id")
+        selected_option = request.form.get("option")
+
+        if question_id:
+            save_student_answer(attempt_id, question_id, selected_option)
+
+        
+
+        # Navigation
         if "next" in request.form:
             return redirect(url_for(
                 "student.quiz_question",
                 quiz_code=quiz_code,
-                q_index=q_index + 1
+                q_index=min(q_index + 1, total_questions - 1)
             ))
 
         elif "prev" in request.form:
@@ -110,29 +149,30 @@ def quiz_question(quiz_code, q_index):
                 q_index=max(q_index - 1, 0)
             ))
 
-        elif "submit" in request.form or "auto_submit" in request.form:
+        elif "submit" in request.form:
             return redirect(url_for(
                 "student.submit_quiz",
                 quiz_code=quiz_code
             ))
 
-    # ---------------- GET ----------------
-    total_questions = get_total_questions(exam_id)
+    # -------------------------------
+    # GET (LOAD QUESTION)
+    # -------------------------------
     question = get_question_for_attempt(attempt_id, q_index)
-    palette = get_question_palette(attempt_id, exam_id)
+    palette = get_question_palette(attempt_id, exam.id)
+    print(question,"q_index=", palette)
 
     if not question:
         return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
-
+    
     return render_template(
         "student_quiz.html",
         question=question,
         q_index=q_index,
         palette=palette,
         total_questions=total_questions,
-        end_timestamp=end_timestamp
+        remaining_time=remaining_time   # ✅ NEW (replace end_timestamp)
     )
-
 
 # -----------------------------
 # Submit Quiz
@@ -141,16 +181,34 @@ def quiz_question(quiz_code, q_index):
 def submit_quiz(quiz_code):
 
     attempt_id = session.get("attempt_id")
-
     if not attempt_id:
         flash("No active attempt found", "danger")
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
+    attempt = AttemptModel.query.get(attempt_id)
+    if not attempt:
+        flash("Attempt not found", "danger")
+        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+
+    # -------------------------------
+    # ✅ Prevent multiple submissions
+    # -------------------------------
+    if attempt.is_submitted:
+        flash("This attempt has already been submitted.", "warning")
+        result = get_student_result(attempt_id)
+        return render_template("student_result.html", **result)
+
+    # Generate result
     result = get_student_result(attempt_id)
 
+    # Clear session
     session.pop("attempt_id", None)
 
-    return render_template("student_result.html", **result)
+    # Send exam + result to template
+    return render_template(
+        "student_result.html",
+        **result,
+    )
 
 
 # -----------------------------
@@ -162,6 +220,21 @@ def save_answer_ajax():
     attempt_id = session.get("attempt_id")
     if not attempt_id:
         return {"status": "error"}
+
+    attempt = AttemptModel.query.get(attempt_id)
+    if not attempt:
+        return {"status": "error"}
+
+    # 🔒 Block if already submitted
+    if attempt.is_submitted:
+        return {"status": "blocked"}
+
+    # ⏱️ Time check (backend safety)
+    exam = attempt.exam
+    end_time = attempt.start_time + timedelta(minutes=exam.duration_minutes)
+
+    if datetime.utcnow() > end_time:
+        return {"status": "expired"}
 
     question_id = request.form.get("question_id")
     selected_option = request.form.get("option")
