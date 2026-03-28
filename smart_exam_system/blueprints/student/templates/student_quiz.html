@@ -140,7 +140,7 @@ input[type="radio"]:checked + label {
             {% else %}
                 btn-secondary
             {% endif %}"
-            onclick="goToQuestion({{ q.index }})">
+            onclick="window.location.href='{{ url_for('student.quiz_question', quiz_code=request.view_args['quiz_code'], q_index=q.index) }}'">
             {{ q.index + 1 }}
         </button>
         {% endfor %}
@@ -193,12 +193,16 @@ setInterval(updateTimer, 1000);
 updateTimer();
 </script>
 
-<!-- ================= NAVIGATION ================= -->
+<!-- ================= Save NAVIGATION ================= -->
 <script>
-function goToQuestion(index){
-    document.getElementById("goto_question").value = index;
-    document.getElementById("quiz-form").submit();
-}
-</script>
-
+    function autoSaveAnswer(){
+        const form = document.getElementById("quiz-form");
+    
+        fetch(window.location.href, {
+            method: "POST",
+            body: new FormData(form)
+        });
+    }
+    </script>
+    
 {% endblock %}

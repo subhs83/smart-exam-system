@@ -72,14 +72,16 @@ def start_quiz(quiz_code):
 
 @student_bp.route("/quiz/<quiz_code>/<int:q_index>", methods=["GET", "POST"])
 def quiz_question(quiz_code, q_index):
+
     # -------------------------------
-    # 🔹 Check if attempt exists in session
+    # 🔹 Check attempt in session
     # -------------------------------
     if "attempt_id" not in session:
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
     attempt_id = session["attempt_id"]
     attempt = AttemptModel.query.get(attempt_id)
+
     if not attempt:
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
@@ -91,6 +93,10 @@ def quiz_question(quiz_code, q_index):
         return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
 
     exam = attempt.exam
+
+    # -------------------------------
+    # 🔹 Time check
+    # -------------------------------
     end_time = attempt.start_time + timedelta(minutes=exam.duration_minutes)
     remaining_time = int((end_time - datetime.utcnow()).total_seconds())
 
@@ -98,7 +104,7 @@ def quiz_question(quiz_code, q_index):
         return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
 
     # -------------------------------
-    # 🔹 Get question list and safety for index
+    # 🔹 Question order & index safety
     # -------------------------------
     import json
     question_order = json.loads(attempt.question_order)
@@ -106,44 +112,37 @@ def quiz_question(quiz_code, q_index):
 
     if q_index < 0:
         q_index = 0
+
     if q_index >= total_questions:
         return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
 
     # -------------------------------
-    # 🔹 POST - Save answer and navigate
+    # 🔹 POST: Save answer + navigation
     # -------------------------------
     if request.method == "POST":
+
         question_id = request.form.get("question_id")
         selected_option = request.form.get("option")
 
-        # Save current answer before any navigation
+        # ✅ Save answer
         if question_id and selected_option:
             save_student_answer(attempt_id, question_id, selected_option)
 
-        # Palette jump
-        if request.form.get("goto_question"):
-            target_index = int(request.form.get("goto_question"))
-            # Safety
-            target_index = max(0, min(target_index, total_questions - 1))
-            return redirect(url_for(
-                "student.quiz_question",
-                quiz_code=quiz_code,
-                q_index=target_index
-            ))
-
-        # Navigation buttons
+        # ✅ Navigation buttons only
         if "next" in request.form:
             return redirect(url_for(
                 "student.quiz_question",
                 quiz_code=quiz_code,
                 q_index=min(q_index + 1, total_questions - 1)
             ))
+
         elif "prev" in request.form:
             return redirect(url_for(
                 "student.quiz_question",
                 quiz_code=quiz_code,
                 q_index=max(q_index - 1, 0)
             ))
+
         elif "submit" in request.form:
             return redirect(url_for(
                 "student.submit_quiz",
@@ -151,7 +150,7 @@ def quiz_question(quiz_code, q_index):
             ))
 
     # -------------------------------
-    # 🔹 GET - Load question and palette
+    # 🔹 GET: Load question + palette
     # -------------------------------
     question = get_question_for_attempt(attempt_id, q_index)
     palette = get_question_palette(attempt_id, exam.id)
@@ -167,7 +166,6 @@ def quiz_question(quiz_code, q_index):
         total_questions=total_questions,
         remaining_time=remaining_time
     )
-
 # -----------------------------
 # Submit Quiz
 # -----------------------------
