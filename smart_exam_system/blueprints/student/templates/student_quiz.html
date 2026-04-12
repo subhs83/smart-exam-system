@@ -24,10 +24,11 @@ body {
 
 .timer {
     font-size: 18px;
-    font-weight: bold;
-    background: #ef4444;
-    padding: 6px 12px;
-    border-radius: 8px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    padding: 6px 14px;
+    border-radius: 999px;
+    box-shadow: 0 0 10px rgba(239,68,68,0.5);
 }
 
 /* Question Card */
@@ -36,6 +37,7 @@ body {
     border-radius: 15px;
     padding: 20px;
     margin: 15px;
+    margin-bottom: 80px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
@@ -47,17 +49,22 @@ body {
     margin-bottom: 10px;
     cursor: pointer;
     transition: 0.3s;
+    background: #ffffff;
+    color: #1e293b; /* 🔥 force readable text */
 }
-
+input[type="radio"]:checked + label {
+    background: #2563eb;
+    color: white;
+    border-radius: 8px;
+    padding: 10px;
+    display: block;
+}
 .option:hover {
     border-color: #3b82f6;
     background: #eff6ff;
 }
 
-input[type="radio"]:checked + label {
-    border-color: #3b82f6;
-    background: #dbeafe;
-}
+ 
 
 /* Palette */
 .palette {
@@ -96,7 +103,6 @@ input[type="radio"]:checked + label {
 
 <!-- ================= QUESTION ================= -->
 <div class="question-card">
-
     <h5 class="mb-3">{{ question.question_text }}</h5>
 
     <form id="quiz-form" method="POST">
@@ -122,12 +128,17 @@ input[type="radio"]:checked + label {
         {% endfor %}
 
     </form>
-
+    <div id="save-status" style="font-size:12px; color:#6b7280; min-height:16px;"></div>
 </div>
 
 <!-- ================= PALETTE ================= -->
 <div class="question-card">
-    <h6>Question Palette</h6>
+    <h6>
+        Question Palette 
+        <span class="badge bg-success">Answered</span>
+        <span class="badge bg-secondary">Not Answered</span>
+        <span class="badge bg-primary">Current</span>
+        </h6>
 
     <div class="palette">
         {% for q in palette %}
@@ -151,20 +162,24 @@ input[type="radio"]:checked + label {
 <div class="bottom-nav">
 
     {% if q_index > 0 %}
-    <button type="submit" form="quiz-form" name="prev" class="btn btn-secondary">
-        Prev
-    </button>
+    <button type="submit" form="quiz-form" name="prev" 
+class="btn btn-outline-secondary px-4">
+    ← Prev
+</button>
     {% else %}
     <div></div>
     {% endif %}
 
     {% if q_index < total_questions - 1 %}
-    <button type="submit" form="quiz-form" name="next" class="btn btn-primary">
-        Next
-    </button>
+    <button type="submit" form="quiz-form" name="next" 
+class="btn btn-primary px-4 fw-semibold">
+    Next →
+</button>
     {% else %}
-    <button type="submit" form="quiz-form" name="submit" class="btn btn-success">
-        Submit
+    <button type="submit" form="quiz-form" name="submit" 
+    class="btn btn-success px-4"
+    onclick="return confirm('Are you sure you want to submit the exam?');">
+        Submit Exam
     </button>
     {% endif %}
 
@@ -184,7 +199,8 @@ function updateTimer(){
     const seconds = timeLeft % 60;
 
     document.getElementById("timer").textContent =
-        minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
+    (minutes < 10 ? "0" : "") + minutes + ":" +
+    (seconds < 10 ? "0" : "") + seconds;
 
     timeLeft--;
 }
@@ -195,12 +211,38 @@ updateTimer();
 
 <!-- ================= Save NAVIGATION ================= -->
 <script>
+    let saving = false;
+    
     function autoSaveAnswer(){
+        if(saving) return; // 🔒 prevent multiple fast clicks
+        saving = true;
+    
         const form = document.getElementById("quiz-form");
+        const status = document.getElementById("save-status");
+    
+        if(status){
+            status.textContent = res.ok ? "✔ Saved" : "❌ Error";
+            setTimeout(() => status.textContent = "", 1500);
+        }
     
         fetch(window.location.href, {
             method: "POST",
             body: new FormData(form)
+        })
+        .then(res => {
+            if(status){
+                status.textContent = res.ok ? "Saved" : "Error";
+                setTimeout(() => status.textContent = "", 1500);
+            }
+        })
+        .catch(() => {
+            if(status){
+                status.textContent = "Error";
+                setTimeout(() => status.textContent = "", 1500);
+            }
+        })
+        .finally(() => {
+            saving = false; // 🔓 unlock
         });
     }
     </script>
