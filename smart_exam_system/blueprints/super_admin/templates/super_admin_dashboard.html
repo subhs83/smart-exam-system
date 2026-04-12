@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-4 super_admin">
     <h2>Super Admin Dashboard</h2>
 
     <!-- Platform Stats -->
@@ -24,6 +24,15 @@
         <div class="stat-box bg-white p-3 rounded shadow flex-fill text-center">
             <h4>Total Students Assessed</h4>
             <p class="fs-3 text-primary">{{ total_students or 0 }}</p>
+        </div>
+        <div class="stat-box bg-white p-3 rounded shadow flex-fill text-center">
+            <h4>Demo Requests</h4>
+            <p class="fs-3 text-success">{{ total_demo_requests or 0 }}</p>
+        </div>
+        
+        <div class="stat-box bg-white p-3 rounded shadow flex-fill text-center">
+            <h4>Contact Messages</h4>
+            <p class="fs-3 text-success">{{ total_contact_messages or 0 }}</p>
         </div>
     </div>
 
@@ -72,6 +81,29 @@
                     <p class="card-text">Monitor application status and logs.</p>
                     <a href="{{ url_for('super_admin.system_health') }}" class="btn btn-primary">
                         View Status
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">📅 Demo Requests</h5>
+                    <p class="card-text">View all demo bookings.</p>
+                    <a href="{{ url_for('super_admin.demo_requests') }}" class="btn btn-primary">
+                        View Requests
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col">
+            <div class="card h-100 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">📩 Contact Messages</h5>
+                    <p class="card-text">User inquiries & support.</p>
+                    <a href="{{ url_for('super_admin.contact_messages') }}" class="btn btn-primary">
+                        View Messages
                     </a>
                 </div>
             </div>

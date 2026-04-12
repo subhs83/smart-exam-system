@@ -6,6 +6,7 @@ from smart_exam_system.models.school import SchoolModel
 from smart_exam_system.models.exam import ExamModel
 from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.extensions import db
+from smart_exam_system.models.democontact import DemoRequest, ContactMessage
 from smart_exam_system.utils.decorators import super_admin_required
 from smart_exam_system.utils.security import hash_password
 import secrets, string
@@ -37,7 +38,14 @@ def dashboard():
     # -------------------------
     # Total Unique Students
     # Use subquery with distinct (school_id, roll_number) for SQLite compatibility
+
     # -------------------------
+    # Demo + Contact Leads
+    # -------------------------
+    total_demo_requests = DemoRequest.query.count()
+    total_contact_messages = ContactMessage.query.count()
+    # -------------------------
+
     student_subquery = db.session.query(
         AttemptModel.school_id,
         AttemptModel.roll_number
@@ -54,13 +62,15 @@ def dashboard():
     total_attempts = db.session.query(func.count(AttemptModel.id)).scalar()
 
     return render_template(
-        "super_admin_dashboard.html",
-        total_schools=total_schools,
-        total_exams=total_exams,
-        total_teachers=total_teachers,
-        total_students=total_students,
-        total_attempts=total_attempts
-    )
+    "super_admin_dashboard.html",
+    total_schools=total_schools,
+    total_exams=total_exams,
+    total_teachers=total_teachers,
+    total_students=total_students,
+    total_attempts=total_attempts,
+    total_demo_requests=total_demo_requests,
+    total_contact_messages=total_contact_messages
+)
 # =========================
 # VIEW ALL SCHOOLS
 # =========================
@@ -234,6 +244,82 @@ def reset_school_admin_password(user_id):
     flash(f"Temporary Password: {temp_password}", "warning")
     return redirect(request.referrer)
 
+
+# =========================
+# DEMO REQUESTS
+# =========================
+
+@super_admin_bp.route("/demo-requests")
+@login_required
+@super_admin_required
+def demo_requests():
+    demos = DemoRequest.query.order_by(DemoRequest.id.desc()).all()
+    return render_template("demo_requests.html", demos=demos)
+
+
+# =========================
+# CONTACT MESSAGES
+# =========================
+@super_admin_bp.route("/contact-messages")
+@login_required
+@super_admin_required
+def contact_messages():
+    messages = ContactMessage.query.order_by(ContactMessage.id.desc()).all()
+    return render_template("contact_messages.html", messages=messages)
+
+
+# =========================
+# UPDATE DEMO STATUS
+# =========================
+@super_admin_bp.route("/demo/<int:id>/status/<string:status>", methods=["POST"])
+@login_required
+@super_admin_required
+def update_demo_status(id, status):
+    demo = DemoRequest.query.get_or_404(id)
+    demo.status = status
+    db.session.commit()
+    return redirect(request.referrer)
+
+
+# =========================
+# DELETE DEMO
+# =========================
+@super_admin_bp.route("/demo/<int:id>/delete", methods=["POST"])
+@login_required
+@super_admin_required
+def delete_demo(id):
+    demo = DemoRequest.query.get_or_404(id)
+    db.session.delete(demo)
+    db.session.commit()
+    return redirect(request.referrer)
+
+
+# =========================
+# UPDATE CONTACT STATUS
+# =========================
+@super_admin_bp.route("/contact/<int:id>/status/<string:status>", methods=["POST"])
+@login_required
+@super_admin_required
+def update_contact_status(id, status):
+    msg = ContactMessage.query.get_or_404(id)
+    msg.status = status
+    db.session.commit()
+    return redirect(request.referrer)
+
+
+# =========================
+# DELETE CONTACT
+# =========================
+@super_admin_bp.route("/contact/<int:id>/delete", methods=["POST"])
+@login_required
+@super_admin_required
+def delete_contact(id):
+    msg = ContactMessage.query.get_or_404(id)
+    db.session.delete(msg)
+    db.session.commit()
+    return redirect(request.referrer)
+
+    
 # =========================
 # View Stats
 # =========================
