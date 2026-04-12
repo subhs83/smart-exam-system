@@ -1,7 +1,8 @@
 import os
 
 class Config:
-    SECRET_KEY = "super-secret-key"
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-key")
+   # SECRET_KEY = "super-secret-key"
     
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
