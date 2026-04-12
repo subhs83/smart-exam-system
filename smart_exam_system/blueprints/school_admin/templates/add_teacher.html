@@ -2,24 +2,41 @@
 {% block title %}Add Teacher{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Add Teacher</h2>
-    <form method="POST" class="mt-3">
-        {{ form.hidden_tag() }}
-        <div class="mb-3">
-            {{ form.name.label(class="form-label") }}
-            {{ form.name(class="form-control") }}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-8">
+      <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-header bg-dark text-white d-flex align-items-center">
+          <i class="fas fa-user-plus me-2 text-white"></i>
+          <h4 class="mb-0">Add Teacher</h4>
         </div>
-        <div class="mb-3">
-            {{ form.email.label(class="form-label") }}
-            {{ form.email(class="form-control") }}
+        <div class="card-body p-4">
+          <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+              {{ form.name.label(class="form-label fw-semibold") }}
+              {{ form.name(class="form-control form-control-lg") }}
+            </div>
+            <div class="mb-3">
+              {{ form.email.label(class="form-label fw-semibold") }}
+              {{ form.email(class="form-control form-control-lg") }}
+            </div>
+            <div class="mb-3">
+              {{ form.password.label(class="form-label fw-semibold") }}
+              {{ form.password(class="form-control form-control-lg") }}
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-check me-2"></i> Add Teacher
+              </button>
+              <a href="{{ url_for('school_admin.dashboard') }}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-arrow-left me-2"></i> Back
+              </a>
+            </div>
+          </form>
         </div>
-        <div class="mb-3">
-            {{ form.password.label(class="form-label") }}
-            {{ form.password(class="form-control") }}
-        </div>
-        <button type="submit" class="btn btn-primary">Add Teacher</button>
-        <a href="{{ url_for('school_admin.dashboard') }}" class="btn btn-secondary ms-2">Back</a>
-    </form>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

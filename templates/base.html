@@ -3,67 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Smart Exam System{% endblock %}</title>
+    <!-- Google Font (SaaS Standard) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-…hash…" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/home.css') }}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/feature.css') }}" rel="stylesheet">
+     <!-- Custom CSS -->
+     <link href="{{ url_for('static', filename='css/contact.css') }}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/demo.css') }}" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/footer.css') }}" rel="stylesheet">
 
 </head>
-<body>
 
-<!-- Navbar -->
+<body class="d-flex flex-column bg-light">
+
+<!-- ================= NAVBAR ================= -->
+
 {% if not hide_nav %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
-    <div class="container-fluid">
-        <span class="sidebar-toggle me-2"><i class="bi bi-list fs-4"></i></span>
-        <a class="navbar-brand" href="#">🎓 Smart Exam System</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav" aria-controls="navbarNav" 
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+<nav class="navbar navbar-expand-lg fixed-top shadow-sm navbar-glass">
+    <div class="container-fluid px-3">
+
+        <!-- Sidebar Toggle -->
+        {% if current_user.is_authenticated %}
+        <button class="btn btn-glass me-2 sidebar-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        {% endif %}
+
+        <!-- Brand -->
+        <a class="navbar-brand fw-semibold d-flex align-items-center text-white" href="{{ url_for('home.home') }}">
+            <i class="fas fa-graduation-cap me-2"></i>
+            <span>IndiaEduCore</span>
+        </a>
+
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <i class="fas fa-bars text-white"></i>
         </button>
 
+        <!-- Right Side -->
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+            <ul class="navbar-nav ms-auto align-items-center gap-2">
+
+                <!-- ================= PUBLIC NAV (ALWAYS VISIBLE) ================= -->
+                <li class="nav-item">
+                    <a class="nav-link nav-modern {% if request.path == '/' %}active{% endif %}" 
+                       href="{{ url_for('home.home') }}">Home</a>
+                </li>
+            
+                <li class="nav-item">
+                    <a class="nav-link nav-modern {% if request.path == '/features' %}active{% endif %}" 
+                       href="{{ url_for('home.features') }}">Features</a>
+                </li>
+            
+                <li class="nav-item">
+                    <a class="nav-link nav-modern {% if request.path == '/contact' %}active{% endif %}" 
+                       href="{{ url_for('home.contact') }}">Contact</a>
+                </li>
+            
+                <!-- CTA BUTTON -->
+                <li class="nav-item ms-2">
+                    <a href="{{ url_for('home.demo') }}" class="btn btn-gradient">
+                        Book Demo
+                    </a>
+                </li>
+            
+            
+                <!-- ================= AUTH SECTION ================= -->
                 {% if current_user.is_authenticated %}
+            
+                    <!-- Divider -->
+                    <li class="nav-item d-none d-lg-block mx-2 text-white-50">|</li>
+            
+                    <!-- Role Links -->
                     {% if current_user.role == "super_admin" %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('super_admin.dashboard') }}">Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('super_admin.schools') }}">Schools</a></li>
+                        <li><a class="nav-link nav-modern" href="{{ url_for('super_admin.dashboard') }}">Dashboard</a></li>
+                        <li><a class="nav-link nav-modern" href="{{ url_for('super_admin.schools') }}">Schools</a></li>
+            
                     {% elif current_user.role == "school_admin" %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('school_admin.dashboard') }}">Dashboard</a></li>
+                        <li><a class="nav-link nav-modern" href="{{ url_for('school_admin.dashboard') }}">Dashboard</a></li>
+            
                     {% elif current_user.role == "teacher" %}
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('teacher.dashboard') }}">Dashboard</a></li>
+                        <li><a class="nav-link nav-modern" href="{{ url_for('teacher.dashboard') }}">Dashboard</a></li>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-danger text-white ms-2" href="{{ url_for('auth.logout') }}">Logout</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="loginDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Login
+            
+                    <!-- User Dropdown -->
+                    <li class="nav-item dropdown ms-3">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle fs-5 me-2"></i>
+                            <span>{{ current_user.name }}</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="loginDropdown">
-                            <li><a class="dropdown-item" href="{{ url_for('auth.login', role='school_admin') }}">Login as School Admin</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.login', role='teacher') }}">Login as Teacher</a></li>
+            
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 dropdown-modern">
+            
+                            <li class="px-3 py-2 border-bottom small text-muted">
+                                Signed in as <br>
+                                <strong>{{ current_user.name }}</strong>
+                            </li>
+            
+                            <li><hr class="dropdown-divider"></li>
+            
+                            <li>
+                                <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a>
+                            </li>
                         </ul>
                     </li>
+            
+                {% else %}
+            
+                    <!-- Login -->
+                    <li class="nav-item dropdown ms-2">
+                        <a class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+                            Login
+                        </a>
+            
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 dropdown-modern">
+                            <li><a class="dropdown-item" href="{{ url_for('auth.login', role='school_admin') }}">School Admin</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.login', role='teacher') }}">Teacher</a></li>
+                        </ul>
+                    </li>
+            
                 {% endif %}
+            
             </ul>
         </div>
     </div>
 </nav>
 {% endif %}
 
-<!-- Page Content -->
-<main>
+<!-- ================= MAIN ================= -->
+
+<main class="flex-grow-1 mt-2">
     <div class="d-flex">
 
         <!-- Sidebar -->
-        {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated and not hide_sidebar %}
             {% set role = current_user.role if current_user.role else '' %}
             {% if role == 'teacher' %}
                 {% include 'teacher_sidebar.html' %}
@@ -72,28 +160,41 @@
             {% endif %}
         {% endif %}
 
-        <!-- Main content -->
-        <div class="flex-grow-1 p-4">
+        <!-- Content -->
+        <div class="flex-grow-1 p-4 main-content">
+
+            <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ 'success' if category=='success' else 'danger' }}">
+                        <div class="alert alert-{{ 'success' if category=='success' else 'danger' }} alert-dismissible fade show shadow-sm">
                             {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
 
             {% block content %}{% endblock %}
+
         </div>
     </div>
 </main>
 
-<!-- Footer -->
+<!-- ================= FOOTER ================= -->
+
 {% if not hide_footer %}
-<footer class="bg-dark text-white text-center py-2">
-    <div class="container">
-        <small>© 2026 Smart Exam System | Developed for Schools</small>
+<footer class="footer-dark-modern py-3 mt-auto">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap">
+
+        <small>© 2026 Smart Exam System</small>
+
+        <div class="d-flex gap-3">
+            <a href="{{ url_for('footer.privacy') }}" class="text-decoration-none text-light small">Privacy</a>
+            <a href="{{ url_for('footer.termsconditions') }}" class="text-decoration-none text-light small">Terms</a>
+            <a href="{{ url_for('footer.support') }}" class="text-decoration-none text-light small">Support</a>
+        </div>
+
     </div>
 </footer>
 {% endif %}
@@ -101,28 +202,29 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Sidebar Toggle JS -->
+<!-- Sidebar Toggle -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const sidebarToggle = document.querySelector('.sidebar-toggle');
+    const toggle = document.querySelector('.sidebar-toggle');
     const sidebar = document.querySelector('.sidebar');
 
-    if(sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener('click', () => {
+    if (toggle && sidebar) {
+        toggle.addEventListener('click', () => {
             sidebar.classList.toggle('show');
-        });
-
-        const links = sidebar.querySelectorAll('.nav-link');
-        links.forEach(link => {
-            link.addEventListener('click', () => {
-                if(window.innerWidth <= 991){
-                    sidebar.classList.remove('show');
-                }
-            });
         });
     }
 });
 </script>
 
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+<script>
+  AOS.init({
+    duration: 800,
+    once: true
+  });
+</script>
 </body>
 </html>

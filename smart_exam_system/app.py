@@ -9,6 +9,10 @@ from .blueprints.super_admin import super_admin_bp
 from .blueprints.school_admin import school_admin_bp
 from .blueprints.teacher import teacher_bp
 from .blueprints.student import student_bp
+from .blueprints.home import home_bp
+from .blueprints.footer import footer_bp
+
+
 
 def create_app():
     # BASE_DIR = project root
@@ -39,10 +43,8 @@ def create_app():
     app.register_blueprint(school_admin_bp)
     app.register_blueprint(teacher_bp)
     app.register_blueprint(student_bp)
+    app.register_blueprint(home_bp)
+    app.register_blueprint(footer_bp)
 
-    # Home route
-    @app.route("/")
-    def home():
-        return render_template("home.html")
 
     return app

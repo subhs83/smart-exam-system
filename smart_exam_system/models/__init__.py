@@ -7,6 +7,8 @@ from smart_exam_system.models.question import QuestionModel
 from smart_exam_system.models.attempt import Attempt
 from smart_exam_system.models.result import Result
 from smart_exam_system.models.answer import StudentAnswerModel
+from smart_exam_system.models.democontact import DemoRequest, ContactMessage
+
 
 __all__ = [
     "UserModel",
@@ -15,5 +17,8 @@ __all__ = [
     "QuestionModel",
     "Attempt",
     "Result",
-    "StudentAnswerModel"
+    "StudentAnswerModel",
+    "DemoRequest",
+    "ContactMessage"
+    
 ]

@@ -7,30 +7,38 @@ from smart_exam_system.utils.security import hash_password, verify_password,vali
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    # Get expected role from query param (optional)
-    expected_role = request.args.get("role")  # e.g., "teacher", "school_admin"
+    expected_role = request.args.get("role")  # teacher / school_admin
+
+    # 1️⃣ Already logged in
+    if current_user.is_authenticated:
+        if expected_role and current_user.role != expected_role:
+            # Logout current user if switching role
+            logout_user()
+        else:
+            # Already logged in with same role → redirect dashboard
+            if current_user.role == "super_admin":
+                return redirect(url_for("super_admin.dashboard"))
+            elif current_user.role == "school_admin":
+                return redirect(url_for("school_admin.dashboard"))
+            elif current_user.role == "teacher":
+                return redirect(url_for("teacher.dashboard"))
 
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
 
         user = UserModel.query.filter_by(email=email).first()
-
         if user and verify_password(password, user.password):
-
-            # 🚫 Block inactive users
             if not user.is_active:
                 flash("Account is inactive. Contact Super Admin.", "danger")
                 return redirect(url_for("auth.login", role=expected_role))
 
-            # 1️⃣ Check role if expected_role provided
             if expected_role and user.role != expected_role:
                 flash(f"This account is not a {expected_role.replace('_',' ').title()}.", "danger")
                 return redirect(url_for("auth.login", role=expected_role))
 
             login_user(user)
 
-            # 🔐 FORCE PASSWORD CHANGE CHECK
             if user.force_password_change:
                 return redirect(url_for("auth.change_password"))
 
@@ -41,13 +49,12 @@ def login():
                 return redirect(url_for("school_admin.dashboard"))
             elif user.role == "teacher":
                 return redirect(url_for("teacher.dashboard"))
-
         else:
             flash("Invalid credentials", "danger")
             return redirect(url_for("auth.login", role=expected_role))
 
     return render_template("login.html", role=expected_role)
-
+    
 @auth_bp.route("/change-password", methods=["GET", "POST"])
 @login_required
 def change_password():

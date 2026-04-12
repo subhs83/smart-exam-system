@@ -1,0 +1,128 @@
+/* General */
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #0f172a;
+  color: #fff;
+}
+
+/* HERO */
+.home-hero {
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  border-radius: 20px;
+}
+.home-hero h1 {
+  font-weight: 700;
+}
+.home-hero .btn {
+  border-radius: 50px;
+  padding: 0.75rem 1.5rem;
+}
+.home-hero-img {
+  max-width: 70%;
+}
+
+/* TRUST */
+.home-trust {
+  background: #111827;
+}
+
+/* Fixed height for home cards */
+.home-card {
+  background: #fff;
+  color: #111;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 180px;              /* fixed height */
+  display: flex;              /* flexbox for alignment */
+  flex-direction: column;     /* stack icon, title, text */
+  justify-content: flex-start;/* keep content aligned at top */
+  align-items: center;        /* center horizontally */
+  text-align: center;
+}
+
+.home-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+}
+
+.home-card .icon {
+  font-size: 2.5rem;
+  color: #2563eb;
+  margin-bottom: 1rem;
+}
+
+.home-card h5 {
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+/* Dark Cards */
+.dark-card {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+.dark-card .icon {
+  color: #facc15;
+}
+
+/* Steps */
+.home-step {
+  background: #fff;
+  color: #111;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  height: 180px;
+}
+.home-step .icon {
+  font-size: 2.5rem;
+  color: #2563eb;
+  margin-bottom: 1rem;
+}
+
+/* Solutions Gradient */
+.home-solutions {
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  border-radius: 20px;
+  
+}
+
+/* CTA */
+.home-cta {
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  border-radius: 20px;
+}
+.home-cta h2 {
+  font-weight: 700;
+}
+.home-cta .btn {
+  border-radius: 50px;
+  padding: 0.75rem 1.5rem;
+}
+
+/* Section spacing */
+.home-problems,
+.home-solutions,
+.home-how-it-works,
+.home-cta {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+@media (max-width: 768px) {
+  
+  .home-hero h1 {
+    font-size: 2rem;
+  }
+
+  .home-detail {
+    text-align: center;
+  }
+
+  .home-img {
+    margin-top: 20px;
+  }
+
+}
