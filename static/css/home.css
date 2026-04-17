@@ -109,7 +109,9 @@ body {
   padding-top: 4rem;
   padding-bottom: 4rem;
 }
-
+.home-solutions h5{
+  color: #fff;
+}
 @media (max-width: 768px) {
   
   .home-hero h1 {
