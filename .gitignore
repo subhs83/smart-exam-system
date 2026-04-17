@@ -1,7 +1,26 @@
+# Virtual environment
 venv/
+
+# Python cache
 __pycache__/
 *.pyc
+
+# Instance folder (Flask optional)
 instance/
+
+# Environment files
 .env
+.flaskenv
+
+# Database files
 *.db
 *.sqlite3
+
+# Pytest / coverage (optional)
+htmlcov/
+.coverage
+
+# IDE / OS files (optional)
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">📚 Manage Questions</h4>
+            <small class="text-muted">Upload and review questions for your exams</small>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Exams</h6>
+                    <h3>{{ exams|length }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Questions</h6>
+                    <h3>{{ exams | sum(attribute='total_questions') }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Locked Exams</h6>
+                    <h3>
+                        {{
+                            exams
+                            | selectattr('status','equalto','published')
+                            | list
+                            | length
+                        }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">All Exams</h5>
+            </div>
+
+            {% if exams %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Exam</th>
+                            <th>Status</th>
+                            <th>Questions</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for exam in exams %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+
+                            <td>
+                                <strong>{{ exam.title }}</strong>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-{{ 'success' if exam.status=='published' else 'secondary' }}">
+                                    {{ exam.status }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ exam.total_questions or 0 }}
+                            </td>
+
+                            <td class="text-end d-flex justify-content-end gap-2 flex-wrap">
+
+                                {% if exam.status != 'published' and exam.total_attempts == 0 %}
+                                    <a href="{{ url_for('teacher.upload_questions_route', exam_id=exam.id) }}"
+                                    class="btn btn-sm btn-upload"><i class="fas fa-upload me-1"></i>Upload</a>
+                                {% else %}
+                                    <button class="btn btn-sm btn-outline-secondary" disabled
+                                            title="Cannot upload after publish or attempts started">
+                                        🔒 Locked
+                                    </button>
+                                {% endif %}
+
+                                <a href="{{ url_for('teacher.review_questions_route', exam_id=exam.id) }}"
+                                   class="btn btn-sm btn-info text-white">
+                                   <i class="bi bi-eye"></i> Review
+                                </a>
+
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            {% else %}
+
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <i class="bi bi-journal-text" style="font-size: 40px;"></i>
+                <p class="mt-3 text-muted">No exams available</p>
+                <a href="{{ url_for('teacher.create_exam_route') }}" class="btn btn-primary">
+                    Create First Exam
+                </a>
+            </div>
+
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

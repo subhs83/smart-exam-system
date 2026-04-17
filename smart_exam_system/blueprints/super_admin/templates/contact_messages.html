@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Contact Messages</h2>
+
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in messages %}
+            <tr>
+                <td>{{ m.name }}</td>
+                <td>{{ m.email }}</td>
+                <td>{{ m.message }}</td>
+            
+                <td>
+                    <span class="badge bg-{% if m.status=='new' %}warning{% elif m.status=='contacted' %}info{% else %}success{% endif %}">
+                        {{ m.status }}
+                    </span>
+                </td>
+            
+                <td>{{ m.created_at.strftime('%Y-%m-%d') }}</td>
+            
+                <td>
+                    <form method="POST" action="{{ url_for('super_admin.update_contact_status', id=m.id, status='contacted') }}" style="display:inline;">
+                        <button class="btn btn-sm btn-info">Contacted</button>
+                    </form>
+            
+                    <form method="POST" action="{{ url_for('super_admin.update_contact_status', id=m.id, status='closed') }}" style="display:inline;">
+                        <button class="btn btn-sm btn-success">Close</button>
+                    </form>
+            
+                    <form method="POST" action="{{ url_for('super_admin.delete_contact', id=m.id) }}" style="display:inline;">
+                        <button class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+    </table>
+</div>
+{% endblock %}

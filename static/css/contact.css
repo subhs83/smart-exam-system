@@ -1,0 +1,125 @@
+/* ================= HERO ================= */
+.contact-hero {
+  padding: 70px 20px;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  color: #fff;
+  border-radius: 20px;
+}
+
+.contact-hero p {
+  color: #cbd5e1;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+
+/* ================= MAIN ================= */
+/* ================= FORCE VISIBILITY FIX ================= */
+
+/* Ensure section has proper background */
+.contact-main {
+  padding: 80px 20px;
+  background: #f8fafc;   /* LIGHT BACKGROUND */
+}
+
+/* Fix heading visibility */
+.contact-main h3,
+.contact-main h4,
+.contact-main h6 {
+  color: #0f172a;  /* DARK TEXT */
+}
+
+/* Fix paragraph visibility */
+.contact-main p {
+  color: #475569;
+}
+
+/* Form labels */
+.contact-card label {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+/* Input fields */
+.contact-card .form-control,
+.contact-card .form-select {
+  background: #fff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+}
+
+/* Fix placeholder visibility */
+.contact-card input::placeholder,
+.contact-card textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* Fix card contrast */
+.contact-card {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+/* ================= CONTACT INFO ================= */
+.contact-item {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.contact-item i {
+  font-size: 20px;
+  color: #2563eb;
+  margin-top: 4px;
+}
+
+.contact-item h6 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.contact-item p {
+  margin: 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.contact-note p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #475569;
+}
+
+
+/* ================= FORM ================= */
+.contact-card {
+  background: #ffffff;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+
+/* ================= BUTTON ================= */
+.contact-btn {
+  background: #2563eb;
+  color: #fff;
+  border-radius: 50px;
+  padding: 0.75rem;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.contact-btn:hover {
+  background: #1d4ed8;
+}
+
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+
+  .contact-main {
+    padding: 50px 15px;
+  }
+
+}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Teachers{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-primary">👩‍🏫 Teachers</h2>
+    <a href="{{ url_for('school_admin.dashboard') }}" class="btn btn-outline-secondary">
+      ⬅ Back to Dashboard
+    </a>
+  </div>
+
+  <!-- Teachers Table -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-dark text-white fw-bold">
+      Registered Teachers
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-striped table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>SN</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for teacher in teachers %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ teacher.name }}</td>
+            <td>{{ teacher.email }}</td>
+            <td class="text-center">
+              <a href="{{ url_for('school_admin.teacher_exams', teacher_id=teacher.id) }}"
+                 class="btn btn-sm btn-primary">
+                 View Exams
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

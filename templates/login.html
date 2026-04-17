@@ -2,39 +2,60 @@
 
 {% block content %}
 
-<div class="login-wrapper d-flex align-items-center justify-content-center">
+    <div class="login-wrapper d-flex align-items-center justify-content-center">
 
-<div class="col-md-4">
+    <div class="col-md-4">
 
-<div class="card shadow-lg border-0">
+    <div class="card shadow-sm border-0" style="border-radius: 12px;">
+    <div class="text-center mb-0">
+    <i class="fas fa-user-lock fa-2x text-primary"></i>
+    </div>
+    <div class="card-body p-4">
 
-<div class="card-body p-4">
-
-<h3 class="text-center fw-bold mb-1">
-Smart Exam System
-</h3>
-
-<p class="text-center text-muted small mb-4">
-    Secure Digital Exam Platform
-</p>
+    <h3 class="text-center fw-bold mb-1">
+        Welcome Back
+    </h3>
+    
+    <p class="text-center text-muted small mb-4">
+        Login to continue to Smart Exam System
+    </p>
 
 <form method="POST">
+    <!-- Email -->
+    <div class="mb-3">
+        <label class="form-label small text-muted">Email</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+            <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+        </div>
+    </div>
+    
+    <!-- Password -->
+    <div class="mb-3">
+        <label class="form-label small text-muted">Password</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+            <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+        </div>
+    </div>
+    
+    <!-- Button -->
+    <button class="btn btn-primary w-100 fw-semibold mt-2">Login</button>
+    </form>
+    
 
-<div class="mb-3">
-<input type="email" name="email" class="form-control" placeholder="Email">
-</div>
-
-<div class="mb-3">
-<input type="password" name="password" class="form-control" placeholder="Password">
-</div>
-
-<button class="btn btn-primary w-100">Login</button>
-
-</form>
-
-<p class="text-center small text-muted mt-3">
-    Forgot password? Contact your School Admin 
-</p>
+<!-- Somewhere below the login form -->
+<p class="text-muted small text-center mt-3">
+    {% if role == "teacher" %}
+        Forgot password? Contact your School Admin.
+    {% elif role == "school_admin" %}
+        Forgot password? Contact your service provider.
+    {% elif role == "super_admin" %}
+        Forgot password? Contact system support.
+    {% else %}
+        Forgot password? Contact support.
+    {% endif %}
+    </p>
 
 </div>
 

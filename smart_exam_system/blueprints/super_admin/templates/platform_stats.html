@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2>📊 Platform Statistics</h2>
+
+```
+<!-- Top Stats -->
+<div class="row mt-4 g-4">
+    
+    <div class="col-md-3">
+        <div class="card shadow rounded text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total Schools</h5>
+                <p class="fs-3 text-primary">{{ total_schools or 0 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow rounded text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total Exams</h5>
+                <p class="fs-3 text-primary">{{ total_exams or 0 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow rounded text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total Teachers</h5>
+                <p class="fs-3 text-primary">{{ total_teachers or 0 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow rounded text-center h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total Attempts</h5>
+                <p class="fs-3 text-primary">{{ total_attempts or 0 }}</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Extra Section -->
+<div class="card shadow rounded mt-4">
+    <div class="card-body">
+        <h5 class="card-title">Insights</h5>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+                Avg Exams per School:
+                <strong>
+                    {{ (total_exams / total_schools) | round(2) if total_schools else 0 }}
+                </strong>
+            </li>
+            <li class="list-group-item">
+                Avg Attempts per Exam:
+                <strong>
+                    {{ (total_attempts / total_exams) | round(2) if total_exams else 0 }}
+                </strong>
+            </li>
+            <li class="list-group-item">
+                Avg Teachers per School:
+                <strong>
+                    {{ (total_teachers / total_schools) | round(2) if total_schools else 0 }}
+                </strong>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Back Button -->
+<div class="mt-4">
+    <a href="{{ url_for('super_admin.dashboard') }}" class="btn btn-secondary">
+        ← Back to Dashboard
+    </a>
+</div>
+```
+
+</div>
+{% endblock %}

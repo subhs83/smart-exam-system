@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard{% endblock %}
+{% block content %}
+
+<div class="container mt-4">
+
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-primary">🏆 Leaderboard</h2>
+      <h5 class="text-muted">📘 {{ exam_title }}</h5>
+      <p class="mb-0"><strong>👩‍🏫 Teacher:</strong> {{ teacher_name }}</p>
+    </div>
+    <a href="{{ url_for('school_admin.teacher_exams', teacher_id=teacher_id) }}" 
+       class="btn btn-outline-secondary">
+       ⬅ Back to Dashboard
+    </a>
+  </div>
+
+  <!-- Podium Section -->
+  {% if leaderboard|length >= 3 %}
+  <div class="row text-center mb-4">
+
+    <!-- 2nd Place -->
+    <div class="col-md-4">
+      <div class="card shadow-sm border-secondary">
+        <div class="card-header bg-secondary text-white fw-bold">🥈 2nd Place</div>
+        <div class="card-body">
+          <h6>{{ leaderboard[1].first_name }} {{ leaderboard[1].last_name }}</h6>
+          <p class="mb-1">Score: {{ leaderboard[1].score }}</p>
+          <small>{{ "%.2f"|format(leaderboard[1].percentage) }}%</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1st Place -->
+    <div class="col-md-4">
+      <div class="card shadow-lg border-warning">
+        <div class="card-header bg-warning text-dark fw-bold">🥇 1st Place</div>
+        <div class="card-body">
+          <h5>{{ leaderboard[0].first_name }} {{ leaderboard[0].last_name }}</h5>
+          <p class="mb-1">Score: {{ leaderboard[0].score }}</p>
+          <small>{{ "%.2f"|format(leaderboard[0].percentage) }}%</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3rd Place -->
+    <div class="col-md-4">
+      <div class="card shadow-sm border-warning">
+        <div class="card-header bg-warning text-white fw-bold" style="background-color:#cd7f32 !important;">
+          🥉 3rd Place
+        </div>
+        <div class="card-body">
+          <h6>{{ leaderboard[2].first_name }} {{ leaderboard[2].last_name }}</h6>
+          <p class="mb-1">Score: {{ leaderboard[2].score }}</p>
+          <small>{{ "%.2f"|format(leaderboard[2].percentage) }}%</small>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  {% endif %}
+
+  <!-- Leaderboard Table -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-dark text-white fw-bold">Full Leaderboard</div>
+    <div class="card-body p-0">
+      <table class="table table-striped table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Class</th>
+            <th>Roll</th>
+            <th>Mobile</th>
+            <th>Score</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in leaderboard %}
+          <tr
+            {% if loop.index == 1 %}
+              class="table-warning"
+            {% elif loop.index == 2 %}
+              class="table-secondary"
+            {% elif loop.index == 3 %}
+              style="background-color:#f5deb3;"
+            {% endif %}
+          >
+            <td>
+              {% if loop.index == 1 %}
+                <i class="bi bi-trophy-fill text-warning"></i>
+              {% elif loop.index == 2 %}
+                <i class="bi bi-trophy-fill text-secondary"></i>
+              {% elif loop.index == 3 %}
+                <i class="bi bi-trophy-fill" style="color:#cd7f32;"></i>
+              {% else %}
+                <span class="badge bg-light text-dark">{{ loop.index }}</span>
+              {% endif %}
+            </td>
+            <td>{{ student.first_name }} {{ student.last_name }}</td>
+            <td>{{ student.student_class }}</td>
+            <td>{{ student.roll_number }}</td>
+            <td>{{ student.mobile }}</td>
+            <td><span class="fw-bold text-success">{{ student.score }}</span> / {{ student.total_marks }}</td>
+            <td><span class="fw-bold">{{ "%.2f"|format(student.percentage or 0) }}%</span></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="text-center">No results yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

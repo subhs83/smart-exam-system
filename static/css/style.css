@@ -1,0 +1,386 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f5f7fb;
+    color: #1f2937;
+  }
+  body {
+    background: #ffffff;
+    color: #0f172a;
+  }
+  
+  /* Headings */
+  .super_admin h1, h2, h3, h4, h5 {
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: #0f172a;
+  }
+  
+  /* Smooth look */
+  p {
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
+
+/* ============================
+   Base & Body
+============================ */
+html, body {
+    height: 100%;
+    scroll-behavior: smooth;
+}
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 60px;
+}
+main { flex: 1; }
+
+/* ============================
+   Sidebar (Teacher & Admin)
+============================ */
+.sidebar {
+    width: 240px;
+    height: 100vh; /* full height */
+    background: #0f172a;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-title {
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.sidebar .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #cbd5e1;
+    transition: all 0.2s ease;
+}
+.sidebar .nav-link.active { background: #1d4ed8; color: #fff; }
+.sidebar .nav-link:hover { background: #1e293b; color: #fff; }
+
+.sidebar .user-icon { font-size: 40px; color: #60a5fa; }
+.logout { color: #f87171; }
+.logout:hover { background: rgba(248,113,113,0.1); }
+.sidebar hr { border-color: rgba(255,255,255,0.1); }
+
+/* ============================
+   Sidebar Profile Section
+============================ */
+.sidebar-profile {
+    margin-top: auto; /* pushes profile to bottom */
+    text-align: center;
+    padding: 1rem 0;
+    color: #fff;
+}
+
+.sidebar-profile img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-profile .profile-info strong {
+    display: block;
+    font-size: 1rem;
+    color: #fff;
+}
+.sidebar-profile .profile-info small {
+    display: block;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+}
+
+/*====================
+    Navbar button
+====================*/
+
+.nav-modern {
+    color: rgba(255,255,255,0.85);
+    position: relative;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+  }
+  
+  /* HOVER */
+  .nav-modern:hover {
+    color: #ffffff;
+    background: rgba(255,255,255,0.08);
+  }
+  
+  /* ACTIVE */
+  .nav-modern.active {
+    color: #ffffff !important;
+    font-weight: 600;
+    background: rgba(255,255,255,0.12);
+    box-shadow: 0 0 10px rgba(255,255,255,0.15);
+  }
+  
+  /* UNDERLINE */
+  .nav-modern.active::after {
+    content: "";
+    position: absolute;
+    left: 10%;
+    bottom: -4px;
+    width: 80%;
+    height: 2px;
+    background: linear-gradient(90deg, #ffffff, rgba(255,255,255,0.5));
+    border-radius: 2px;
+  }
+
+/* ============================
+   Sidebar Profile / User Box
+============================ */
+.sidebar .user-box {
+    margin-top: auto; /* push to bottom */
+    text-align: center;
+    padding: 1rem 0;
+    color: #fff; /* make all text white */
+}
+
+.sidebar .user-box .user-icon {
+    font-size: 40px;
+    color: #60a5fa; /* icon color */
+}
+
+.sidebar-muted {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+}
+.sidebar .user-box .text-muted h6 {
+    margin: 0.5rem 0 0;
+    color: #fff; /* name color */
+}
+
+.sidebar .user-box small {
+    display: block;
+    color: #cbd5e1; /* role color */
+} small {
+    display: block;
+    color: #cbd5e1; /* role color */
+}
+
+
+/* ============================
+   Login Form
+============================ */
+.login-wrapper {
+    min-height: 90vh;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    border-color: #0d6efd;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: 0;
+}
+
+.form-control {
+    border-left: 0;
+}
+/* ============================
+   Podium / Stats
+============================ */
+.stat-box h4 { margin: 0; color: #666; }
+.stat-box p { font-size: 24px; margin: 8px 0 0; color: #1f4ed8; font-weight: bold; }
+
+.rank-icon { font-size: 22px; }
+.gold { color: #FFD700; }
+.silver { color: #C0C0C0; }
+.bronze { color: #CD7F32; }
+
+.podium-card {
+    border-radius: 12px;
+    padding: 15px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+.podium-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+.first { border-top: 5px solid #FFD700; }
+.second { border-top: 5px solid #C0C0C0; }
+.third { border-top: 5px solid #CD7F32; }
+.podium-rank { font-size: 28px; }
+
+/* ============================
+   Navbar & Footer
+============================ */
+/* 🔥 Navbar Glass Effect */
+.navbar-glass {
+    background: linear-gradient(135deg, #1e3a8a, #4f46e5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* Modern nav links */
+.nav-modern {
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+    transition: 0.3s;
+}
+.nav-modern:hover {
+    color: #fff;
+}
+
+/* Gradient Button */
+.btn-gradient {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+.btn-gradient:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+/* Glass Button */
+.btn-glass {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    border-radius: 8px;
+}
+.btn-glass:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+/* Dropdown Modern */
+.dropdown-modern {
+    border-radius: 12px;
+    padding: 6px;
+}
+.dropdown-modern .dropdown-item {
+    border-radius: 8px;
+    transition: 0.2s;
+}
+.dropdown-modern .dropdown-item:hover {
+    background: #f3f4f6;
+}
+.footer-glass {
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(12px);
+    color: #e5e7eb;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+.footer-dark-modern {
+    background: #0f172a;
+    color: #cbd5f5;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ============================
+   Sections / Spacing
+============================ */
+section { padding: 80px 0; }
+.login-wrapper { min-height: calc(100vh - 170px); }
+.hero-section { position: relative; z-index: 1; border-radius: 20px; }
+
+/* ============================
+   Font Awesome Default
+============================ */
+.fa, .fas, .far, .fab { 
+    font-size: 18px; 
+    color: #60a5fa; 
+}
+/* Custom Upload Button */
+
+/* Upload Button */
+.btn-upload {
+    background-color: #f97316; /* orange */
+    color: #fff;
+    border: none;
+    transition: all 0.2s ease;
+}
+.btn-upload:hover {
+    background-color: #ea580c; /* darker orange on hover */
+    color: #fff;
+}
+/* Upload button icon color */
+.btn-upload i {
+    color: #fff; /* same as button text */
+}
+
+
+/* Add Teacher Page Scoped Styles */
+/* Admin Card Form Styles */
+.card {
+    border-radius: 10px;
+  }
+  
+  .card-header {
+    font-weight: 600;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+  
+  .form-label {
+    color: #374151;
+  }
+  
+  .form-control {
+    border-radius: 6px;
+  }
+  
+  .btn {
+    border-radius: 6px;
+    padding: 0.6rem 1.2rem;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border: none;
+  }
+  
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  }
+  
+  .btn-outline-secondary {
+    border: 2px solid #6b7280;
+    color: #374151;
+  }
+  
+  .btn-outline-secondary:hover {
+    background-color: #6b7280;
+    color: #fff;
+  }
+  
+
+/* ============================
+   Responsive
+============================ */
+@media (max-width: 991px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        transform: translateX(-100%);
+        z-index: 1050;
+        height: 100vh;
+    }
+    .sidebar.show { transform: translateX(0); }
+    main > .d-flex { flex-direction: column; }
+    .navbar .sidebar-toggle { display: block; margin-right: 1rem; font-size: 1.5rem; cursor: pointer; color: #fff; }
+}

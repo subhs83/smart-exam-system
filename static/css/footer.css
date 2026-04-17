@@ -1,0 +1,66 @@
+/* ================= HERO ================= */
+.legal-hero,
+.support-hero {
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #1e293b, #6366f1);
+  color: #fff;
+}
+
+.legal-hero h1,
+.support-hero h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+
+/* ================= CONTENT ================= */
+.legal-content {
+  padding: 60px 20px;
+  background: #f8fafc;
+}
+
+.legal-card {
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  line-height: 1.7;
+}
+
+.legal-card h4 {
+  margin-top: 20px;
+  font-weight: 600;
+}
+
+
+/* ================= SUPPORT ================= */
+.support-options {
+  padding: 60px 20px;
+  background: #f8fafc;
+}
+
+.support-card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  transition: 0.3s;
+  height: 100%;
+}
+
+.support-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.support-card .icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.support-card span {
+  display: block;
+  margin-top: 10px;
+  font-weight: 600;
+  color: #4f46e5;
+}

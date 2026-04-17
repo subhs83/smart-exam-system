@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+
+<div class="container mt-4">
+
+  <!-- Section Header -->
+  <h2 class="mb-4 text-primary fw-bold">📥 Reports</h2>
+
+  <!-- Reports Card -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-success text-white fw-bold">
+      Generate & Download Reports
+    </div>
+    <div class="card-body">
+      <p class="text-muted">
+        Create performance reports for your school or specific exams. 
+        Use these reports to analyze student progress and exam outcomes.
+      </p>
+
+      <form action="{{ url_for('school_admin.download_report') }}" method="get" class="row g-3 align-items-end">
+
+        <!-- Report Type -->
+        <div class="col-md-4">
+          <label for="report_type" class="form-label fw-bold">Report Type</label>
+          <select id="report_type" name="type" class="form-select" onchange="toggleExamDropdown()">
+            <option value="school">Entire School</option>
+            <option value="exam">Single Exam</option>
+          </select>
+        </div>
+
+        <!-- Exam Dropdown (hidden until 'exam' selected) -->
+        <div class="col-md-4" id="exam_dropdown" style="display: none;">
+          <label for="exam_id" class="form-label fw-bold">Select Exam</label>
+          <select id="exam_id" name="exam_id" class="form-select">
+            {% for exam in exams %}
+              <option value="{{ exam.id }}">{{ exam.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="col-md-4">
+          <button type="submit" class="btn btn-success w-100 fw-bold">
+            📥 Download Report
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleExamDropdown() {
+    var reportType = document.getElementById('report_type').value;
+    var examDiv = document.getElementById('exam_dropdown');
+    examDiv.style.display = reportType === 'exam' ? 'block' : 'none';
+}
+</script>
+
+{% endblock %}
