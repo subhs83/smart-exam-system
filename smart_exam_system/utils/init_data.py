@@ -5,12 +5,13 @@ from smart_exam_system.utils.security import hash_password
 from sqlalchemy.exc import OperationalError
 from sqlalchemy import inspect
 
+
 def create_default_super_admin():
     try:
         # ✅ Corrected: inspect returns table names as strings
         inspector = inspect(db.engine)
-        if "users" not in inspector.get_table_names():
-            return
+        if not inspector.get_table_names():
+             return
 
         admin_exists = UserModel.query.filter_by(role="super_admin").first()
         if not admin_exists:
