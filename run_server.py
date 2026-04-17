@@ -1,5 +1,5 @@
 # run_server.py
-from smart_exam_system import create_app
+from smart_exam_system.app import create_app
 
 app = create_app()
 
