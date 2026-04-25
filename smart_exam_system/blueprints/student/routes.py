@@ -179,7 +179,9 @@ def quiz_question(quiz_code, q_index):
 @student_bp.route("/quiz/<quiz_code>/submit", methods=["GET", "POST"])
 def submit_quiz(quiz_code):
 
-    attempt_id = session.get("attempt_id")
+        # ✅ FIX: get attempt_id from URL OR session
+    attempt_id = request.args.get("attempt_id") or session.get("attempt_id")
+
     if not attempt_id:
         flash("No active attempt found", "danger")
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))

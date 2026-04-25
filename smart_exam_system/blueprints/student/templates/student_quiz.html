@@ -246,7 +246,7 @@ async function autoSubmitExam() {
     }
 
     // ✅ Then submit exam
-    window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}";
+    window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
 }
 let timeLeft = {{ remaining_time }};
 
