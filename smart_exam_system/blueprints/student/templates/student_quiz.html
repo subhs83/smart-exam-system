@@ -302,5 +302,52 @@ updateTimer();
     });
 }
     </script>
+<script>
+    let violationCount = 0;
+    const MAX_VIOLATIONS = 2;
     
+    // 🔹 Tab switch detection
+    document.addEventListener("visibilitychange", function() {
+        if (document.hidden) {
+            violationCount++;
+    
+            if (violationCount <= MAX_VIOLATIONS) {
+                alert(`⚠️ Warning ${violationCount}/${MAX_VIOLATIONS}: Do not switch tabs!`);
+            } else {
+                alert("❌ Too many violations. Exam will be submitted.");
+    
+                window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
+            }
+        }
+    });
+    
+    // 🔹 App switch / minimize
+    window.addEventListener("blur", function() {
+        violationCount++;
+    
+        if (violationCount > MAX_VIOLATIONS) {
+            alert("❌ You left the exam. Submitting now.");
+    
+            window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
+        }
+    });
+    
+    // 🔹 Disable right click
+    document.addEventListener("contextmenu", e => e.preventDefault());
+    
+    // 🔹 Disable copy/paste
+    document.addEventListener("copy", e => e.preventDefault());
+    document.addEventListener("paste", e => e.preventDefault());
+    
+    // 🔹 Basic DevTools detection
+    setInterval(function() {
+        if (window.outerWidth - window.innerWidth > 150 ||
+            window.outerHeight - window.innerHeight > 150) {
+    
+            alert("❌ DevTools detected. Submitting exam.");
+    
+            window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
+        }
+    }, 2000);
+    </script>
 {% endblock %}
