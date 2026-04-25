@@ -125,8 +125,6 @@
                             <td>
                                 {% if exam.quiz_code %}
                                 <div class="d-flex gap-1">
-                                    <a href="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code) }}" target="_blank"
-                                       class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt me-1"></i>Open</a>
                                     <button class="btn btn-sm btn-outline-secondary"
                                             data-link="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code, _external=True) }}"
                                             onclick="copyQuizLink(this)"><i class="fas fa-copy me-1"></i>Copy</button>
