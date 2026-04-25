@@ -227,11 +227,32 @@ class="btn btn-primary px-4 fw-semibold">
 
 <!-- ================= TIMER ================= -->
 <script>
+    let isSubmitting = false;
+
+async function autoSubmitExam() {
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    const form = document.getElementById("quiz-form");
+
+    try {
+        // ✅ Save current answer before submit
+        await fetch(window.location.href, {
+            method: "POST",
+            body: new FormData(form)
+        });
+    } catch (e) {
+        console.error("Save failed:", e);
+    }
+
+    // ✅ Then submit exam
+    window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}";
+}
 let timeLeft = {{ remaining_time }};
 
 function updateTimer(){
     if(timeLeft <= 0){
-        window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}";
+        autoSubmitExam();   // ✅ CALL THIS INSTEAD
         return;
     }
 
@@ -254,37 +275,32 @@ updateTimer();
     let saving = false;
     
     function autoSaveAnswer(){
-        if(saving) return; // 🔒 prevent multiple fast clicks
-        saving = true;
-    
-        const form = document.getElementById("quiz-form");
-        const status = document.getElementById("save-status");
-    
+    if(saving) return;
+    saving = true;
+
+    const form = document.getElementById("quiz-form");
+    const status = document.getElementById("save-status");
+
+    fetch(window.location.href, {
+        method: "POST",
+        body: new FormData(form)
+    })
+    .then(res => {
         if(status){
             status.textContent = res.ok ? "✔ Saved" : "❌ Error";
             setTimeout(() => status.textContent = "", 1500);
         }
-    
-        fetch(window.location.href, {
-            method: "POST",
-            body: new FormData(form)
-        })
-        .then(res => {
-            if(status){
-                status.textContent = res.ok ? "Saved" : "Error";
-                setTimeout(() => status.textContent = "", 1500);
-            }
-        })
-        .catch(() => {
-            if(status){
-                status.textContent = "Error";
-                setTimeout(() => status.textContent = "", 1500);
-            }
-        })
-        .finally(() => {
-            saving = false; // 🔓 unlock
-        });
-    }
+    })
+    .catch(() => {
+        if(status){
+            status.textContent = "❌ Error";
+            setTimeout(() => status.textContent = "", 1500);
+        }
+    })
+    .finally(() => {
+        saving = false;
+    });
+}
     </script>
     
 {% endblock %}

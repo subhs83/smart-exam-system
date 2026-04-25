@@ -32,8 +32,12 @@
 
         <td>{{ loop.index }}</td>
 
-        <td>{{ r.first_name }} {{ r.last_name }}</td>
-
+        <td class="p-0">
+                <a href="{{ url_for('teacher.attempt_detail', attempt_id=r.id) }}"
+                   class="d-block w-100 h-100 px-2 py-1 text-decoration-none text-dark fw-semibold">
+                    {{ r.first_name }} {{ r.last_name }}
+                </a>
+            </td>
         <td>{{ r.student_class }}</td>
 
         <td>{{ r.roll_number }}</td>
@@ -49,6 +53,7 @@
         <td>{{ r.end_time }}</td>
 
         <td>{{ r.ip_address }}</td>
+         
 
 </tr>
 

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <h4 class="mb-0">Student Report</h4>
+
+    <a href="{{ url_for('teacher.results_route', exam_id=exam_id) }}" 
+       class="btn btn-outline-secondary btn-sm">
+        ← Back to Results
+    </a>
+
+</div>
+
+<div class="card p-3 mb-3">
+    <strong>{{ report.student_name }}</strong><br>
+    Score: {{ report.score }} / {{ report.total }}<br>
+    Percentage: {{ report.percentage | round(2) }}%
+</div>
+
+{% for q in report.questions %}
+<div class="card p-3 mb-3">
+
+    <div class="mb-2">
+        <strong>Q{{ loop.index }}. {{ q.question_text }}</strong>
+    </div>
+
+    <!-- OPTIONS -->
+    {% for key, val in q.options.items() %}
+    <div 
+    class="
+    {% if key == q.selected_option and q.is_correct %}text-success fw-semibold{% endif %}
+    {% if key == q.selected_option and not q.is_correct %}text-danger fw-semibold{% endif %}
+    ">
+        {{ key }}. {{ val }}
+
+        {% if key == q.selected_option %}
+            <span class="badge bg-secondary ms-2">Your Answer</span>
+        {% endif %}
+    </div>
+{% endfor %}
+
+    <!-- RESULT -->
+    <div class="mt-2">
+        {% if q.is_correct %}
+            <span class="badge bg-success">Correct</span>
+        {% else %}
+            <span class="badge bg-danger">Wrong</span>
+        {% endif %}
+    </div>
+
+    <!-- SHOW CORRECT ANSWER ONLY IF WRONG -->
+    {% if not q.is_correct %}
+    <div class="mt-2">
+        <strong>Correct Answer:</strong>
+        <span class="text-success">
+            {{ q.correct_option }}. {{ q.correct_text }}
+        </span>
+    </div>
+    {% endif %}
+
+</div>
+{% endfor %}
+
+{% endblock %}

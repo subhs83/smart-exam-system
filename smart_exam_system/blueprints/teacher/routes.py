@@ -3,7 +3,8 @@ from flask_login import login_required, current_user
 from smart_exam_system.utils.decorators import teacher_required, exam_owner_required
 from smart_exam_system.utils.services.exam_service import create_exam, get_teacher_exams, publish_exam, delete_exam
 from smart_exam_system.utils.services.question_service import upload_questions, get_exam_questions
-from smart_exam_system.utils.services.result_service import get_results, generate_leaderboard
+from smart_exam_system.utils.services.result_service import get_results, generate_leaderboard,get_attempt_detailed_report
+from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.blueprints.teacher import teacher_bp
 
 # ---------------------------------
@@ -128,6 +129,26 @@ def delete_exam_route(exam_id):
     flash(msg, 'success' if success else 'danger')
     return redirect(url_for('teacher.dashboard'))
 
+# ---------------------------------
+# Detailed Student Report)
+# ---------------------------------
+
+@teacher_bp.route('/teacher/attempt/<int:attempt_id>')
+@teacher_required
+def attempt_detail(attempt_id):
+    report = get_attempt_detailed_report(attempt_id)
+    attempt = AttemptModel.query.get(attempt_id)
+    exam_id = attempt.exam_id   # ✅ get from DB
+    if not report:
+        flash("Attempt not found", "danger")
+        return redirect(url_for('teacher.results_overview'))
+
+    return render_template(
+        'attempt_detail.html',
+        report=report,
+         exam_id=exam_id,
+        active_page='results_overview'
+    )
 
 # Sidebar Link Routes
 

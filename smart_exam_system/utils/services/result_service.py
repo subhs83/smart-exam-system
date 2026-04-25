@@ -1,8 +1,68 @@
  
 from smart_exam_system.models.attempt import AttemptModel
+from smart_exam_system.models.question import QuestionModel
+from smart_exam_system.models.answer import StudentAnswerModel
+import json
 from openpyxl import Workbook
+ 
+# ---------------------------------
+# Get attempts Detailed Report
+# ---------------------------------
 
+def get_attempt_detailed_report(attempt_id):
 
+    attempt = AttemptModel.query.get(attempt_id)
+    if not attempt:
+        return None
+
+    question_order = json.loads(attempt.question_order or "[]")
+
+    report = []
+
+    for q_id in question_order:
+
+        question = QuestionModel.query.get(q_id)
+
+        answer = StudentAnswerModel.query.filter_by(
+            attempt_id=attempt_id,
+            question_id=q_id
+        ).first()
+
+        selected = answer.selected_option if answer else None
+        correct = question.correct_option
+
+        # ✅ ADD THIS
+        option_map = {
+            "A": question.option_a,
+            "B": question.option_b,
+            "C": question.option_c,
+            "D": question.option_d
+        }
+
+        selected_text = option_map.get(selected) if selected else None
+        correct_text = option_map.get(correct)
+
+        report.append({
+            "question_text": question.question_text,
+
+            "selected_option": selected,
+            "selected_text": selected_text,   # ✅ NEW
+
+            "correct_option": correct,
+            "correct_text": correct_text,     # ✅ NEW
+
+            "is_correct": selected == correct,
+
+            "options": option_map
+        })
+
+    return {
+        "student_name": f"{attempt.first_name} {attempt.last_name}",
+        "score": attempt.score,
+        "total": attempt.total_marks,
+        "percentage": attempt.percentage,
+        "questions": report
+    }
 # ---------------------------------
 # Get all attempts for an exam
 # ---------------------------------
@@ -120,3 +180,4 @@ def export_results_to_excel(exam_id, file_path):
     wb.save(file_path)
 
     return True, f"Results exported to {file_path}"
+
