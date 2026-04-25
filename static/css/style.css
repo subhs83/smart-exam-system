@@ -372,7 +372,9 @@ section { padding: 80px 0; }
     color: #fff;
   }
   
-
+  .alert {
+    transition: opacity 0.3s ease;
+}
 /* ============================
    Responsive
 ============================ */

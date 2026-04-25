@@ -38,7 +38,7 @@
 
         <!-- Sidebar Toggle -->
         {% if current_user.is_authenticated %}
-        <button class="btn btn-glass me-2 sidebar-toggle">
+        <button class="btn btn-glass me-2 sidebar-toggle d-lg-none">
             <i class="fas fa-bars"></i>
         </button>
         {% endif %}
@@ -60,7 +60,7 @@
 
         <!-- Right Side -->
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center gap-2">
+            <ul class="navbar-nav ms-auto align-items-left gap-2">
 
                 <!-- ================= PUBLIC NAV ================= -->
         {% if not current_user.is_authenticated or current_user.role == "super_admin" %}
@@ -224,6 +224,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-
+<!-- 🔥 Auto-hide flash messages -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const alerts = document.querySelectorAll(".alert");
+    
+        alerts.forEach((alert) => {
+            setTimeout(() => {
+                alert.style.opacity = "0";
+                setTimeout(() => alert.remove(), 300);
+            }, 2500);
+        });
+    });
+    </script>
 </body>
 </html>
