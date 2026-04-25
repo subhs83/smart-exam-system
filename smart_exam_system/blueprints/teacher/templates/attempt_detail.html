@@ -43,7 +43,9 @@
 
     <!-- RESULT -->
     <div class="mt-2">
-        {% if q.is_correct %}
+        {% if q.is_na %}
+        <span class="badge bg-secondary">Not Attempted</span>
+        {% elif q.is_correct %}
             <span class="badge bg-success">Correct</span>
         {% else %}
             <span class="badge bg-danger">Wrong</span>

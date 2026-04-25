@@ -304,49 +304,62 @@ updateTimer();
     </script>
 <script>
     let violationCount = 0;
+    let hasShownWarningOnReturn = false;
     const MAX_VIOLATIONS = 2;
     
+    // 🔥 SINGLE SUBMIT FUNCTION (central control)
+    function submitExamDueToViolation(message = "❌ Exam submitted due to violation") {
+        alert(message);
+    
+        window.location.href =
+            "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
+    }
+    
+    
     // 🔹 Tab switch detection
-    document.addEventListener("visibilitychange", function() {
+    document.addEventListener("visibilitychange", function () {
         if (document.hidden) {
             violationCount++;
-    
-            if (violationCount <= MAX_VIOLATIONS) {
-                alert(`⚠️ Warning ${violationCount}/${MAX_VIOLATIONS}: Do not switch tabs!`);
-            } else {
-                alert("❌ Too many violations. Exam will be submitted.");
-    
-                window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
-            }
+            hasShownWarningOnReturn = false;
+            return;
         }
-    });
     
-    // 🔹 App switch / minimize
-    window.addEventListener("blur", function() {
-        violationCount++;
+        // 🔥 When user comes back
+        if (violationCount > 0 && !hasShownWarningOnReturn) {
+            alert(`⚠️ You have ${violationCount} violation(s)`);
+            hasShownWarningOnReturn = true;
+        }
     
+        // 🔥 Auto submit if limit crossed
         if (violationCount > MAX_VIOLATIONS) {
-            alert("❌ You left the exam. Submitting now.");
-    
-            window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
+            submitExamDueToViolation();
         }
     });
+    
+    
+    // 🔹 App switch / minimize (ONLY COUNT, NO SUBMIT HERE)
+    window.addEventListener("blur", function () {
+        violationCount++;
+        hasShownWarningOnReturn = false;
+    });
+    
     
     // 🔹 Disable right click
     document.addEventListener("contextmenu", e => e.preventDefault());
+    
     
     // 🔹 Disable copy/paste
     document.addEventListener("copy", e => e.preventDefault());
     document.addEventListener("paste", e => e.preventDefault());
     
-    // 🔹 Basic DevTools detection
-    setInterval(function() {
-        if (window.outerWidth - window.innerWidth > 150 ||
-            window.outerHeight - window.innerHeight > 150) {
     
-            alert("❌ DevTools detected. Submitting exam.");
-    
-            window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
+    // 🔹 DevTools detection
+    setInterval(function () {
+        if (
+            window.outerWidth - window.innerWidth > 150 ||
+            window.outerHeight - window.innerHeight > 150
+        ) {
+            submitExamDueToViolation("❌ DevTools detected. Exam submitted.");
         }
     }, 2000);
     </script>

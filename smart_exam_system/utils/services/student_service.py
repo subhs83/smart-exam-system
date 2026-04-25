@@ -306,7 +306,7 @@ def get_student_result(attempt_id):
     end_time = attempt.start_time + timedelta(minutes=exam.duration_minutes)
     is_time_up = datetime.utcnow() > end_time
 
-    # ✅ HANDLE SUBMISSION (BOTH CASES)
+    # ✅ HANDLE SUBMISSION (UNCHANGED LOGIC)
     if not attempt.is_submitted:
 
         percentage = (score / total) * 100 if total > 0 else 0
@@ -322,16 +322,26 @@ def get_student_result(attempt_id):
     else:
         percentage = attempt.percentage or 0
 
-    # 📊 STATS
+    # ===============================
+    # ✅ FIX: correct / wrong / NA
+    # ===============================
+
+    attempted = StudentAnswerModel.query.filter_by(
+        attempt_id=attempt_id
+    ).count()
+
     correct_answers = score
-    wrong_answers = total - score
+    wrong_answers = attempted - score
+    not_attempted = total - attempted
 
     return {
         "score": score,
         "total": total,
         "percentage": percentage,
+
         "correct_answers": correct_answers,
         "wrong_answers": wrong_answers,
+        "not_attempted": not_attempted,  # ⭐ NEW
 
         "student_name": f"{attempt.first_name} {attempt.last_name}",
         "student_class": attempt.student_class,

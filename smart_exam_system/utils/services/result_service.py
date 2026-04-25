@@ -31,7 +31,7 @@ def get_attempt_detailed_report(attempt_id):
         selected = answer.selected_option if answer else None
         correct = question.correct_option
 
-        # ✅ ADD THIS
+        # ✅ option mapping
         option_map = {
             "A": question.option_a,
             "B": question.option_b,
@@ -42,16 +42,23 @@ def get_attempt_detailed_report(attempt_id):
         selected_text = option_map.get(selected) if selected else None
         correct_text = option_map.get(correct)
 
+        # ⭐ FIX: NA detection
+        is_na = False
+        if not answer or answer.selected_option is None:
+            is_na = True
+
         report.append({
             "question_text": question.question_text,
 
-            "selected_option": selected,
-            "selected_text": selected_text,   # ✅ NEW
+            "selected_option": selected if selected else "NA",   # ⭐ FIX
+            "selected_text": selected_text if selected else "Not Attempted",
 
             "correct_option": correct,
-            "correct_text": correct_text,     # ✅ NEW
+            "correct_text": correct_text,
 
-            "is_correct": selected == correct,
+            "is_correct": selected == correct if not is_na else False,
+
+            "is_na": is_na,   # ⭐ NEW IMPORTANT FLAG
 
             "options": option_map
         })
