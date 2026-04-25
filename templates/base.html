@@ -170,7 +170,7 @@
         {% endif %}
 
         <!-- Content -->
-        <div class="flex-grow-1 p-4 main-content">
+        <div class="content-area p-4">
 
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -197,7 +197,7 @@
     <div class="container d-flex justify-content-between align-items-center flex-wrap">
 
         <small>© 2026 Smart Exam System</small>
-
+ 
         <div class="d-flex gap-3">
             <a href="{{ url_for('footer.privacy') }}" class="text-decoration-none text-light small">Privacy</a>
             <a href="{{ url_for('footer.termsconditions') }}" class="text-decoration-none text-light small">Terms</a>

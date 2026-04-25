@@ -9,6 +9,7 @@ class Config:
     # SQLite database
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, "exam.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
 
     # Optional: directory for uploads, logs, etc.
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")

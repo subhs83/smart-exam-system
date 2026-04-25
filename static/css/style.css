@@ -12,7 +12,6 @@ body {
   .super_admin h1, h2, h3, h4, h5 {
     font-weight: 700;
     letter-spacing: -0.3px;
-    color: #0f172a;
   }
   
   /* Smooth look */
@@ -41,6 +40,8 @@ main { flex: 1; }
 ============================ */
 .sidebar {
     width: 240px;
+    min-width: 240px;   /* 🔥 ADD THIS */
+    max-width: 240px;   /* 🔥 ADD THIS */
     height: 100vh; /* full height */
     background: #0f172a;
     position: sticky;
@@ -49,6 +50,10 @@ main { flex: 1; }
     flex-direction: column;
     padding: 1rem;
     transition: transform 0.3s ease;
+}
+.content-area {
+    flex: 1;
+    min-width: 0; /* 🔥 VERY IMPORTANT (prevents overflow bugs) */
 }
 
 .sidebar-title {

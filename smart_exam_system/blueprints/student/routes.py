@@ -127,7 +127,14 @@ def quiz_question(quiz_code, q_index):
         # ✅ Save answer
         if question_id and selected_option:
             save_student_answer(attempt_id, question_id, selected_option)
-
+        # 🔥 NEW: palette navigation
+        goto_index = request.form.get("goto")
+        if goto_index is not None:
+            return redirect(url_for(
+                "student.quiz_question",
+                quiz_code=quiz_code,
+                q_index=int(goto_index)
+            ))
         # ✅ Navigation buttons only
         if "next" in request.form:
             return redirect(url_for(

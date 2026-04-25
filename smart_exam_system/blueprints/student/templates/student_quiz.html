@@ -9,89 +9,123 @@ body {
     background: #f5f7fb;
 }
 
-/* Top Bar */
+/* ================= HEADER ================= */
 .quiz-header {
     position: sticky;
     top: 0;
     z-index: 1000;
     background: #1e293b;
     color: white;
-    padding: 12px 15px;
+    padding: 10px 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-size: 14px;
 }
 
 .timer {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 600;
     background: linear-gradient(135deg, #ef4444, #dc2626);
-    padding: 6px 14px;
+    padding: 4px 10px;
     border-radius: 999px;
-    box-shadow: 0 0 10px rgba(239,68,68,0.5);
 }
 
-/* Question Card */
+/* ================= QUESTION ================= */
 .question-card {
     background: white;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 15px;
-    margin-bottom: 80px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 12px;
+    margin: 10px;
+    margin-bottom: 10px; /* reduced */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
-/* Options */
-.option {
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 12px;
+.question-card h5 {
+    font-size: 15px;
     margin-bottom: 10px;
-    cursor: pointer;
-    transition: 0.3s;
-    background: #ffffff;
-    color: #1e293b; /* 🔥 force readable text */
+    line-height: 1.4;
 }
-input[type="radio"]:checked + label {
-    background: #2563eb;
-    color: white;
+
+/* ================= OPTIONS ================= */
+.option {
+    border: 1.5px solid #e2e8f0;
     border-radius: 8px;
-    padding: 10px;
-    display: block;
+    padding: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    background: #ffffff;
+    font-size: 14px;
 }
+
 .option:hover {
     border-color: #3b82f6;
     background: #eff6ff;
 }
 
- 
+input[type="radio"]:checked + label {
+    background: #2563eb;
+    color: white;
+    border-radius: 6px;
+    padding: 6px;
+    display: block;
+}
 
-/* Palette */
-.palette {
+/* ================= SAVE TEXT ================= */
+#save-status {
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+/* ================= PALETTE (COMPACT) ================= */
+.palette-container {
+    padding: 0 10px 70px; /* space for bottom nav */
+}
+
+.palette-title {
+    font-size: 13px;
+    margin-bottom: 5px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 10px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.palette {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr); /* more dense */
+    gap: 4px;
 }
 
 .palette button {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
+    height: 28px;              /* fixed height */
+    padding: 0;
+    font-size: 14px;
+    border-radius: 6px;        /* 🔥 small rounded square */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-
-/* Bottom Nav */
+.btn-primary {
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+}
+/* ================= BOTTOM NAV ================= */
 .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
-    z-index: 9999; /* 🔥 important */
+    z-index: 9999;
     width: 100%;
     background: white;
-    padding: 10px;
+    padding: 8px;
     display: flex;
     justify-content: space-between;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
+}
+
+.bottom-nav button {
+    padding: 8px;
+    font-size: 14px;
 }
 </style>
 
@@ -132,17 +166,23 @@ input[type="radio"]:checked + label {
 </div>
 
 <!-- ================= PALETTE ================= -->
-<div class="question-card">
-    <h6>
-        Question Palette 
-        <span class="badge bg-success">Answered</span>
-        <span class="badge bg-secondary">Not Answered</span>
-        <span class="badge bg-primary">Current</span>
-        </h6>
+<div class="palette-container">
+
+    <div class="palette-title">
+        <span>Questions</span>
+        <div>
+            <span class="badge bg-success">✓</span>
+            <span class="badge bg-secondary">•</span>
+            <span class="badge bg-primary">●</span>
+        </div>
+    </div>
 
     <div class="palette">
         {% for q in palette %}
-        <button type="button"
+        <button type="submit"
+            form="quiz-form"
+            name="goto"
+            value="{{ q.index }}"
             class="btn btn-sm 
             {% if q.index == q_index %}
                 btn-primary
@@ -150,12 +190,12 @@ input[type="radio"]:checked + label {
                 btn-success
             {% else %}
                 btn-secondary
-            {% endif %}"
-            onclick="window.location.href='{{ url_for('student.quiz_question', quiz_code=request.view_args['quiz_code'], q_index=q.index) }}'">
+            {% endif %}">
             {{ q.index + 1 }}
         </button>
         {% endfor %}
     </div>
+
 </div>
 
 <!-- ================= BOTTOM NAV ================= -->
