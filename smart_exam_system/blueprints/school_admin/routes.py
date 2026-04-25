@@ -127,7 +127,7 @@ def teachers():
     return render_template(
         'teachers.html',
         teachers=teachers,
-       active_page="teachers"
+        active_page="exams"
     )
 # --------------------------
 # View Exams
