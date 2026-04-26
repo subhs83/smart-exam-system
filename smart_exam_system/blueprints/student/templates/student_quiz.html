@@ -305,9 +305,12 @@ updateTimer();
 <script>
     let violationCount = 0;
     let hasShownWarningOnReturn = false;
-    const MAX_VIOLATIONS = 2;
+    let lastViolationTime = 0;
     
-    // 🔥 SINGLE SUBMIT FUNCTION (central control)
+    const MAX_VIOLATIONS = 2;
+    const COOLDOWN = 2000; // 🔒 prevents double counting (2 sec lock)
+    
+    // 🔥 SINGLE SUBMIT FUNCTION
     function submitExamDueToViolation(message = "❌ Exam submitted due to violation") {
         alert(message);
     
@@ -315,43 +318,49 @@ updateTimer();
             "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
     }
     
+    // 🔥 CENTRAL VIOLATION HANDLER
+    function addViolation(reason) {
+        const now = Date.now();
+    
+        // 🔒 prevent duplicate triggers
+        if (now - lastViolationTime < COOLDOWN) return;
+    
+        lastViolationTime = now;
+        violationCount++;
+        hasShownWarningOnReturn = false;
+    
+        console.log("Violation:", reason, "Total:", violationCount);
+    
+        if (violationCount > MAX_VIOLATIONS) {
+            submitExamDueToViolation(`❌ Exam auto-submitted due to ${reason}`);
+        }
+    }
     
     // 🔹 Tab switch detection
     document.addEventListener("visibilitychange", function () {
         if (document.hidden) {
-            violationCount++;
-            hasShownWarningOnReturn = false;
+            addViolation("Tab Switch");
             return;
         }
     
-        // 🔥 When user comes back
+        // 🔥 show warning ONLY once per return
         if (violationCount > 0 && !hasShownWarningOnReturn) {
-            alert(`⚠️ You have ${violationCount} violation(s)`);
+            alert(`⚠️ Violation Warning\n\nTotal Violations: ${violationCount} / ${MAX_VIOLATIONS}`);
             hasShownWarningOnReturn = true;
         }
-    
-        // 🔥 Auto submit if limit crossed
-        if (violationCount > MAX_VIOLATIONS) {
-            submitExamDueToViolation();
-        }
     });
     
-    
-    // 🔹 App switch / minimize (ONLY COUNT, NO SUBMIT HERE)
+    // 🔹 App switch / minimize
     window.addEventListener("blur", function () {
-        violationCount++;
-        hasShownWarningOnReturn = false;
+        addViolation("Window Minimized / App Switch");
     });
-    
     
     // 🔹 Disable right click
     document.addEventListener("contextmenu", e => e.preventDefault());
     
-    
     // 🔹 Disable copy/paste
     document.addEventListener("copy", e => e.preventDefault());
     document.addEventListener("paste", e => e.preventDefault());
-    
     
     // 🔹 DevTools detection
     setInterval(function () {
@@ -359,7 +368,7 @@ updateTimer();
             window.outerWidth - window.innerWidth > 150 ||
             window.outerHeight - window.innerHeight > 150
         ) {
-            submitExamDueToViolation("❌ DevTools detected. Exam submitted.");
+            addViolation("DevTools Opened");
         }
     }, 2000);
     </script>
