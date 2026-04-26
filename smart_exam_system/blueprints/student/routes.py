@@ -11,6 +11,7 @@ from smart_exam_system.utils.services.student_service import (
     get_total_questions,
     get_student_result,
     get_question_palette,
+    record_violation,
 )
 from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.models.exam import ExamModel
@@ -199,6 +200,8 @@ def submit_quiz(quiz_code):
         result = get_student_result(attempt_id)
         return render_template("student_result.html", **result)
 
+    if attempt.violation_count >= 2:
+        attempt.auto_submitted_reason = "Tab switch / DevTools / App switch detected"
     # Generate result
     result = get_student_result(attempt_id)
 
@@ -211,7 +214,27 @@ def submit_quiz(quiz_code):
         **result,
     )
 
+    # -------------------------------
+    # Save Violation
+    # -------------------------------
 
+# ---------------------------------
+# Save Violation (FINAL CLEAN)
+# ---------------------------------
+@student_bp.route("/quiz/save-violation", methods=["POST"])
+def save_violation():
+
+    attempt_id = session.get("attempt_id")
+
+    if not attempt_id:
+        return {"status": "error"}, 400
+
+    data = request.get_json() or {}
+    reason = data.get("reason", "Unknown")
+
+    result = record_violation(attempt_id, reason)
+    print("Violation API HIT")
+    return result
 # -----------------------------
 # Auto Save Answer (AJAX)
 # -----------------------------

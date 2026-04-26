@@ -28,7 +28,16 @@ class AttemptModel(db.Model):
     option_order = db.Column(db.Text)  # JSON mapping per question
         # ✅ NEW
     is_submitted = db.Column(db.Boolean, default=False)
+    
+     # ✅ NEW Violation / Auto-Submit Reason Tracking
+    violation_count = db.Column(db.Integer, default=0)
 
+    violation_log = db.Column(db.Text, nullable=True)  
+    # stores JSON list of events
+
+    auto_submitted_reason = db.Column(db.String(255), nullable=True)
+
+    last_violation_time = db.Column(db.DateTime, nullable=True)
     # Relationships
     exam = db.relationship(ExamModel, backref="attempts")
 

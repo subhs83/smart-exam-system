@@ -16,7 +16,7 @@
 <div class="card p-3 mb-3">
     <strong>{{ report.student_name }}</strong><br>
     Score: {{ report.score }} / {{ report.total }}<br>
-    Percentage: {{ report.percentage | round(2) }}%
+    Percentage: {{ "%.2f"|format(report.percentage or 0) }}%
 </div>
 
 {% for q in report.questions %}

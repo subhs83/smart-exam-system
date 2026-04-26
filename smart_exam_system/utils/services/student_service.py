@@ -395,3 +395,72 @@ def get_question_palette(attempt_id, exam_id):
         })
 
     return palette
+
+ 
+# ---------------------
+# Violation Record / Tracking (FINAL FIX)
+# ---------------------
+
+def record_violation(attempt_id, reason):
+
+    attempt = AttemptModel.query.get(attempt_id)
+
+    if not attempt:
+        return None
+
+    # 🚫 Already submitted
+    if attempt.is_submitted:
+        return {
+            "violation_count": attempt.violation_count or 0,
+            "auto_submitted": True
+        }
+
+    now = datetime.utcnow()
+
+    # 🔒 HARD LOCK: ignore duplicate within 3 seconds
+    if attempt.last_violation_time:
+        diff = (now - attempt.last_violation_time).total_seconds()
+
+        if diff < 3:
+            return {
+                "violation_count": attempt.violation_count or 0,
+                "auto_submitted": attempt.is_submitted
+            }
+
+    # ✅ SAFE TO COUNT
+    attempt.last_violation_time = now
+    attempt.violation_count = (attempt.violation_count or 0) + 1
+
+    MAX_VIOLATIONS = 3
+
+    # 🔥 AUTO SUBMIT (FINAL FIX WITH SCORE CALCULATION)
+    if attempt.violation_count >= MAX_VIOLATIONS and not attempt.is_submitted:
+
+        # ✅ Calculate score BEFORE submitting
+        total = db.session.query(func.count(QuestionModel.id))\
+            .filter(QuestionModel.exam_id == attempt.exam_id)\
+            .scalar()
+
+        score = db.session.query(func.count(StudentAnswerModel.id))\
+            .filter(
+                StudentAnswerModel.attempt_id == attempt.id,
+                StudentAnswerModel.is_correct == 1
+            ).scalar()
+
+        percentage = (score / total * 100) if total else 0
+
+        # ✅ Save results
+        attempt.score = score
+        attempt.total_marks = total
+        attempt.percentage = percentage
+
+        attempt.is_submitted = True
+        attempt.auto_submitted_reason = f"Exceeded violations ({attempt.violation_count})"
+        attempt.end_time = now
+
+    db.session.commit()
+
+    return {
+        "violation_count": attempt.violation_count,
+        "auto_submitted": attempt.is_submitted
+    }

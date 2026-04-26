@@ -127,8 +127,39 @@ input[type="radio"]:checked + label {
     padding: 8px;
     font-size: 14px;
 }
-</style>
+.violation-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #dc3545;
+    color: white;
+    text-align: center;
+    padding: 12px;
+    font-weight: 600;
+    z-index: 9999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-in-out;
+}
 
+.violation-banner.show {
+    transform: translateY(0);
+}
+
+.violation-banner.warning {
+    background: #ffc107;
+    color: #000;
+}
+
+.violation-banner.error {
+    background: #dc3545;
+}
+</style>
+<!-- ================= Violation Banner ================= -->
+<div id="violation-banner" class="violation-banner d-none">
+    <span id="violation-message"></span>
+</div>
 <!-- ================= HEADER ================= -->
 <div class="quiz-header">
     <div>Q {{ q_index + 1 }} / {{ total_questions }}</div>
@@ -301,75 +332,98 @@ updateTimer();
         saving = false;
     });
 }
-    </script>
+
+</script>
+
 <script>
-    let violationCount = 0;
-    let hasShownWarningOnReturn = false;
-    let lastViolationTime = 0;
+    function showBanner(message, type = "warning") {
+        const banner = document.getElementById("violation-banner");
+        const text = document.getElementById("violation-message");
     
-    const MAX_VIOLATIONS = 2;
-    const COOLDOWN = 2000; // 🔒 prevents double counting (2 sec lock)
+        text.innerText = message;
     
-    // 🔥 SINGLE SUBMIT FUNCTION
-    function submitExamDueToViolation(message = "❌ Exam submitted due to violation") {
-        alert(message);
+        banner.classList.remove("d-none", "warning", "error");
+        banner.classList.add("show", type);
     
-        window.location.href =
-            "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
-    }
-    
-    // 🔥 CENTRAL VIOLATION HANDLER
-    function addViolation(reason) {
-        const now = Date.now();
-    
-        // 🔒 prevent duplicate triggers
-        if (now - lastViolationTime < COOLDOWN) return;
-    
-        lastViolationTime = now;
-        violationCount++;
-        hasShownWarningOnReturn = false;
-    
-        console.log("Violation:", reason, "Total:", violationCount);
-    
-        if (violationCount > MAX_VIOLATIONS) {
-            submitExamDueToViolation(`❌ Exam auto-submitted due to ${reason}`);
+        if (type === "warning") {
+            setTimeout(() => {
+                banner.classList.remove("show");
+            }, 5000);
         }
     }
-    
-    // 🔹 Tab switch detection
-    document.addEventListener("visibilitychange", function () {
-        if (document.hidden) {
-            addViolation("Tab Switch");
-            return;
-        }
-    
-        // 🔥 show warning ONLY once per return
-        if (violationCount > 0 && !hasShownWarningOnReturn) {
-            alert(`⚠️ Violation Warning\n\nTotal Violations: ${violationCount} / ${MAX_VIOLATIONS}`);
-            hasShownWarningOnReturn = true;
-        }
-    });
-    
-    // 🔹 App switch / minimize
-    window.addEventListener("blur", function () {
-        addViolation("Window Minimized / App Switch");
-    });
-    
-    // 🔹 Disable right click
-    document.addEventListener("contextmenu", e => e.preventDefault());
-    
-    // 🔹 Disable copy/paste
-    document.addEventListener("copy", e => e.preventDefault());
-    document.addEventListener("paste", e => e.preventDefault());
-    
-    // 🔹 DevTools detection
-    setInterval(function () {
-        if (
-            window.outerWidth - window.innerWidth > 150 ||
-            window.outerHeight - window.innerHeight > 150
-        ) {
-            addViolation("DevTools Opened");
-        }
-    }, 2000);
     </script>
+
+
+<script>
+    let isInternalNavigation = false;
+    
+    // 🔹 Mark navigation actions
+    function markNavigation() {
+        isInternalNavigation = true;
+    
+        // reset after short delay
+        setTimeout(() => {
+            isInternalNavigation = false;
+        }, 1000);
+    }
+    
+    // 🔹 Attach to buttons (IMPORTANT)
+    document.querySelectorAll("a, button").forEach(el => {
+        el.addEventListener("click", markNavigation);
+    });
+    
+    
+    // 🔹 Violation sender
+    function sendViolation(reason) {
+        fetch("/student/quiz/save-violation", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ reason })
+        })
+        .then(res => res.json())
+        .then(data => {
+
+    if (data.auto_submitted) {
+
+        showBanner("❌ Multiple violations detected. Exam will auto-submit in 3 seconds.", "error");
+
+let seconds = 3;
+
+const interval = setInterval(() => {
+    seconds--;
+
+    if (seconds > 0) {
+        document.getElementById("violation-message").innerText =
+            `❌ Multiple violations detected. Submitting in ${seconds}s...`;
+    } else {
+        clearInterval(interval);
+        window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
+    }
+}, 1000);
+
+    } else {
+
+        showBanner(
+            `⚠️ Do not switch tabs. Violations: ${data.violation_count}. 
+             After ${3 - data.violation_count} more, quiz will auto-submit.`,
+            "warning"
+        );
+    }
+
+});
+    }
+    
+    
+    // 🔹 ONLY count real tab switch
+    document.addEventListener("visibilitychange", function () {
+    
+        // ❌ IGNORE internal navigation
+        if (isInternalNavigation) return;
+    
+        if (document.hidden && !document.hasFocus()) {
+            sendViolation("Tab Switch");
+        }
+    });
+    </script>
+
 {% endblock %}

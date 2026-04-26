@@ -89,7 +89,11 @@ def get_results(exam_id):
         AttemptModel.percentage,
         AttemptModel.start_time,
         AttemptModel.end_time,
-        AttemptModel.ip_address
+        AttemptModel.ip_address,
+
+        # ⭐ ADD THESE
+        AttemptModel.violation_count,
+        AttemptModel.auto_submitted_reason
     ).filter(
         AttemptModel.exam_id == exam_id,
         AttemptModel.end_time.isnot(None)

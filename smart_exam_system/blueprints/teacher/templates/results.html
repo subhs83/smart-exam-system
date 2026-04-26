@@ -21,6 +21,8 @@
         <th>Start Time</th>
         <th>End Time</th>
         <th>IP</th>
+        <th>Violation Count</th>
+        <th>Auto Submit Reason</th>
         </tr>
 </thead>
 
@@ -53,14 +55,39 @@
         <td>{{ r.end_time }}</td>
 
         <td>{{ r.ip_address }}</td>
-         
+        
+        <!-- 🔥 Violation Count -->
+        <td>
+            {% if r.violation_count %}
+                <span class="badge bg-warning text-dark">
+                    {{ r.violation_count }}
+                </span>
+            {% else %}
+                <span class="text-muted">0</span>
+            {% endif %}
+        </td>
 
-</tr>
+        <!-- 🔥 Auto Submit Status -->
+        <td>
+            {% if r.auto_submitted_reason %}
+                <span class="badge bg-danger">
+                    Auto Submitted
+                </span>
+                <div class="small text-muted">
+                    {{ r.auto_submitted_reason }}
+                </div>
+            {% else %}
+                <span class="badge bg-success">
+                    Normal
+                </span>
+            {% endif %}
+        </td>
+        </tr>
 
 {% else %}
 
 <tr>
-<td colspan="10" class="text-center">No results yet.</td>
+<td colspan="12" class="text-center">No results yet.</td>
 </tr>
 
 {% endfor %}
