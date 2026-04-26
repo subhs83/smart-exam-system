@@ -48,11 +48,16 @@ def create_app():
     app.register_blueprint(home_bp)
     app.register_blueprint(footer_bp)
 
-    # Safe startup task (NO db.create_all)
+     # Safe startup task (NO db.create_all)
     with app.app_context():
         create_default_super_admin()
 
-    return app
+        # 🔥 SAFE AUTO MIGRATION FOR RENDER (TESTING PHASE ONLY)
+        try:
+            from flask_migrate import upgrade
+            upgrade()
+            print("✅ DB migration applied successfully")
+        except Exception as e:
+            print("⚠️ Migration skipped or failed:", e)
 
-# 👇 THIS IS THE IMPORTANT PART
-app = create_app()    
+    return app
