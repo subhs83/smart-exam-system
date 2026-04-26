@@ -53,3 +53,6 @@ def create_app():
         create_default_super_admin()
 
     return app
+
+# 👇 THIS IS THE IMPORTANT PART
+app = create_app()    
