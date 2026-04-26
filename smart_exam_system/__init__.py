@@ -50,7 +50,8 @@ def create_app():
 
     # Safe startup task (NO db.create_all)
     with app.app_context():
-        create_default_super_admin()
+         db.create_all()
+         create_default_super_admin()
 
     return app
 
