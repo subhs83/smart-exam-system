@@ -20,3 +20,4 @@ class QuestionModel(db.Model):
     ai_generated = db.Column(db.Integer, default=0)
 
     created_at = db.Column(db.DateTime)
+     

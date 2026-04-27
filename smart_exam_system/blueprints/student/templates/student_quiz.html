@@ -42,23 +42,31 @@ body {
 }
 
 .question-card h5 {
-    font-size: 15px;
-    margin-bottom: 10px;
-    line-height: 1.4;
+    font-size: 18px;        /* 🔥 bigger */
+    font-weight: 600;       /* 🔥 clearer */
+    margin-bottom: 14px;
+    line-height: 1.5;
+    color: #111827;
 }
+
 
 /* ================= OPTIONS ================= */
 .option {
     border: 1.5px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 8px;
-    margin-bottom: 6px;
+    border-radius: 10px;
+    padding: 12px 14px;     /* 🔥 more padding */
+    margin-bottom: 10px;
     cursor: pointer;
     transition: 0.2s;
     background: #ffffff;
-    font-size: 14px;
+    font-size: 16px;        /* 🔥 bigger text */
+    line-height: 1.5;
 }
-
+.option label {
+    display: block;
+    cursor: pointer;
+    font-size: 16px;
+}
 .option:hover {
     border-color: #3b82f6;
     background: #eff6ff;
@@ -67,8 +75,8 @@ body {
 input[type="radio"]:checked + label {
     background: #2563eb;
     color: white;
-    border-radius: 6px;
-    padding: 6px;
+    border-radius: 8px;
+    padding: 10px;
     display: block;
 }
 
@@ -186,8 +194,8 @@ input[type="radio"]:checked + label {
                 {% if question.selected_option == opt_key %}checked{% endif %}
                 hidden
             >
-            <label for="opt{{ opt_key }}" style="display:block; cursor:pointer;">
-                {{ opt_value }}
+            <label for="opt{{ opt_key }}">
+                <strong>{{ opt_key }}.</strong> {{ opt_value }}
             </label>
         </div>
         {% endfor %}
@@ -424,6 +432,46 @@ const interval = setInterval(() => {
             sendViolation("Tab Switch");
         }
     });
+        document.addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+        sendViolation("Right Click");
+        });
+
+        document.addEventListener("copy", function () {
+            sendViolation("Copy Attempt");
+        });
+
+        document.addEventListener("paste", function () {
+            sendViolation("Paste Attempt");
+        });
+
+        document.addEventListener("keydown", function (e) {
+
+        // 🔹 IGNORE typing inside input/textarea
+        const tag = document.activeElement.tagName.toLowerCase();
+        if (tag === "input" || tag === "textarea") return;
+
+        // Ctrl + C / V / U / S
+        if (e.ctrlKey && ["c", "v", "u", "s"].includes(e.key.toLowerCase())) {
+            sendViolation("Keyboard Shortcut: Ctrl+" + e.key.toUpperCase());
+        }
+
+        // F12
+        if (e.key === "F12") {
+            sendViolation("DevTools Open Attempt");
+        }
+        });
+        window.addEventListener("blur", function () {
+            if (!isInternalNavigation) {
+                sendViolation("Window Blur / Alt-Tab");
+            }
+        });
+
+        document.addEventListener("fullscreenchange", function () {
+            if (!document.fullscreenElement) {
+                sendViolation("Fullscreen Exit");
+            }
+        });
     </script>
 
 {% endblock %}
