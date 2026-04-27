@@ -6,76 +6,42 @@
 
 <h3>🏆 Leaderboard</h3>
 {% if leaderboard|length >= 3 %}
+<div class="row justify-content-center align-items-end text-center mb-5 podium-wrapper">
 
-<div class="row text-center mb-4">
+  <!-- 2nd Place -->
+  <div class="col-md-3 col-4">
+    <div class="podium-card second shadow-sm">
+      <i class="fas fa-trophy text-secondary mb-2"></i>
+      <h6 class="mb-1">{{ leaderboard[1].first_name }} {{ leaderboard[1].last_name }}</h6>
+      <small class="text-muted">Score: {{ leaderboard[1].score }}</small><br>
+      <strong>{{ "%.2f"|format(leaderboard[1].percentage) }}%</strong>
+      <div class="rank-badge">2</div>
+    </div>
+  </div>
 
-<!-- 2nd Place -->
-<div class="col-md-4">
-<div class="podium-card second">
+  <!-- 1st Place (Highlight Center) -->
+  <div class="col-md-3 col-4">
+    <div class="podium-card first shadow-lg">
+      <i class="fas fa-trophy text-warning mb-2"></i>
+      <h5 class="mb-1">{{ leaderboard[0].first_name }} {{ leaderboard[0].last_name }}</h5>
+      <small class="text-muted">Score: {{ leaderboard[0].score }}</small><br>
+      <strong>{{ "%.2f"|format(leaderboard[0].percentage) }}%</strong>
+      <div class="rank-badge">1</div>
+    </div>
+  </div>
 
-<div class="podium-rank silver">🏆</div>
-
-<h6>
-{{ leaderboard[1].first_name }} {{ leaderboard[1].last_name }}
-</h6>
-
-<p class="mb-1">
-Score: {{ leaderboard[1].score }}
-</p>
-
-<small>
-{{ "%.2f"|format(leaderboard[1].percentage) }}%
-</small>
-
-</div>
-</div>
-
-
-<!-- 1st Place -->
-<div class="col-md-4">
-<div class="podium-card first">
-
-<div class="podium-rank gold">🏆</div>
-
-<h5>
-{{ leaderboard[0].first_name }} {{ leaderboard[0].last_name }}
-</h5>
-
-<p class="mb-1">
-Score: {{ leaderboard[0].score }}
-</p>
-
-<small>
-{{ "%.2f"|format(leaderboard[0].percentage) }}%
-</small>
+  <!-- 3rd Place -->
+  <div class="col-md-3 col-4">
+    <div class="podium-card third shadow-sm">
+      <i class="fas fa-trophy mb-2" style="color:#cd7f32;"></i>
+      <h6 class="mb-1">{{ leaderboard[2].first_name }} {{ leaderboard[2].last_name }}</h6>
+      <small class="text-muted">Score: {{ leaderboard[2].score }}</small><br>
+      <strong>{{ "%.2f"|format(leaderboard[2].percentage) }}%</strong>
+      <div class="rank-badge">3</div>
+    </div>
+  </div>
 
 </div>
-</div>
-
-
-<!-- 3rd Place -->
-<div class="col-md-4">
-<div class="podium-card third">
-
-<div class="podium-rank bronze">🏆</div>
-
-<h6>
-{{ leaderboard[2].first_name }} {{ leaderboard[2].last_name }}
-</h6>
-
-<p class="mb-1">
-Score: {{ leaderboard[2].score }}
-</p>
-
-<small>
-{{ "%.2f"|format(leaderboard[2].percentage) }}%
-</small>
-
-</div>
-</div>
-
-</div>
-
 {% endif %}
 <table class="table table-bordered">
 
