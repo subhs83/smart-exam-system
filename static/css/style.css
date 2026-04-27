@@ -31,6 +31,10 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+/* Only when navbar exists */
+body.with-navbar {
     padding-top: 60px;
 }
 main { flex: 1; }
@@ -229,7 +233,7 @@ main { flex: 1; }
 /* ============================
    Navbar & Footer
 ============================ */
-.no-nav .content-area {
+ .content-area {
     padding-top: 8px;
 }
 /* 🔥 Navbar Glass Effect */

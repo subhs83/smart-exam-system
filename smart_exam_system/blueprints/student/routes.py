@@ -32,8 +32,12 @@ def quiz_page(quiz_code):
     return render_template(
         "student_register.html",
         quiz_code=quiz_code,
-        exam=exam
+        exam=exam,
+        hide_nav=True,
+        hide_footer=True,
+        hide_sidebar=True
     )
+    
 
 
 # -----------------------------
