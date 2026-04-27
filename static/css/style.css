@@ -209,27 +209,51 @@ main { flex: 1; }
 .stat-box h4 { margin: 0; color: #666; }
 .stat-box p { font-size: 24px; margin: 8px 0 0; color: #1f4ed8; font-weight: bold; }
 
-.rank-icon { font-size: 22px; }
 .gold { color: #FFD700; }
 .silver { color: #C0C0C0; }
 .bronze { color: #CD7F32; }
 
 .podium-card {
-    border-radius: 12px;
-    padding: 15px;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px 15px;
+    position: relative;
     transition: all 0.3s ease;
+    text-align: center;
 }
+
 .podium-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-6px);
     box-shadow: 0 10px 25px rgba(0,0,0,0.12);
 }
-.first { border-top: 5px solid #FFD700; }
-.second { border-top: 5px solid #C0C0C0; }
-.third { border-top: 5px solid #CD7F32; }
-.podium-rank { font-size: 28px; }
 
+/* hierarchy */
+.podium-card.first {
+    height: 200px;
+    border: 2px solid #FFD700;
+    z-index: 2;
+}
+
+.podium-card.second {
+    height: 160px;
+}
+
+.podium-card.third {
+    height: 140px;
+}
+
+/* rank badge */
+.rank-badge {
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #fff;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+}
 /* ============================
    Navbar & Footer
 ============================ */
