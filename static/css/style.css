@@ -232,27 +232,55 @@ main { flex: 1; }
     height: 200px;
     border: 2px solid #FFD700;
     z-index: 2;
+    background: linear-gradient(180deg, #fffdf5, #ffffff);
+    box-shadow: 0 12px 30px rgba(255, 215, 0, 0.25);
 }
-
 .podium-card.second {
     height: 160px;
+    background: #f8f9fb;
 }
 
 .podium-card.third {
     height: 140px;
+    background: #f8f9fb;
 }
-
+.podium-card i {
+    font-size: 26px;
+}
 /* rank badge */
 .rank-badge {
     position: absolute;
     bottom: -12px;
     left: 50%;
     transform: translateX(-50%);
-    background: #000;
+    background: #1f2937;
     color: #fff;
     font-size: 12px;
     padding: 5px 12px;
     border-radius: 20px;
+}
+.podium-wrapper .col-md-3 {
+    display: flex;
+    justify-content: center;
+}
+.podium-card.first h5 {
+    font-weight: 700;
+}
+.podium-card {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.6s ease forwards;
+}
+
+.podium-card:nth-child(2) { animation-delay: 0.2s; }
+.podium-card:nth-child(1) { animation-delay: 0.4s; }
+.podium-card:nth-child(3) { animation-delay: 0.6s; }
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 /* ============================
    Navbar & Footer
