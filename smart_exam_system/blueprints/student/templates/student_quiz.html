@@ -67,6 +67,7 @@ html, body {
     transition: 0.2s;
     background: #ffffff;
     font-size: 18px;        /* 🔥 bigger text */
+    font-weight: 600; 
     line-height: 1.5;
 }
 .option label {
@@ -110,10 +111,14 @@ input[type="radio"]:checked + label {
     justify-content: space-between;
     align-items: center;
 }
-
+.palette-legend {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;   /* 🔥 ensures no overflow */
+}
 .palette {
     display: grid;
-    grid-template-columns: repeat(8, 1fr); /* more dense */
+    grid-template-columns: repeat(6, 1fr); /* more dense */
     gap: 6px;
 }
 
@@ -223,13 +228,13 @@ input[type="radio"]:checked + label {
 
     <div class="palette-title">
         <span>Questions</span>
-        <div>
-            <span class="badge bg-success">✓</span>
-            <span class="badge bg-secondary">•</span>
-            <span class="badge bg-primary">●</span>
-        </div>
     </div>
-
+    
+    <div class="palette-legend mb-1">
+        <span class="badge bg-success">✓ Answered</span>
+        <span class="badge bg-secondary">• Not Answered</span>
+        <span class="badge bg-primary">● Current</span>
+    </div>
     <div class="palette">
         {% for q in palette %}
         <button type="submit"
