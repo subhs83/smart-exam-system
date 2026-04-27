@@ -4,7 +4,8 @@ from smart_exam_system.models.question import QuestionModel
 from smart_exam_system.models.answer import StudentAnswerModel
 import json
 from openpyxl import Workbook
- 
+from datetime import datetime
+from sqlalchemy import desc, asc
 # ---------------------------------
 # Get attempts Detailed Report
 # ---------------------------------
@@ -113,28 +114,39 @@ def get_results(exam_id):
 # ---------------------------------
 # Get leaderboard for an exam
 # ---------------------------------
-from datetime import datetime
+
 
 def generate_leaderboard(exam_id):
-    # Fetch full AttemptModel objects
+
     attempts_query = AttemptModel.query.filter(
         AttemptModel.exam_id == exam_id,
         AttemptModel.start_time.isnot(None),
         AttemptModel.end_time.isnot(None)
     ).order_by(
-        AttemptModel.percentage.desc()
+        desc(AttemptModel.percentage),   # ✅ primary sort
+        asc(AttemptModel.end_time)       # ✅ tie-breaker (faster submission)
     ).limit(5).all()
 
     leaderboard = []
+    prev_percentage = None
+    rank = 0
+
     for idx, a in enumerate(attempts_query, start=1):
-        # Ensure valid datetime objects
+
         start_time = a.start_time if isinstance(a.start_time, datetime) else datetime.utcnow()
         end_time = a.end_time if isinstance(a.end_time, datetime) else datetime.utcnow()
         time_taken = end_time - start_time
-        # ✅ FIX HERE
+
         percentage = float(a.percentage) if a.percentage is not None else 0.0
+
+        # ✅ REAL RANK LOGIC (tie handling)
+        if percentage != prev_percentage:
+            rank = idx
+
+        prev_percentage = percentage
+
         leaderboard.append({
-            "rank": idx,
+            "rank": rank,
             "first_name": a.first_name,
             "last_name": a.last_name,
             "student_class": a.student_class,
@@ -142,7 +154,7 @@ def generate_leaderboard(exam_id):
             "mobile": a.mobile,
             "score": a.score,
             "total_marks": a.total_marks,
-            "percentage": percentage,   # ✅ use safe value
+            "percentage": percentage,
             "time_taken": time_taken
         })
 
