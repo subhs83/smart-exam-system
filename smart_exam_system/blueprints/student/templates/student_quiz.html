@@ -90,8 +90,9 @@ input[type="radio"]:checked + label {
 
 /* ================= SAVE TEXT ================= */
 #save-status {
-    font-size: 11px;
+    font-size: 16px;
     margin-top: 4px;
+    color: rgb(0, 145, 0);
 }
 
 /* ================= PALETTE (COMPACT) ================= */
@@ -119,7 +120,7 @@ input[type="radio"]:checked + label {
 .palette {
     display: grid;
     grid-template-columns: repeat(6, 1fr); /* more dense */
-    gap: 6px;
+    gap: 4px;
 }
 
 .palette button {
@@ -220,7 +221,7 @@ input[type="radio"]:checked + label {
         {% endfor %}
 
     </form>
-    <div id="save-status" style="font-size:12px; color:#6b7280; min-height:16px;"></div>
+    <div id="save-status"></div>
 </div>
 
 <!-- ================= PALETTE ================= -->
