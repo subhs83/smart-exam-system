@@ -121,10 +121,15 @@ def generate_leaderboard(exam_id):
     attempts_query = AttemptModel.query.filter(
         AttemptModel.exam_id == exam_id,
         AttemptModel.start_time.isnot(None),
-        AttemptModel.end_time.isnot(None)
+        AttemptModel.end_time.isnot(None),
+
+        # 🔥 ADD THESE (CRITICAL)
+        AttemptModel.score.isnot(None),
+        AttemptModel.total_marks.isnot(None),
+        AttemptModel.percentage.isnot(None)
     ).order_by(
-        desc(AttemptModel.percentage),   # ✅ primary sort
-        asc(AttemptModel.end_time)       # ✅ tie-breaker (faster submission)
+        desc(AttemptModel.percentage),
+        asc(AttemptModel.end_time)
     ).limit(5).all()
 
     leaderboard = []
