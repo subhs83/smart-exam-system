@@ -28,7 +28,7 @@
 
 </head>
 
-<body class="d-flex flex-column bg-light">
+<body class="d-flex flex-column bg-light {% if hide_nav %}no-nav{% endif %}">
 
 <!-- ================= NAVBAR ================= -->
 
@@ -156,7 +156,7 @@
 
 <!-- ================= MAIN ================= -->
 
-<main class="flex-grow-1 mt-2">
+<main class="flex-grow-1 {% if not hide_nav %}mt-5{% else %}mt-0{% endif %}">
     <div class="d-flex">
 
         <!-- Sidebar -->
@@ -170,7 +170,7 @@
         {% endif %}
 
         <!-- Content -->
-        <div class="content-area p-4">
+        <div class="content-area {% if hide_nav %}p-2{% else %}p-4{% endif %}">
 
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}

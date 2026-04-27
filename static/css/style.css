@@ -229,6 +229,9 @@ main { flex: 1; }
 /* ============================
    Navbar & Footer
 ============================ */
+.no-nav .content-area {
+    padding-top: 8px;
+}
 /* 🔥 Navbar Glass Effect */
 .navbar-glass {
     background: linear-gradient(135deg, #1e3a8a, #4f46e5);
