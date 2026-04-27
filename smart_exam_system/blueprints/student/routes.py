@@ -173,6 +173,7 @@ def quiz_question(quiz_code, q_index):
         palette=palette,
         total_questions=total_questions,
         remaining_time=remaining_time,
+        exam=exam,
         hide_nav=True,
         hide_footer=True,
         hide_sidebar=True
