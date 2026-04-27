@@ -172,7 +172,10 @@ def quiz_question(quiz_code, q_index):
         q_index=q_index,
         palette=palette,
         total_questions=total_questions,
-        remaining_time=remaining_time
+        remaining_time=remaining_time,
+        hide_nav=True,
+        hide_footer=True,
+        hide_sidebar=True
     )
 # -----------------------------
 # Submit Quiz
