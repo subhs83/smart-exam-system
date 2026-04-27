@@ -77,30 +77,35 @@ def get_attempt_detailed_report(attempt_id):
 
 def get_results(exam_id):
 
-    results = AttemptModel.query.with_entities(
-        AttemptModel.id,
-        AttemptModel.first_name,
-        AttemptModel.last_name,
-        AttemptModel.student_class,
-        AttemptModel.roll_number,
-        AttemptModel.mobile,
-        AttemptModel.score,
-        AttemptModel.total_marks,
-        AttemptModel.percentage,
-        AttemptModel.start_time,
-        AttemptModel.end_time,
-        AttemptModel.ip_address,
-
-        # ⭐ ADD THESE
-        AttemptModel.violation_count,
-        AttemptModel.auto_submitted_reason
-    ).filter(
+    query = AttemptModel.query.filter(
         AttemptModel.exam_id == exam_id,
         AttemptModel.end_time.isnot(None)
     ).order_by(
-        AttemptModel.percentage.desc(),
-        AttemptModel.end_time.asc()
+    AttemptModel.percentage.desc().nullslast(),
+    AttemptModel.end_time.asc()
     ).all()
+
+    results = []
+
+    for a in query:
+        percentage = float(a.percentage) if a.percentage is not None else 0.0
+
+        results.append({
+            "id": a.id,
+            "first_name": a.first_name,
+            "last_name": a.last_name,
+            "student_class": a.student_class,
+            "roll_number": a.roll_number,
+            "mobile": a.mobile,
+            "score": a.score,
+            "total_marks": a.total_marks,
+            "percentage": percentage,   # ✅ safe
+            "start_time": a.start_time,
+            "end_time": a.end_time,
+            "ip_address": a.ip_address,
+            "violation_count": a.violation_count,
+            "auto_submitted_reason": a.auto_submitted_reason
+        })
 
     return results
 
@@ -126,7 +131,8 @@ def generate_leaderboard(exam_id):
         start_time = a.start_time if isinstance(a.start_time, datetime) else datetime.utcnow()
         end_time = a.end_time if isinstance(a.end_time, datetime) else datetime.utcnow()
         time_taken = end_time - start_time
-
+        # ✅ FIX HERE
+        percentage = float(a.percentage) if a.percentage is not None else 0.0
         leaderboard.append({
             "rank": idx,
             "first_name": a.first_name,
@@ -136,7 +142,7 @@ def generate_leaderboard(exam_id):
             "mobile": a.mobile,
             "score": a.score,
             "total_marks": a.total_marks,
-            "percentage": a.percentage,
+            "percentage": percentage,   # ✅ use safe value
             "time_taken": time_taken
         })
 

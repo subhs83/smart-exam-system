@@ -215,7 +215,8 @@ input[type="radio"]:checked + label {
 
         <input type="hidden" name="question_id" value="{{ question.question_id }}">
         <input type="hidden" name="goto_question" id="goto_question">
-
+       
+        {% set labels = ['A', 'B', 'C', 'D'] %}
         {% for opt_key, opt_value in question.options %}
         <div class="option">
             <input
@@ -228,7 +229,7 @@ input[type="radio"]:checked + label {
                 hidden
             >
             <label for="opt{{ opt_key }}">
-                <strong>{{ opt_key }}.</strong> {{ opt_value }}
+                <strong>{{ labels[loop.index0] }}.</strong> {{ opt_value }}
             </label>
         </div>
         {% endfor %}
