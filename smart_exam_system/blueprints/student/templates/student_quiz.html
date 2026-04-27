@@ -8,6 +8,10 @@
 body {
     background: #f5f7fb;
 }
+html, body {
+    height: 100%;
+    overflow: hidden;   /* 🔥 prevent full page scroll */
+}
 
 /* ================= HEADER ================= */
 .quiz-header {
@@ -37,12 +41,15 @@ body {
     border-radius: 12px;
     padding: 12px;
     margin: 10px;
-    margin-bottom: 10px; /* reduced */
+
+    height: calc(100vh - 200px);  /* 🔥 dynamic height */
+    overflow-y: auto;             /* 🔥 only this scrolls */
+
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 .question-card h5 {
-    font-size: 18px;        /* 🔥 bigger */
+    font-size: 20px;        /* 🔥 bigger */
     font-weight: 600;       /* 🔥 clearer */
     margin-bottom: 14px;
     line-height: 1.5;
@@ -59,7 +66,7 @@ body {
     cursor: pointer;
     transition: 0.2s;
     background: #ffffff;
-    font-size: 16px;        /* 🔥 bigger text */
+    font-size: 18px;        /* 🔥 bigger text */
     line-height: 1.5;
 }
 .option label {
@@ -88,11 +95,16 @@ input[type="radio"]:checked + label {
 
 /* ================= PALETTE (COMPACT) ================= */
 .palette-container {
-    padding: 0 10px 70px; /* space for bottom nav */
+    position: fixed;
+    bottom: 60px;   /* above bottom nav */
+    width: 100%;
+    background: #f5f7fb;
+    padding: 10px;
 }
 
 .palette-title {
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 600;
     margin-bottom: 5px;
     display: flex;
     justify-content: space-between;
@@ -101,21 +113,23 @@ input[type="radio"]:checked + label {
 
 .palette {
     display: grid;
-    grid-template-columns: repeat(10, 1fr); /* more dense */
-    gap: 4px;
+    grid-template-columns: repeat(6, 1fr); /* more dense */
+    gap: 8px;
 }
 
 .palette button {
-    height: 28px;              /* fixed height */
+    height: 40px;              /* fixed height */
     padding: 0;
-    font-size: 14px;
-    border-radius: 6px;        /* 🔥 small rounded square */
+    font-size: 15px;
+    border-radius: 8px;        /* 🔥 small rounded square */
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 .btn-primary {
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.5);
+    transform: scale(1.05);   /* 🔥 slight zoom */
 }
 /* ================= BOTTOM NAV ================= */
 .bottom-nav {
