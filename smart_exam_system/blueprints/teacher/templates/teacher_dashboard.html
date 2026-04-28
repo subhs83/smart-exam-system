@@ -160,7 +160,7 @@
                                         <a href="{{ url_for('teacher.results_route', exam_id=exam.id) }}"
                                            class="btn btn-sm btn-primary"><i class="fas fa-chart-bar me-1"></i>Results</a>
                                         <a href="{{ url_for('teacher.leaderboard_route', exam_id=exam.id) }}"
-                                           class="btn btn-sm btn-warning text-dark"><i class="fas fa-trophy me-1"></i>Leaderboard</a>
+                                           class="btn btn-sm btn-warning text-dark"><i class="fas fa-trophy me-1 text-dark"></i>Leaderboard</a>
                                     {% else %}
                                         <button class="btn btn-sm btn-outline-secondary" disabled>Locked</button>
                                     {% endif %}
