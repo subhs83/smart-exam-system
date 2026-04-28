@@ -14,9 +14,6 @@ from .blueprints.footer import footer_bp
 
 from .utils.init_data import create_default_super_admin
 
-
-from sqlalchemy import text
-
 def create_app():
     base_dir = os.path.dirname(os.path.dirname(__file__))
 
@@ -34,18 +31,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # 👇 ADD THIS ROUTE HERE (IMPORTANT)
-    @app.route("/fix-db")
-    def fix_db():
-        try:
-            db.session.execute(text("ALTER TABLE demo_requests ADD COLUMN phone VARCHAR(20);"))
-            db.session.execute(text("ALTER TABLE demo_requests ADD COLUMN size VARCHAR(20);"))
-            db.session.commit()
-            return "DB Updated Successfully"
-        except Exception as e:
-            return str(e)
-
-    # User loader
+       # User loader
     from .models.user import UserModel
 
     @login_manager.user_loader
