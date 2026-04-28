@@ -57,14 +57,20 @@
 /* Fix card contrast */
 .contact-card {
   background: #ffffff;
-  color: #0f172a;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.10);
+  border: 1px solid #eef2f7;
 }
-
 /* ================= CONTACT INFO ================= */
 .contact-item {
   display: flex;
   gap: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 }
 
 .contact-item i {

@@ -6,23 +6,36 @@
 
 <!-- ================= HERO ================= -->
 <section class="demo-hero text-center">
+
   <div class="container">
+
     <h1 class="fw-bold">Book Your Free Demo</h1>
+
     <p class="mt-3">
-      See how Smart Exam System can simplify exams, save time, and go fully digital
+      See how Smart Exam System helps schools conduct secure exams, reduce manual work, and automate evaluation.
     </p>
+
+    <div class="demo-badges mt-3">
+      <span>✔ No setup required</span>
+      <span>✔ 15 min demo</span>
+      <span>✔ Fully managed onboarding</span>
+    </div>
+
   </div>
+
 </section>
 
-
-<!-- ================= MAIN SECTION ================= -->
+<!-- ================= MAIN ================= -->
 <section class="demo-main">
-  <div class="container">
-    <div class="row align-items-center g-5">
 
-      <!-- LEFT SIDE (BENEFITS) -->
+  <div class="container">
+
+    <div class="row g-5 align-items-stretch">
+
+      <!-- ================= LEFT ================= -->
       <div class="col-lg-5">
-        <h3 class="fw-bold mb-4">What You'll Get</h3>
+
+        <h3 class="fw-bold mb-4">What You’ll Get</h3>
 
         <div class="demo-point">
           <i class="fa-solid fa-bolt"></i>
@@ -36,36 +49,43 @@
           <i class="fa-solid fa-chart-line"></i>
           <div>
             <h6>Instant Results</h6>
-            <p>Automatic evaluation and performance analytics</p>
+            <p>Automatic evaluation with detailed analytics</p>
           </div>
         </div>
 
         <div class="demo-point">
-          <i class="fa-solid fa-mobile-screen"></i>
+          <i class="fa-solid fa-shield-halved"></i>
           <div>
-            <h6>Mobile Friendly</h6>
-            <p>Smooth experience for students on any device</p>
+            <h6>Secure Exam System</h6>
+            <p>Anti-cheating controls and monitoring tools</p>
           </div>
         </div>
 
         <div class="demo-trust mt-4">
-          <p>✔ No technical setup required</p>
-          <p>✔ Demo takes only 15 minutes</p>
-          <p>✔ Trusted by schools</p>
+          <p>✔ Trusted by coaching institutes</p>
+          <p>✔ Used for online & offline exams</p>
+          <p>✔ Scalable for 100 to 10,000+ students</p>
         </div>
+
       </div>
 
-
-      <!-- RIGHT SIDE (FORM) -->
+      <!-- ================= RIGHT (FORM) ================= -->
       <div class="col-lg-7">
+
         <div class="demo-card">
 
-          <h4 class="text-center mb-4 fw-semibold">Request a Free Demo</h4>
+          <h4 class="text-center fw-semibold mb-3">
+            Request Your Demo Access
+          </h4>
+
+          <p class="text-center small text-muted mb-4">
+            We will contact you within 24 hours and set up everything for you.
+          </p>
 
           <form method="POST" action="/demo">
 
             <div class="mb-3">
-              <label class="form-label">School Name</label>
+              <label class="form-label">School / Institute Name</label>
               <input type="text" name="school_name" class="form-control" required>
             </div>
 
@@ -85,7 +105,7 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">School Size</label>
+              <label class="form-label">Institute Size</label>
               <select name="size" class="form-select">
                 <option>Below 200 Students</option>
                 <option>200 - 500 Students</option>
@@ -95,16 +115,22 @@
             </div>
 
             <button type="submit" class="btn demo-btn w-100">
-              Book Demo
+              Get Demo Access
             </button>
+
+            <p class="text-center mt-3 small text-muted">
+              We respect your privacy. No spam ever.
+            </p>
 
           </form>
 
         </div>
+
       </div>
 
     </div>
   </div>
+
 </section>
 
 {% endblock %}

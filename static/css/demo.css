@@ -7,7 +7,9 @@
 }
 
 .demo-hero p {
-  color: #cbd5e1;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 1.05rem;
+  line-height: 1.6;
   max-width: 600px;
   margin: 0 auto;
 }
@@ -23,14 +25,19 @@
   padding: 40px 20px;
 }
 
-.demo-main h3, h6{
+.demo-main h3,
+.demo-main h6 {
   color: #1e293b;
 }
 /* ================= LEFT BENEFITS ================= */
 .demo-point {
   display: flex;
   gap: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 }
 
 .demo-point i {
@@ -62,9 +69,9 @@
   background: #ffffff;
   padding: 2.5rem;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.10);
+  border: 1px solid #eef2f7;
 }
-
 .demo-card h4 {
   color: #000;
 }
@@ -82,7 +89,18 @@
   background: #1d4ed8;
 }
 
+/* ================= HERO BADGES ================= */
+.demo-badges span {
+  display: inline-block;
+  margin: 5px 8px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.9);
+}
 
+/* ================= BETTER LAYOUT ================= */
+.demo-main .row {
+  align-items: stretch;
+}
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
 
