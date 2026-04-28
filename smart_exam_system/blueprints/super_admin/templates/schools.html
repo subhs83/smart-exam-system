@@ -82,7 +82,7 @@
                     </button>
                 </form>
                 <!-- Delete Button (POST method) -->
-                {% if school.admins|length == 0 %}
+                {% if not school.has_admin %}
                 <form method="POST"
                     action="{{ url_for('super_admin.delete_school', school_id=school.id) }}"
                     style="display:inline;"

@@ -86,6 +86,9 @@ def schools():
         abort(403)
 
     schools = SchoolModel.query.order_by(SchoolModel.id.asc()).all()
+    # 🔥 FIX: compute flag for template
+    for s in schools:
+        s.has_admin = len(list(s.admins)) > 0
     return render_template("schools.html", schools=schools,current_time=datetime.utcnow())
 
 # =========================
@@ -96,29 +99,44 @@ def schools():
 @super_admin_required
 def add_school():
     if request.method == "POST":
-        expiry_date = None
+
         name = request.form["name"].strip()
         address = request.form["address"].strip()
         phone = request.form["phone"].strip()
         email = request.form["email"].strip()
         duration_days = request.form.get("duration_days")
-        
-        if duration_days:
-            expiry_date = datetime.utcnow() + timedelta(days=int(duration_days))
 
+        # 🔥 STEP 1: CHECK DUPLICATES FIRST
+        existing_school = SchoolModel.query.filter(
+            (SchoolModel.email == email) | (SchoolModel.name == name)
+        ).first()
+
+        if existing_school:
+            flash("School already exists with same name or email.", "danger")
+            return redirect(url_for("super_admin.add_school"))
+
+        # 🔥 STEP 2: VALIDATE
         if not name:
             flash("School name is required.", "danger")
             return redirect(url_for("super_admin.add_school"))
 
-        new_school = SchoolModel(name=name, address=address, phone=phone, email=email, expiry_date=expiry_date)
-        db.session.add(new_school)
-        # ✅ NEW CODE (Avoid Duplicacy)
-        existing_school = SchoolModel.query.filter_by(email=email).first()
+        # 🔥 STEP 3: SET EXPIRY
+        expiry_date = None
+        if duration_days:
+            expiry_date = datetime.utcnow() + timedelta(days=int(duration_days))
 
-        if existing_school:
-            flash("School already exists with this name.", "danger")
-            return redirect(url_for("super_admin.schools"))
-        # ✅ NEW CODE (safe addition)
+        # 🔥 STEP 4: CREATE
+        new_school = SchoolModel(
+            name=name,
+            address=address,
+            phone=phone,
+            email=email,
+            expiry_date=expiry_date
+        )
+
+        db.session.add(new_school)
+
+        # Demo conversion
         demo_id = request.form.get("demo_id")
         if demo_id:
             demo = DemoRequest.query.get(demo_id)
@@ -126,12 +144,8 @@ def add_school():
                 demo.status = "converted"
 
         db.session.commit()
-        
-        
 
         flash("School created successfully!", "success")
-        print("🔥 CREATE SCHOOL ROUTE HIT")
-        print("FORM DATA:", request.form)
         return redirect(url_for("super_admin.schools"))
 
     return render_template("add_school.html")
