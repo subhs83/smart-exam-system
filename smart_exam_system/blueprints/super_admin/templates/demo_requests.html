@@ -28,17 +28,32 @@
                 <td>{{ d.created_at.strftime('%Y-%m-%d') }}</td>
             
                 <td>
+
+                    <!-- Contacted -->
                     <form method="POST" action="{{ url_for('super_admin.update_demo_status', id=d.id, status='contacted') }}" style="display:inline;">
                         <button class="btn btn-sm btn-info">Contacted</button>
                     </form>
-            
+                
+                    <!-- Close -->
                     <form method="POST" action="{{ url_for('super_admin.update_demo_status', id=d.id, status='closed') }}" style="display:inline;">
                         <button class="btn btn-sm btn-success">Close</button>
                     </form>
-            
+                
+                    <!-- ✅ NEW: Convert Button -->
+                    {% if d.status != "converted" %}
+                        <a href="{{ url_for('super_admin.convert_demo', id=d.id) }}"
+                           class="btn btn-sm btn-primary">
+                           Convert
+                        </a>
+                    {% else %}
+                        <span class="badge bg-success">Converted</span>
+                    {% endif %}
+                
+                    <!-- Delete -->
                     <form method="POST" action="{{ url_for('super_admin.delete_demo', id=d.id) }}" style="display:inline;">
                         <button class="btn btn-sm btn-danger">Delete</button>
                     </form>
+                
                 </td>
             </tr>
             {% endfor %}

@@ -103,6 +103,14 @@ def add_school():
 
         new_school = SchoolModel(name=name, address=address, phone=phone, email=email)
         db.session.add(new_school)
+
+        # ✅ NEW CODE (safe addition)
+        demo_id = request.form.get("demo_id")
+        if demo_id:
+            demo = DemoRequest.query.get(demo_id)
+            if demo:
+                demo.status = "converted"
+
         db.session.commit()
 
         flash("School created successfully!", "success")
@@ -181,13 +189,14 @@ def add_school_admin(school_id):
     if request.method == "POST":
         name = request.form["name"].strip()
         email = request.form["email"].strip()
-        password = request.form["password"].strip()
-
-        if not name or not email or not password:
-            flash("All fields are required.", "danger")
+        if not name or not email:
+            flash("Name and Email are required.", "danger")
             return redirect(url_for("super_admin.add_school_admin", school_id=school_id))
 
-        hashed_password = hash_password(password)
+        # ✅ Generate temp password
+        temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(8))
+
+        hashed_password = hash_password(temp_password)
 
         if UserModel.query.filter_by(email=email).first():
             flash("Email already exists!", "danger")
@@ -199,11 +208,13 @@ def add_school_admin(school_id):
             password=hashed_password,
             role="school_admin",
             school_id=school_id,
-            is_active=True
+            is_active=True,
+            force_password_change=True   # ✅ IMPORTANT
         )
         db.session.add(new_admin)
         db.session.commit()
 
+        flash(f"Temporary Password: {temp_password}", "password")
         flash("School Admin created successfully!", "success")
         return redirect(url_for("super_admin.view_school_admins", school_id=school_id))
 
@@ -241,7 +252,7 @@ def reset_school_admin_password(user_id):
     admin.force_password_change = True
     db.session.commit()
 
-    flash(f"Temporary Password: {temp_password}", "warning")
+    flash(f"Temporary Password: {temp_password}", "password")
     return redirect(request.referrer)
 
 
@@ -354,4 +365,16 @@ def system_health():
     return render_template(
         "system_health.html",
         current_time=datetime.now()
+    )
+
+
+@super_admin_bp.route("/demo/<int:id>/convert")
+@login_required
+@super_admin_required
+def convert_demo(id):
+    demo = DemoRequest.query.get_or_404(id)
+
+    return render_template(
+        "add_school.html",
+        demo=demo   # 👈 pass demo data
     )
