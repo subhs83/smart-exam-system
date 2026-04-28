@@ -57,3 +57,14 @@ def create_app():
 
 # 👇 THIS IS THE IMPORTANT PART
 app = create_app()    
+from sqlalchemy import text
+
+@app.route("/fix-db")
+def fix_db():
+    try:
+        db.session.execute(text("ALTER TABLE demo_requests ADD COLUMN phone VARCHAR(20);"))
+        db.session.execute(text("ALTER TABLE demo_requests ADD COLUMN size VARCHAR(20);"))
+        db.session.commit()
+        return "DB Updated Successfully"
+    except Exception as e:
+        return str(e)
