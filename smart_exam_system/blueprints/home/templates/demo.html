@@ -106,11 +106,12 @@
 
             <div class="mb-3">
               <label class="form-label">Institute Size</label>
-              <select name="size" class="form-select">
-                <option>Below 200 Students</option>
-                <option>200 - 500 Students</option>
-                <option>500 - 1000 Students</option>
-                <option>1000+ Students</option>
+              <select name="size" class="form-select" required>
+                <option value="">Select size</option>
+                <option value="0-200">Below 200 Students</option>
+                <option value="200-500">200 - 500 Students</option>
+                <option value="500-1000">500 - 1000 Students</option>
+                <option value="1000+">1000+ Students</option>
               </select>
             </div>
 
