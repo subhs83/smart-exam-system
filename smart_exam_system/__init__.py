@@ -31,29 +31,6 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
-
-    from sqlalchemy import text
-
-    @app.route("/fix-db")
-    def fix_db():
-        try:
-            db.session.execute(text("""
-                DO $$
-                BEGIN
-                    IF NOT EXISTS (
-                        SELECT 1 FROM information_schema.columns
-                        WHERE table_name='schools' AND column_name='expiry_date'
-                    ) THEN
-                        ALTER TABLE schools ADD COLUMN expiry_date TIMESTAMP;
-                    END IF;
-                END $$;
-            """))
-            db.session.commit()
-            return "✅ DB schema safely updated"
-        except Exception as e:
-            db.session.rollback()
-            return str(e)
-
        # User loader
     from .models.user import UserModel
 
