@@ -4,6 +4,7 @@ from flask_login import login_user, logout_user, login_required,current_user
 from smart_exam_system.models.user import UserModel
 from smart_exam_system.extensions import db
 from smart_exam_system.utils.security import hash_password, verify_password,validate_password_strength
+from datetime import datetime
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
@@ -24,11 +25,29 @@ def login():
                 return redirect(url_for("teacher.dashboard"))
 
     if request.method == "POST":
+        print("LOGIN SUCCESS")
         email = request.form.get("email")
         password = request.form.get("password")
 
         user = UserModel.query.filter_by(email=email).first()
+
         if user and verify_password(password, user.password):
+
+            # ❗ ADD EXPIRY CHECK HERE (FIRST THING INSIDE SUCCESS BLOCK)
+            if user.school and not user.school.is_active:
+                flash("School is inactive. Contact Super Admin.", "danger")
+                return redirect(url_for("auth.login", role=expected_role))
+
+            # (OPTIONAL BUT IMPORTANT) expiry date check
+           
+            if user.school and user.school.expiry_date:
+                if user.school.expiry_date < datetime.utcnow():
+                    user.school.is_active = False
+                    db.session.commit()
+
+                    flash("Your school access has expired. Contact Super Admin.", "danger")
+                    return redirect(url_for("auth.login", role=expected_role))
+
             if not user.is_active:
                 flash("Account is inactive. Contact Super Admin.", "danger")
                 return redirect(url_for("auth.login", role=expected_role))

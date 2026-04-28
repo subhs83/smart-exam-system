@@ -32,7 +32,10 @@
         <input type="email" name="email" class="form-control"
                value="{{ demo.email if demo else '' }}">
     </div>
-
+    <div class="mb-3">
+        <label class="form-label">Access Duration (Days)</label>
+        <input type="number" name="duration_days" class="form-control" placeholder="e.g. 30">
+    </div>
     <button type="submit" class="btn btn-success">
         Create School
     </button>

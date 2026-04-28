@@ -15,7 +15,9 @@
             <th>Name</th>
             <th>Email</th>
             <th>Status</th>
+            <th>Validity</th>
             <th>Action</th>
+           
         </tr>
     </thead>
     <tbody>
@@ -29,6 +31,29 @@
                     <span class="badge bg-success">Active</span>
                 {% else %}
                     <span class="badge bg-danger">Inactive</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if school.expiry_date %}
+            
+                    {% set days_left = (school.expiry_date - current_time).days %}
+            
+                    {% if days_left > 0 %}
+                        <span class="badge bg-success">
+                            {{ days_left }} days left
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger">
+                            Expired
+                        </span>
+                    {% endif %}
+            
+                    <div class="small text-muted mt-1">
+                        {{ school.expiry_date.strftime('%d-%b-%Y') }}
+                    </div>
+            
+                {% else %}
+                    <span class="badge bg-secondary">No expiry</span>
                 {% endif %}
             </td>
             <td>
@@ -56,11 +81,76 @@
                         {% endif %}
                     </button>
                 </form>
-            
+                <!-- Delete Button (POST method) -->
+                {% set admin_exists = school.admins if school.admins is defined else None %}
+
+                    {% if not admin_exists %}
+                    <form method="POST"
+                        action="{{ url_for('super_admin.delete_school', school_id=school.id) }}"
+                        style="display:inline;"
+                        onsubmit="return confirm('Delete this school?')">
+
+                        <button class="btn btn-sm btn-danger">
+                            Delete
+                        </button>
+                    </form>
+                    {% endif %}
+                <form method="POST"
+                    action="#"
+                    onsubmit="return false;"
+                    style="display:inline;">
+
+                    <select class="form-select form-select-sm d-inline w-auto"
+                            onchange="extendSchool(this, {{ school.id }})">
+
+                        <option value="">Extend</option>
+                        <option value="30">+30 Days</option>
+                        <option value="90">+90 Days</option>
+                        <option value="365">+365 Days</option>
+
+                    </select>
+
+                </form>
+                <form method="POST"
+                    action="{{ url_for('super_admin.reset_school_validity', school_id=school.id) }}"
+                    style="display:inline;"
+                    onsubmit="return confirm('Reset validity for this school?')">
+
+                    <button class="btn btn-sm btn-danger">
+                        Reset
+                    </button>
+                </form>
+                
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+<script>
+    function extendSchool(select, schoolId) {
+    const days = select.value;
+    if (!days) return;
 
+    if (!confirm("Are you sure you want to extend this school?")) {
+        select.value = "";
+        return;
+    }
+
+    fetch(`/super_admin/schools/extend/${schoolId}/${days}`, {
+        method: "POST"
+    })
+    .then(response => {
+        console.log("Status:", response.status);
+        return response.text();
+    })
+    .then(data => {
+        console.log("Response:", data);
+        location.reload();
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Request failed");
+    });
+}
+    </script>
 {% endblock %}

@@ -172,21 +172,32 @@
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                 {% for category, message in messages %}
-                <div class="alert 
-                    {% if category == 'success' %}
-                        alert-success
-                    {% elif category == 'password' %}
-                        alert-warning no-auto-hide
-                    {% else %}
-                        alert-danger
-                    {% endif %}
-                    alert-dismissible fade show shadow-sm">
-            
-                    <strong>Temporary Password:</strong> {{ message }}
-            
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+                    <div class="alert 
+                        {% if category == 'success' %}
+                            alert-success
+                        {% elif category == 'password' %}
+                            alert-warning no-auto-hide
+                        {% else %}
+                            alert-danger
+                        {% endif %}
+                        alert-dismissible fade show shadow-sm">
+
+                        {% if category == 'password' %}
+                            <strong>Temporary Password:</strong> 
+                            <span class="temp-password">{{ message.split(':')[-1].strip() }}</span>
+
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-dark ms-2"
+                                    onclick="copyPassword(this)">
+                                Copy
+                            </button>
+                        {% else %}
+                            {{ message }}
+                        {% endif %}
+
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
                 {% endif %}
             {% endwith %}
 
@@ -244,6 +255,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 2500);
         });
     });
+    </script>
+
+<script>
+    function copyPassword(btn) {
+        const password = btn.parentElement.querySelector(".temp-password").innerText;
+    
+        navigator.clipboard.writeText(password).then(() => {
+            btn.innerText = "Copied ✓";
+            btn.classList.remove("btn-outline-dark");
+            btn.classList.add("btn-success");
+        }).catch(() => {
+            alert("Copy failed. Please copy manually.");
+        });
+    }
     </script>
 </body>
 </html>

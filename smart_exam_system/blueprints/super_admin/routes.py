@@ -11,6 +11,10 @@ from smart_exam_system.utils.decorators import super_admin_required
 from smart_exam_system.utils.security import hash_password
 import secrets, string
 from sqlalchemy import func
+from datetime import datetime, timedelta
+
+
+
 
 
 # =========================
@@ -82,7 +86,7 @@ def schools():
         abort(403)
 
     schools = SchoolModel.query.order_by(SchoolModel.id.asc()).all()
-    return render_template("schools.html", schools=schools)
+    return render_template("schools.html", schools=schools,current_time=datetime.utcnow())
 
 # =========================
 # ADD SCHOOL
@@ -92,18 +96,28 @@ def schools():
 @super_admin_required
 def add_school():
     if request.method == "POST":
+        expiry_date = None
         name = request.form["name"].strip()
         address = request.form["address"].strip()
         phone = request.form["phone"].strip()
         email = request.form["email"].strip()
+        duration_days = request.form.get("duration_days")
+        
+        if duration_days:
+            expiry_date = datetime.utcnow() + timedelta(days=int(duration_days))
 
         if not name:
             flash("School name is required.", "danger")
             return redirect(url_for("super_admin.add_school"))
 
-        new_school = SchoolModel(name=name, address=address, phone=phone, email=email)
+        new_school = SchoolModel(name=name, address=address, phone=phone, email=email, expiry_date=expiry_date)
         db.session.add(new_school)
+        # ✅ NEW CODE (Avoid Duplicacy)
+        existing_school = SchoolModel.query.filter_by(email=email).first()
 
+        if existing_school:
+            flash("School already exists with this name.", "danger")
+            return redirect(url_for("super_admin.schools"))
         # ✅ NEW CODE (safe addition)
         demo_id = request.form.get("demo_id")
         if demo_id:
@@ -112,8 +126,12 @@ def add_school():
                 demo.status = "converted"
 
         db.session.commit()
+        
+        
 
         flash("School created successfully!", "success")
+        print("🔥 CREATE SCHOOL ROUTE HIT")
+        print("FORM DATA:", request.form)
         return redirect(url_for("super_admin.schools"))
 
     return render_template("add_school.html")
@@ -367,7 +385,9 @@ def system_health():
         current_time=datetime.now()
     )
 
-
+# =========================
+# Convert Demo Request
+# =========================
 @super_admin_bp.route("/demo/<int:id>/convert")
 @login_required
 @super_admin_required
@@ -378,3 +398,70 @@ def convert_demo(id):
         "add_school.html",
         demo=demo   # 👈 pass demo data
     )
+
+# =========================
+# Extend School Validity
+# =========================
+
+@super_admin_bp.route("/schools/extend/<int:school_id>/<int:days>", methods=["POST"])
+@login_required
+@super_admin_required
+def extend_school(school_id, days):
+    school = SchoolModel.query.get_or_404(school_id)
+
+    # If expiry exists → extend from that date
+    # If not → extend from today
+    base_date = school.expiry_date or datetime.utcnow()
+
+    school.expiry_date = base_date + timedelta(days=days)
+    school.is_active = True
+
+    db.session.commit()
+
+    flash(f"School extended by {days} days!", "success")
+    return redirect(url_for("super_admin.schools"))
+
+# =========================
+# Reset School Validity
+# =========================
+
+@super_admin_bp.route("/schools/reset/<int:school_id>", methods=["POST"])
+@login_required
+@super_admin_required
+def reset_school_validity(school_id):
+    school = SchoolModel.query.get_or_404(school_id)
+
+    school.expiry_date = None
+    school.is_active = True
+
+    db.session.commit()
+
+    flash("School validity reset successfully!", "success")
+    return redirect(url_for("super_admin.schools"))
+
+# =========================
+# Delete School
+# =========================
+
+@super_admin_bp.route("/schools/delete/<int:school_id>", methods=["POST"])
+@login_required
+@super_admin_required
+def delete_school(school_id):
+    school = SchoolModel.query.get_or_404(school_id)
+
+    # Check if admins exist
+    from smart_exam_system.models.user import UserModel
+    admin_exists = UserModel.query.filter_by(
+        school_id=school.id,
+        role="school_admin"
+    ).first()
+
+    if admin_exists:
+        flash("Cannot delete school with existing admin.", "danger")
+        return redirect(url_for("super_admin.schools"))
+
+    db.session.delete(school)
+    db.session.commit()
+
+    flash("School deleted successfully!", "success")
+    return redirect(url_for("super_admin.schools"))
