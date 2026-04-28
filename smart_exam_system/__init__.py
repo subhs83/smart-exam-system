@@ -15,6 +15,8 @@ from .blueprints.footer import footer_bp
 from .utils.init_data import create_default_super_admin
 
 
+from sqlalchemy import text
+
 def create_app():
     base_dir = os.path.dirname(os.path.dirname(__file__))
 
@@ -32,6 +34,17 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    # 👇 ADD THIS ROUTE HERE (IMPORTANT)
+    @app.route("/fix-db")
+    def fix_db():
+        try:
+            db.session.execute(text("ALTER TABLE demo_requests ADD COLUMN phone VARCHAR(20);"))
+            db.session.execute(text("ALTER TABLE demo_requests ADD COLUMN size VARCHAR(20);"))
+            db.session.commit()
+            return "DB Updated Successfully"
+        except Exception as e:
+            return str(e)
+
     # User loader
     from .models.user import UserModel
 
@@ -48,23 +61,11 @@ def create_app():
     app.register_blueprint(home_bp)
     app.register_blueprint(footer_bp)
 
-    # Safe startup task (NO db.create_all)
     with app.app_context():
-         db.create_all()
-         create_default_super_admin()
+        db.create_all()
+        create_default_super_admin()
 
     return app
 
 # 👇 THIS IS THE IMPORTANT PART
 app = create_app()    
-from sqlalchemy import text
-
-@app.route("/fix-db")
-def fix_db():
-    try:
-        db.session.execute(text("ALTER TABLE demo_requests ADD COLUMN phone VARCHAR(20);"))
-        db.session.execute(text("ALTER TABLE demo_requests ADD COLUMN size VARCHAR(20);"))
-        db.session.commit()
-        return "DB Updated Successfully"
-    except Exception as e:
-        return str(e)
