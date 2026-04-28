@@ -82,19 +82,17 @@
                     </button>
                 </form>
                 <!-- Delete Button (POST method) -->
-                {% set admin_exists = school.admins if school.admins is defined else None %}
+                {% if school.admins|length == 0 %}
+                <form method="POST"
+                    action="{{ url_for('super_admin.delete_school', school_id=school.id) }}"
+                    style="display:inline;"
+                    onsubmit="return confirm('Delete this school?')">
 
-                    {% if not admin_exists %}
-                    <form method="POST"
-                        action="{{ url_for('super_admin.delete_school', school_id=school.id) }}"
-                        style="display:inline;"
-                        onsubmit="return confirm('Delete this school?')">
-
-                        <button class="btn btn-sm btn-danger">
-                            Delete
-                        </button>
-                    </form>
-                    {% endif %}
+                    <button class="btn btn-sm btn-danger">
+                        Delete
+                    </button>
+                </form>
+                {% endif %}
                 <form method="POST"
                     action="#"
                     onsubmit="return false;"
