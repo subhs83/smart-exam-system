@@ -30,24 +30,7 @@ def create_app():
     login_manager.init_app(app)
     db.init_app(app)
     migrate.init_app(app, db)
-
     
-    from sqlalchemy import text
-
-    @app.route("/fix-db")
-    def fix_db():
-        try:
-            db.session.execute(text("""
-                ALTER TABLE exams ADD COLUMN start_date TIMESTAMP;
-            """))
-            db.session.execute(text("""
-                ALTER TABLE exams ADD COLUMN end_date TIMESTAMP;
-            """))
-            db.session.commit()
-            return "✅ Render DB updated successfully"
-        except Exception as e:
-            db.session.rollback()
-            return f"Error or already exists: {str(e)}"
        # User loader
     from .models.user import UserModel
 
