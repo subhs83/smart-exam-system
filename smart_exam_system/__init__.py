@@ -11,7 +11,7 @@ from .blueprints.teacher import teacher_bp
 from .blueprints.student import student_bp
 from .blueprints.home import home_bp
 from .blueprints.footer import footer_bp
-
+from sqlalchemy import text
 from .utils.init_data import create_default_super_admin
 
 def create_app():
@@ -31,6 +31,24 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    
+
+    @app.route("/fix-db")
+    def fix_db():
+        try:
+            db.session.execute(text("""
+                ALTER TABLE exams ADD COLUMN start_date TIMESTAMP;
+            """))
+            db.session.execute(text("""
+                ALTER TABLE exams ADD COLUMN end_date TIMESTAMP;
+            """))
+
+            db.session.commit()
+            return "✅ Exams table updated successfully"
+
+        except Exception as e:
+            db.session.rollback()
+            return str(e)
        # User loader
     from .models.user import UserModel
 

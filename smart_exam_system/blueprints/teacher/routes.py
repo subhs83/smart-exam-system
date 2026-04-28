@@ -6,6 +6,7 @@ from smart_exam_system.utils.services.question_service import upload_questions, 
 from smart_exam_system.utils.services.result_service import get_results, generate_leaderboard,get_attempt_detailed_report
 from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.blueprints.teacher import teacher_bp
+from datetime import datetime
 
 # ---------------------------------
 # Dashboard
@@ -23,11 +24,20 @@ def dashboard():
 # ---------------------------------
 # Create Exam
 # ---------------------------------
+from datetime import datetime
+
 @teacher_bp.route('/teacher/exams/create', methods=['GET', 'POST'])
 @teacher_required
 def create_exam_route():
 
     if request.method == 'POST':
+
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+
+        # convert to datetime
+        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
+        end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
 
         success, msg = create_exam(
             teacher_id=current_user.id,
@@ -36,13 +46,15 @@ def create_exam_route():
             duration=request.form.get('duration'),
             marks=request.form.get('marks'),
             negative=request.form.get('negative'),
-            max_attempts=request.form.get('max_attempts')
+            max_attempts=request.form.get('max_attempts'),
+            start_date=start_date,
+            end_date=end_date
         )
 
         flash(msg, 'success' if success else 'danger')
         return redirect(url_for('teacher.dashboard'))
 
-    return render_template('exams_create.html',active_page='exams_create')
+    return render_template('exams_create.html', active_page='exams_create')
 
 
 # ---------------------------------

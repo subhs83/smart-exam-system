@@ -11,7 +11,16 @@ from smart_exam_system.models.attempt import AttemptModel
 # -------------------------------
 
 
-def create_exam(teacher_id, school_id, title, duration, marks, negative, max_attempts):
+def create_exam(
+    teacher_id, 
+    school_id, 
+    title, 
+    duration, 
+    marks, 
+    negative, 
+    max_attempts, 
+    start_date,
+    end_date):
     try:
         exam = ExamModel(
             title=title,
@@ -20,7 +29,9 @@ def create_exam(teacher_id, school_id, title, duration, marks, negative, max_att
             negative_marks=negative,
             max_attempts_per_mobile=max_attempts,
             school_id=school_id,
-            teacher_id=teacher_id
+            teacher_id=teacher_id,
+            start_date=start_date,
+            end_date=end_date
         )
 
         db.session.add(exam)

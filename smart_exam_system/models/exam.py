@@ -18,8 +18,11 @@ class ExamModel(db.Model):
     school_id = db.Column(db.Integer, nullable=False)
     teacher_id = db.Column(db.Integer, nullable=False)
 
-    # ✅ ADD THIS
     quiz_code = db.Column(db.String(20), unique=True, nullable=True)
+
+    # ✅ NEW SCHEDULING FIELDS
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=False)
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     published_at = db.Column(db.DateTime, nullable=True)
