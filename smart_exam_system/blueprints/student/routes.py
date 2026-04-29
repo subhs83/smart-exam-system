@@ -142,12 +142,19 @@ def start_quiz(quiz_code):
 def quiz_question(quiz_code, q_index):
 
     # -------------------------------
-    # 🔹 Check attempt in session
+    # 🔹 Get attempt safely
     # -------------------------------
-    if "attempt_id" not in session:
+    attempt_id = session.get("attempt_id") or request.args.get("attempt_id")
+
+    if not attempt_id:
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
-    attempt_id = session["attempt_id"]
+    # ✅ Convert to int safely
+    try:
+        attempt_id = int(attempt_id)
+    except (TypeError, ValueError):
+        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+
     attempt = AttemptModel.query.get(attempt_id)
 
     if not attempt:
@@ -261,6 +268,13 @@ def submit_quiz(quiz_code):
 
     if not attempt_id:
         flash("No active attempt found", "danger")
+        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+
+    # ✅ ADD THIS
+    try:
+        attempt_id = int(attempt_id)
+    except (TypeError, ValueError):
+        flash("Invalid attempt ID", "danger")
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
     attempt = AttemptModel.query.get(attempt_id)

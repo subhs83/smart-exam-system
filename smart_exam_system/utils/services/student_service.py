@@ -292,6 +292,11 @@ def get_student_score(attempt_id):
 
 def get_student_result(attempt_id):
 
+    try:
+        attempt_id = int(attempt_id)
+    except (TypeError, ValueError):
+        return None
+
     attempt = AttemptModel.query.get(attempt_id)
 
     if not attempt:
@@ -303,10 +308,11 @@ def get_student_result(attempt_id):
     score = get_student_score(attempt_id)
 
     # ⏱️ TIME CHECK
+    from datetime import datetime, timezone
     end_time = attempt.start_time + timedelta(minutes=exam.duration_minutes)
     is_time_up = datetime.utcnow() > end_time
 
-    # ✅ HANDLE SUBMISSION (UNCHANGED LOGIC)
+    # ✅ HANDLE SUBMISSION
     if not attempt.is_submitted:
 
         percentage = (score / total) * 100 if total > 0 else 0
@@ -323,16 +329,13 @@ def get_student_result(attempt_id):
         percentage = attempt.percentage or 0
 
     # ===============================
-    # ✅ FIX: correct / wrong / NA
-    # ===============================
-
     attempted = StudentAnswerModel.query.filter_by(
         attempt_id=attempt_id
     ).count()
 
     correct_answers = score
-    wrong_answers = attempted - score
-    not_attempted = total - attempted
+    wrong_answers = max(0, attempted - score)
+    not_attempted = max(0, total - attempted)
 
     return {
         "score": score,
@@ -341,7 +344,7 @@ def get_student_result(attempt_id):
 
         "correct_answers": correct_answers,
         "wrong_answers": wrong_answers,
-        "not_attempted": not_attempted,  # ⭐ NEW
+        "not_attempted": not_attempted,
 
         "student_name": f"{attempt.first_name} {attempt.last_name}",
         "student_class": attempt.student_class,
