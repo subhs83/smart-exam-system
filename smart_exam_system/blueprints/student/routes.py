@@ -23,7 +23,7 @@ from datetime import datetime, timedelta
 def quiz_page(quiz_code):
     exam = get_exam_by_quiz_code(quiz_code)
     new_attempt = request.args.get("new_attempt")
-
+    print("NEW ATTEMPT FLAG:", new_attempt)
     if not exam:
         flash("Invalid Quiz Link", "danger")
         return "Invalid Quiz Link"
@@ -59,7 +59,8 @@ def quiz_page(quiz_code):
             # -------------------------------
             # 🔹 If user wants new attempt
             # -------------------------------
-            if new_attempt:
+            if new_attempt == "1":
+                print("Creating new attempt...")
                 if len(attempts) >= max_attempts:
                     return redirect(url_for(
                         "student.submit_quiz",
