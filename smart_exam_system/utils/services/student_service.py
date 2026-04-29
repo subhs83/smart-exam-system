@@ -8,6 +8,7 @@ from smart_exam_system.models.exam import ExamModel
 from smart_exam_system.models.question import QuestionModel
 from smart_exam_system.models.answer import StudentAnswerModel
 import json
+from datetime import datetime
  
 # -------------------------------
 # Get Exam by Quiz Code
@@ -24,15 +25,14 @@ def get_exam_by_quiz_code(quiz_code):
 
 
 def start_student_attempt(exam_id, school_id, form_data, ip_address):
-    import json
-    from datetime import datetime
+
 
     # -------------------------------
     # Extract student data
     # -------------------------------
     first_name = form_data.get("first_name")
     last_name = form_data.get("last_name")
-    student_class = form_data.get("class_name")
+    student_class = form_data.get("student_class")
     roll_number = form_data.get("roll_number")
     mobile = form_data.get("mobile")
 
