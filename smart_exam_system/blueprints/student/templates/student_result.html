@@ -165,7 +165,7 @@ body {
     <!-- ✅ Start Next Attempt Button -->
     {% if exam.max_attempts_per_mobile and exam.max_attempts_per_mobile > 1 %}
     <button class="btn btn-success btn-lg ms-2"
-        onclick="window.location.href='{{ url_for('student.quiz_page', quiz_code=exam.quiz_code) }}?new_attempt=1'">
+    onclick="window.location.href='/student/quiz/{{ exam.quiz_code }}?new_attempt=1'">
     Start Next Attempt
 </button>
     {% endif %}
