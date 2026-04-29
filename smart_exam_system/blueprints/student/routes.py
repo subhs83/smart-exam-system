@@ -22,6 +22,7 @@ from datetime import datetime, timedelta
 @student_bp.route("/quiz/<quiz_code>")
 def quiz_page(quiz_code):
     exam = get_exam_by_quiz_code(quiz_code)
+    new_attempt = request.args.get("new_attempt")
 
     if not exam:
         flash("Invalid Quiz Link", "danger")
@@ -55,7 +56,41 @@ def quiz_page(quiz_code):
             last_attempt = attempts[0]
             max_attempts = exam.max_attempts_per_mobile or 1
 
-            # ✅ Always redirect to result after submission
+            # -------------------------------
+            # 🔹 If user wants new attempt
+            # -------------------------------
+            if new_attempt:
+                if len(attempts) >= max_attempts:
+                    return redirect(url_for(
+                        "student.submit_quiz",
+                        quiz_code=quiz_code,
+                        attempt_id=last_attempt.id
+                    ))
+
+                attempt, error = start_student_attempt(
+                    exam.id,
+                    exam.school_id,
+                    {
+                        "first_name": last_attempt.first_name,
+                        "last_name": last_attempt.last_name,
+                        "mobile": last_attempt.mobile,
+                        "student_class": last_attempt.student_class,
+                        "roll_number": last_attempt.roll_number,
+                    },
+                    request.remote_addr
+                )
+
+                if attempt:
+                    session["attempt_id"] = attempt.id
+                    return redirect(url_for(
+                        "student.quiz_question",
+                        quiz_code=quiz_code,
+                        q_index=0
+                    ))
+
+            # -------------------------------
+            # 🔹 DEFAULT → ALWAYS SHOW RESULT
+            # -------------------------------
             return redirect(url_for(
                 "student.submit_quiz",
                 quiz_code=quiz_code,
