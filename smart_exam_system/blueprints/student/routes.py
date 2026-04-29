@@ -104,14 +104,22 @@ def quiz_page(quiz_code):
     # -------------------------------
     # 🔹 Default: show registration form
     # -------------------------------
+    used_attempts = AttemptModel.query.filter_by(
+        exam_id=exam.id,
+        mobile=student_mobile,
+        is_submitted=True
+    ).count()
+    max_attempts = exam.max_attempts_per_mobile or 1
     return render_template(
-        "student_register.html",
-        quiz_code=quiz_code,
-        exam=exam,
-        hide_nav=True,
-        hide_footer=True,
-        hide_sidebar=True
-    )
+    "student_register.html",
+    quiz_code=quiz_code,
+    exam=exam,
+    used_attempts=used_attempts,
+    max_attempts=max_attempts,
+    hide_nav=True,
+    hide_footer=True,
+    hide_sidebar=True
+)
 
 
 # -----------------------------

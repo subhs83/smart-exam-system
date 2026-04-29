@@ -11,43 +11,126 @@ body {
 .result-header {
     background: linear-gradient(135deg, #22c55e, #16a34a);
     color: white;
-    padding: 25px;
+    padding: 28px 15px;
     text-align: center;
-    border-radius: 0 0 20px 20px;
+    border-radius: 0 0 22px 22px;
 }
 
-/* Cards */
+.result-header h2 {
+    font-size: 22px;
+    margin-bottom: 5px;
+}
+
+.result-header p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Attempt Badge */
+.attempt-badge {
+    display: inline-block;
+    background: #111827;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+/* Card */
 .result-card {
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    margin-top: -40px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    background: #fff;
+    border-radius: 18px;
+    padding: 18px;
+    margin-top: -35px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* Info grid (mobile friendly) */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.info-box strong {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.info-box p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 /* Stats */
-.stat-box {
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.stat {
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 12px;
     text-align: center;
-    padding: 15px;
 }
 
-.stat-box h3 {
+.stat h5 {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 5px;
+}
+
+.stat h3 {
+    font-size: 18px;
     font-weight: bold;
 }
 
-/* Grade Badge */
+/* Progress */
+.progress {
+    height: 18px;
+    border-radius: 10px;
+}
+
+/* Grade */
 .grade {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: bold;
-    padding: 10px 20px;
+    padding: 8px 18px;
     border-radius: 10px;
     display: inline-block;
 }
 
-/* Message */
 .message {
-    font-size: 18px;
-    margin-top: 10px;
+    font-size: 15px;
+    margin-top: 8px;
+    color: #374151;
+}
+
+/* Buttons */
+.action-buttons {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.action-buttons a {
+    display: inline-block;
+    width: 48%;
+    margin: 5px 1%;
+}
+
+@media(max-width: 480px) {
+    .action-buttons a {
+        width: 100%;
+        margin: 6px 0;
+    }
 }
 </style>
 
@@ -55,6 +138,11 @@ body {
 <div class="result-header">
     <h2>Quiz Completed 🎉</h2>
     <p>{{ exam.title }}</p>
+
+    <!-- Attempt Counter -->
+    <div class="attempt-badge">
+        Attempts: {{ used_attempts }} / {{ max_attempts }}
+    </div>
 </div>
 
 <div class="container">
@@ -63,25 +151,25 @@ body {
 <div class="result-card">
 
     <!-- Student Info -->
-    <div class="row text-center mb-4">
+    <div class="info-grid">
 
-        <div class="col-md-3">
+        <div class="info-box">
             <strong>Name</strong>
             <p>{{ student_name }}</p>
         </div>
 
-        <div class="col-md-3">
+        <div class="info-box">
             <strong>Class</strong>
             <p>{{ student_class }}</p>
         </div>
 
-        <div class="col-md-3">
+        <div class="info-box">
             <strong>Roll</strong>
             <p>{{ roll_number }}</p>
         </div>
 
-        <div class="col-md-3">
-            <strong>Total Questions</strong>
+        <div class="info-box">
+            <strong>Total</strong>
             <p>{{ total }}</p>
         </div>
 
@@ -90,26 +178,26 @@ body {
     <hr>
 
     <!-- Stats -->
-    <div class="row text-center">
+    <div class="stats">
 
-        <div class="col-md-3 stat-box">
+        <div class="stat">
             <h5>Score</h5>
             <h3 class="text-success">{{ score }}</h3>
         </div>
 
-        <div class="col-md-3 stat-box">
+        <div class="stat">
             <h5>Correct</h5>
             <h3 class="text-success">{{ correct_answers }}</h3>
         </div>
 
-        <div class="col-md-3 stat-box">
+        <div class="stat">
             <h5>Wrong</h5>
             <h3 class="text-danger">{{ wrong_answers }}</h3>
         </div>
 
-        <div class="col-md-3 stat-box">
+        <div class="stat">
             <h5>Percentage</h5>
-            <h3 class="text-primary">{{ "%.2f"|format(percentage) }}%</h3>
+            <h3 class="text-primary">{{ "%.1f"|format(percentage) }}%</h3>
         </div>
 
     </div>
@@ -117,17 +205,16 @@ body {
     <hr>
 
     <!-- Progress -->
-    <div class="mb-4">
-        <div class="progress" style="height: 25px;">
+    <div class="mb-3">
+        <div class="progress">
             <div class="progress-bar bg-info"
-                 role="progressbar"
                  style="width: {{ percentage }}%">
                 {{ "%.1f"|format(percentage) }}%
             </div>
         </div>
     </div>
 
-    <!-- Performance Logic -->
+    <!-- Grade -->
     {% if percentage >= 80 %}
         {% set grade = "A" %}
         {% set message = "Excellent Performance 🎉" %}
@@ -142,8 +229,7 @@ body {
         {% set color = "bg-danger text-white" %}
     {% endif %}
 
-    <!-- Grade + Message -->
-    <div class="text-center mt-4">
+    <div class="text-center mt-3">
         <div class="grade {{ color }}">
             Grade {{ grade }}
         </div>
@@ -156,21 +242,27 @@ body {
 </div>
 
 <!-- ================= ACTION BUTTONS ================= -->
-<div class="text-center mt-4">
+<div class="action-buttons">
 
     <a href="/" class="btn btn-primary btn-lg">
         Finish
     </a>
 
-    <!-- ✅ Start Next Attempt Button -->
-    {% if exam.max_attempts_per_mobile and exam.max_attempts_per_mobile > 1 %}
-    <button class="btn btn-success btn-lg ms-2"
-    onclick="window.location.href='/student/quiz/{{ exam.quiz_code }}?new_attempt=1'">
-    Start Next Attempt
-</button>
+    {% if used_attempts < exam.max_attempts_per_mobile %}
+        <a href="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code, new_attempt=1) }}"
+           class="btn btn-success btn-lg">
+            Start Next Attempt
+        </a>
+    {% endif %}
+
+    {% if used_attempts >= exam.max_attempts_per_mobile %}
+        <p class="text-danger mt-3">
+            Maximum attempts reached
+        </p>
     {% endif %}
 
 </div>
+
 </div>
 
 {% endblock %}
