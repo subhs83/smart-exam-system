@@ -195,7 +195,8 @@ input[type="radio"]:checked + label {
 
     <!-- LEFT: Branding -->
     <div class="d-flex align-items-center gap-2">
-        <strong>{{ exam.title }}</strong>
+        <strong><i class="fas fa-graduation-cap me-2"></i>
+            <span>IndiaEduCore</span></strong>
     </div>
 
     <!-- CENTER: Progress -->
@@ -209,9 +210,7 @@ input[type="radio"]:checked + label {
 </div>
 <!-- ================= QUESTION ================= -->
 <div class="question-card">
- <!--<h5 class="mb-3">{{ question.question_text }}</h5>-->
-    <i class="fas fa-graduation-cap me-2"></i>
-            <span>IndiaEduCore</span>
+ <h5 class="mb-3">{{ question.question_text }}</h5>
     <form id="quiz-form" method="POST">
 
         <input type="hidden" name="question_id" value="{{ question.question_id }}">
