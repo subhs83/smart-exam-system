@@ -5,7 +5,7 @@ from sqlalchemy import func
 from smart_exam_system.models.exam import ExamModel
 from smart_exam_system.models.question import QuestionModel
 from smart_exam_system.models.attempt import AttemptModel
-from smart_exam_system.utils.exam_helpers import apply_exam_status
+from smart_exam_system.utils.helpers import apply_exam_status
 from datetime import datetime, timezone
 
 

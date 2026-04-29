@@ -1,4 +1,4 @@
-from flask import render_template, session, redirect, url_for, request, flash
+from flask import render_template, session, redirect, url_for, request, flash,make_response
 from smart_exam_system.blueprints.student import student_bp
 from smart_exam_system.extensions import db
 from smart_exam_system.utils.services.student_service import (
@@ -13,14 +13,12 @@ from smart_exam_system.utils.services.student_service import (
     get_question_palette,
     record_violation,
 )
+from smart_exam_system.utils.helpers import no_cache
 from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.models.exam import ExamModel
 from datetime import datetime, timedelta
 
 
-# -----------------------------
-# Registration / Quiz Start Page
-# -----------------------------
 @student_bp.route("/quiz/<quiz_code>")
 def quiz_page(quiz_code):
     exam = get_exam_by_quiz_code(quiz_code)
@@ -29,6 +27,70 @@ def quiz_page(quiz_code):
         flash("Invalid Quiz Link", "danger")
         return "Invalid Quiz Link"
 
+    # -------------------------------
+    # 🔹 Check session (same device)
+    # -------------------------------
+    student_mobile = session.get("student_mobile")
+
+    if student_mobile:
+        attempts = AttemptModel.query.filter_by(
+            exam_id=exam.id,
+            mobile=student_mobile
+        ).order_by(AttemptModel.id.desc()).all()
+
+        if attempts:
+            last_attempt = attempts[0]
+
+            # -------------------------------
+            # ✅ Case 1: Only 1 attempt allowed
+            # -------------------------------
+            if exam.max_attempts == 1:
+                if last_attempt.is_submitted:
+                    return redirect(url_for(
+                        "student.submit_quiz",
+                        quiz_code=quiz_code,
+                        attempt_id=last_attempt.id
+                    ))
+
+            # -------------------------------
+            # ✅ Case 2: Multiple attempts
+            # -------------------------------
+            if exam.max_attempts > 1:
+
+                if len(attempts) >= exam.max_attempts:
+                    # limit reached → show result
+                    return redirect(url_for(
+                        "student.submit_quiz",
+                        quiz_code=quiz_code,
+                        attempt_id=last_attempt.id
+                    ))
+
+                # attempts left → start new attempt (skip form)
+                attempt, error = start_student_attempt(
+                    exam.id,
+                    exam.school_id,
+                    {
+                        "first_name": last_attempt.first_name,
+                        "last_name": last_attempt.last_name,
+                        "mobile": last_attempt.mobile,
+                        "student_class": last_attempt.student_class,
+                        "roll_number": last_attempt.roll_number,
+                    },
+                    request.remote_addr
+                )
+
+                if attempt:
+                    session["attempt_id"] = attempt.id
+
+                    return redirect(url_for(
+                        "student.quiz_question",
+                        quiz_code=quiz_code,
+                        q_index=0
+                    ))
+
+    # -------------------------------
+    # 🔹 Default: show registration form
+    # -------------------------------
     return render_template(
         "student_register.html",
         quiz_code=quiz_code,
@@ -37,7 +99,6 @@ def quiz_page(quiz_code):
         hide_footer=True,
         hide_sidebar=True
     )
-    
 
 
 # -----------------------------
@@ -67,6 +128,8 @@ def start_quiz(quiz_code):
 
     # 🔹 Store attempt
     session["attempt_id"] = attempt.id
+    session["student_mobile"] = attempt.mobile
+    
 
     return redirect(url_for(
         "student.quiz_question",
@@ -94,8 +157,11 @@ def quiz_question(quiz_code, q_index):
     # 🔹 Prevent answering after submit
     # -------------------------------
     if attempt.is_submitted:
-        flash("This attempt has been submitted and cannot be modified.", "warning")
-        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
+        return redirect(url_for(
+            "student.submit_quiz",
+            quiz_code=quiz_code,
+            attempt_id=attempt.id
+        ))
 
     exam = attempt.exam
 
@@ -106,7 +172,7 @@ def quiz_question(quiz_code, q_index):
     remaining_time = int((end_time - datetime.utcnow()).total_seconds())
 
     if remaining_time <= 0:
-        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
+        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code,attempt_id=attempt.id))
 
     # -------------------------------
     # 🔹 Question order & index safety
@@ -119,7 +185,7 @@ def quiz_question(quiz_code, q_index):
         q_index = 0
 
     if q_index >= total_questions:
-        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
+        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code,attempt_id=attempt.id))
 
     # -------------------------------
     # 🔹 POST: Save answer + navigation
@@ -158,7 +224,8 @@ def quiz_question(quiz_code, q_index):
         elif "submit" in request.form:
             return redirect(url_for(
                 "student.submit_quiz",
-                quiz_code=quiz_code
+                quiz_code=quiz_code,
+                attempt_id=attempt.id
             ))
 
     # -------------------------------
@@ -168,9 +235,9 @@ def quiz_question(quiz_code, q_index):
     palette = get_question_palette(attempt_id, exam.id)
 
     if not question:
-        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code))
+        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code,attempt_id=attempt.id))
 
-    return render_template(
+    response = make_response(render_template(
         "student_quiz.html",
         question=question,
         q_index=q_index,
@@ -181,7 +248,8 @@ def quiz_question(quiz_code, q_index):
         hide_nav=True,
         hide_footer=True,
         hide_sidebar=True
-    )
+    ))
+    return no_cache(response)
 # -----------------------------
 # Submit Quiz
 # -----------------------------
