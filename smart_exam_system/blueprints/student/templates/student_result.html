@@ -162,8 +162,15 @@ body {
         Finish
     </a>
 
-</div>
+    <!-- ✅ Start Next Attempt Button -->
+    {% if exam.max_attempts_per_mobile and exam.max_attempts_per_mobile > 1 %}
+        <a href="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code) }}"
+           class="btn btn-success btn-lg ms-2">
+            Start Next Attempt
+        </a>
+    {% endif %}
 
+</div>
 </div>
 
 {% endblock %}

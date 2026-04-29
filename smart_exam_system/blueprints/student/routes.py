@@ -28,10 +28,23 @@ def quiz_page(quiz_code):
         return "Invalid Quiz Link"
 
     # -------------------------------
-    # 🔹 Check session (same device)
+    # 🔹 Resolve student identity
     # -------------------------------
-    student_mobile = session.get("student_mobile")
+    student_mobile = session.get("student_mobile") or request.cookies.get("student_mobile")
 
+    if not student_mobile:
+        last_attempt = AttemptModel.query.filter_by(
+            exam_id=exam.id,
+            ip_address=request.remote_addr
+        ).order_by(AttemptModel.id.desc()).first()
+
+        if last_attempt:
+            student_mobile = last_attempt.mobile
+            session["student_mobile"] = student_mobile
+
+    # -------------------------------
+    # 🔹 Existing attempts check
+    # -------------------------------
     if student_mobile:
         attempts = AttemptModel.query.filter_by(
             exam_id=exam.id,
@@ -40,55 +53,14 @@ def quiz_page(quiz_code):
 
         if attempts:
             last_attempt = attempts[0]
+            max_attempts = exam.max_attempts_per_mobile or 1
 
-            # -------------------------------
-            # ✅ Case 1: Only 1 attempt allowed
-            # -------------------------------
-            if (exam.max_attempts_per_mobile or 1) == 1:
-                if last_attempt.is_submitted:
-                    return redirect(url_for(
-                        "student.submit_quiz",
-                        quiz_code=quiz_code,
-                        attempt_id=last_attempt.id
-                    ))
-
-            # -------------------------------
-            # ✅ Case 2: Multiple attempts
-            # -------------------------------
-            if exam.max_attempts_per_mobile > 1:
-
-                max_attempts = exam.max_attempts_per_mobile or 1
-
-                if len(attempts) >= max_attempts:
-                    # limit reached → show result
-                    return redirect(url_for(
-                        "student.submit_quiz",
-                        quiz_code=quiz_code,
-                        attempt_id=last_attempt.id
-                    ))
-
-                # attempts left → start new attempt (skip form)
-                attempt, error = start_student_attempt(
-                    exam.id,
-                    exam.school_id,
-                    {
-                        "first_name": last_attempt.first_name,
-                        "last_name": last_attempt.last_name,
-                        "mobile": last_attempt.mobile,
-                        "student_class": last_attempt.student_class,
-                        "roll_number": last_attempt.roll_number,
-                    },
-                    request.remote_addr
-                )
-
-                if attempt:
-                    session["attempt_id"] = attempt.id
-
-                    return redirect(url_for(
-                        "student.quiz_question",
-                        quiz_code=quiz_code,
-                        q_index=0
-                    ))
+            # ✅ Always redirect to result after submission
+            return redirect(url_for(
+                "student.submit_quiz",
+                quiz_code=quiz_code,
+                attempt_id=last_attempt.id
+            ))
 
     # -------------------------------
     # 🔹 Default: show registration form
@@ -109,14 +81,12 @@ def quiz_page(quiz_code):
 @student_bp.route("/quiz/<quiz_code>/start", methods=["POST"])
 def start_quiz(quiz_code):
 
-    # 🔹 Get exam using quiz_code
     exam = ExamModel.query.filter_by(quiz_code=quiz_code).first()
 
     if not exam:
         flash("Invalid quiz link", "danger")
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
-    # 🔹 Call correct function
     attempt, error = start_student_attempt(
         exam.id,
         exam.school_id,
@@ -128,16 +98,23 @@ def start_quiz(quiz_code):
         flash(error, "danger")
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
-    # 🔹 Store attempt
-    session["attempt_id"] = attempt.id
-    session["student_mobile"] = attempt.mobile
-    
-
-    return redirect(url_for(
+    response = make_response(redirect(url_for(
         "student.quiz_question",
         quiz_code=quiz_code,
         q_index=0
-    ))
+    )))
+
+    session["attempt_id"] = attempt.id
+    session["student_mobile"] = attempt.mobile
+
+    # ✅ Persist identity (important)
+    response.set_cookie(
+        "student_mobile",
+        attempt.mobile,
+        max_age=30 * 24 * 60 * 60
+    )
+
+    return response
 
 
 @student_bp.route("/quiz/<quiz_code>/<int:q_index>", methods=["GET", "POST"])
@@ -265,14 +242,12 @@ def quiz_question(quiz_code, q_index):
 @student_bp.route("/quiz/<quiz_code>/submit", methods=["GET", "POST"])
 def submit_quiz(quiz_code):
 
-        # ✅ FIX: get attempt_id from URL OR session
     attempt_id = request.args.get("attempt_id") or session.get("attempt_id")
 
     if not attempt_id:
         flash("No active attempt found", "danger")
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
-    # ✅ ADD THIS
     try:
         attempt_id = int(attempt_id)
     except (TypeError, ValueError):
@@ -284,9 +259,6 @@ def submit_quiz(quiz_code):
         flash("Attempt not found", "danger")
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
-    # -------------------------------
-    # ✅ Prevent multiple submissions
-    # -------------------------------
     if attempt.is_submitted:
         flash("This attempt has already been submitted.", "warning")
         result = get_student_result(attempt_id)
@@ -294,13 +266,11 @@ def submit_quiz(quiz_code):
 
     if attempt.violation_count >= 2:
         attempt.auto_submitted_reason = "Tab switch / DevTools / App switch detected"
-    # Generate result
+
     result = get_student_result(attempt_id)
 
-    # Clear session
     session.pop("attempt_id", None)
 
-    # Send exam + result to template
     return render_template(
         "student_result.html",
         **result,
