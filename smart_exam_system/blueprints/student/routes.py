@@ -51,7 +51,8 @@ def quiz_page(quiz_code):
     if student_mobile:
         attempts = AttemptModel.query.filter_by(
             exam_id=exam.id,
-            mobile=student_mobile
+            mobile=student_mobile,
+            is_submitted=True
         ).order_by(AttemptModel.id.desc()).all()
 
         if attempts:
