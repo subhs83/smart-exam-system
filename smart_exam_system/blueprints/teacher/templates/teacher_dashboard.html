@@ -116,14 +116,18 @@
                             <td>{{ exam.id }}</td>
                             <td><strong>{{ exam.title }}</strong></td>
                             <td>
-                                <span class="badge bg-{{ 'success' if exam.status=='published' else 'secondary' }}">
-                                    {{ exam.status }}
+                                <span class="badge bg-{{ 
+                                    'success' if exam.display_status=='published'
+                                    else 'danger' if exam.display_status=='expired'
+                                    else 'secondary'
+                                }}">
+                                    {{ exam.display_status|capitalize }}
                                 </span>
                             </td>
                             <td>{{ exam.total_questions or 0 }}</td>
                             <td>{{ exam.duration_minutes }} min</td>
                             <td>
-                                {% if exam.quiz_code %}
+                                {% if exam.quiz_code and exam.display_status != 'expired' %}
                                 <div class="d-flex gap-1">
                                     <button class="btn btn-sm btn-outline-secondary"
                                             data-link="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code, _external=True) }}"
@@ -148,7 +152,7 @@
                                     </form>
                                     {% endif %}
 
-                                    {% if exam.status != 'published' and exam.total_attempts == 0 %}
+                                    {% if exam.status != 'published' and exam.total_attempts == 0 and exam.display_status != 'expired' %}
                                     <!-- Upload Button -->
                                     <a href="{{ url_for('teacher.upload_questions_route', exam_id=exam.id) }}"
                                     class="btn btn-sm btn-upload"><i class="fas fa-upload me-1"></i>Upload</a>

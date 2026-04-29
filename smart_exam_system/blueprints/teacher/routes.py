@@ -6,7 +6,7 @@ from smart_exam_system.utils.services.question_service import upload_questions, 
 from smart_exam_system.utils.services.result_service import get_results, generate_leaderboard,get_attempt_detailed_report
 from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.blueprints.teacher import teacher_bp
-from datetime import datetime
+from datetime import datetime,timezone
 
 # ---------------------------------
 # Dashboard
@@ -24,7 +24,7 @@ def dashboard():
 # ---------------------------------
 # Create Exam
 # ---------------------------------
-from datetime import datetime
+
 
 @teacher_bp.route('/teacher/exams/create', methods=['GET', 'POST'])
 @teacher_required
@@ -36,9 +36,10 @@ def create_exam_route():
         end_date = request.form.get('end_date')
 
         # convert to datetime
-        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M")
-        end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M")
+        from datetime import datetime, timezone
 
+        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M").astimezone(timezone.utc)
+        end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M").astimezone(timezone.utc)
         success, msg = create_exam(
             teacher_id=current_user.id,
             school_id=current_user.school_id,

@@ -5,6 +5,9 @@ from sqlalchemy import func
 from smart_exam_system.models.exam import ExamModel
 from smart_exam_system.models.question import QuestionModel
 from smart_exam_system.models.attempt import AttemptModel
+from smart_exam_system.utils.exam_helpers import apply_exam_status
+from datetime import datetime, timezone
+
 
 # -------------------------------
 # Create Exam
@@ -49,12 +52,6 @@ def create_exam(
 # -------------------------------
 
 def get_teacher_exams(teacher_id):
-    """
-    Returns all exams created by the teacher
-    including:
-    - total_questions
-    - total_attempts
-    """
 
     exams = db.session.query(
         ExamModel.id,
@@ -63,6 +60,7 @@ def get_teacher_exams(teacher_id):
         ExamModel.status,
         ExamModel.quiz_code,
         ExamModel.created_at,
+        ExamModel.end_date,   # ⚠️ make sure included if used
 
         func.count(func.distinct(QuestionModel.id)).label("total_questions"),
         func.count(func.distinct(AttemptModel.id)).label("total_attempts")
@@ -79,8 +77,13 @@ def get_teacher_exams(teacher_id):
         ExamModel.created_at.desc()
     ).all()
 
-    return exams
+    result = []
 
+    for e in exams:
+        exam = dict(e._mapping)
+        result.append(apply_exam_status(exam))
+
+    return result
 
 # -------------------------------
 # Publish Exam
@@ -133,3 +136,4 @@ def delete_exam(exam_id):
     db.session.commit()
 
     return True, "Exam deleted successfully."
+
