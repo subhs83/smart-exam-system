@@ -309,7 +309,21 @@ def submit_quiz(quiz_code):
     if attempt.is_submitted:
         flash("This attempt has already been submitted.", "warning")
         result = get_student_result(attempt_id)
-        return render_template("student_result.html", **result)
+
+        used_attempts = AttemptModel.query.filter_by(
+            exam_id=attempt.exam_id,
+            mobile=attempt.mobile,
+            is_submitted=True
+        ).count()
+
+        max_attempts = attempt.exam.max_attempts_per_mobile or 1
+
+        return render_template(
+            "student_result.html",
+            **result,
+            used_attempts=used_attempts,
+            max_attempts=max_attempts
+        )
 
     if attempt.violation_count >= 2:
         attempt.auto_submitted_reason = "Tab switch / DevTools / App switch detected"
