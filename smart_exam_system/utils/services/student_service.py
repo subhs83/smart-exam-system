@@ -14,16 +14,8 @@ import json
 # -------------------------------
 
 def get_exam_by_quiz_code(quiz_code):
-
-    return ExamModel.query.with_entities(
-        ExamModel.id,
-        ExamModel.school_id,
-        ExamModel.duration_minutes,
-        ExamModel.marks_per_question,
-        ExamModel.negative_marks,
-        ExamModel.max_attempts_per_mobile
-    ).filter(
-        ExamModel.quiz_code == quiz_code
+    return ExamModel.query.filter_by(
+        quiz_code=quiz_code
     ).first()
 
 # -------------------------------

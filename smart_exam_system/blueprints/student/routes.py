@@ -44,7 +44,7 @@ def quiz_page(quiz_code):
             # -------------------------------
             # ✅ Case 1: Only 1 attempt allowed
             # -------------------------------
-            if exam.max_attempts == 1:
+            if (exam.max_attempts_per_mobile or 1) == 1:
                 if last_attempt.is_submitted:
                     return redirect(url_for(
                         "student.submit_quiz",
@@ -55,9 +55,11 @@ def quiz_page(quiz_code):
             # -------------------------------
             # ✅ Case 2: Multiple attempts
             # -------------------------------
-            if exam.max_attempts > 1:
+            if exam.max_attempts_per_mobile > 1:
 
-                if len(attempts) >= exam.max_attempts:
+                max_attempts = exam.max_attempts_per_mobile or 1
+
+                if len(attempts) >= max_attempts:
                     # limit reached → show result
                     return redirect(url_for(
                         "student.submit_quiz",
