@@ -3,143 +3,185 @@
 {% block content %}
 
 <style>
-body {
-    background: #f4f6fb;
+body{
+    background:#f4f6fb;
+    font-family: Inter, sans-serif;
 }
 
-/* Header */
-.result-header {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: white;
-    padding: 28px 15px;
-    text-align: center;
-    border-radius: 0 0 22px 22px;
+/* HEADER */
+.result-header{
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    color:#fff;
+    padding:24px 16px;
+    text-align:center;
+    border-radius:0 0 18px 18px;
 }
 
-.result-header h2 {
-    font-size: 22px;
-    margin-bottom: 5px;
+.result-header h2{
+    font-size:20px;
+    margin:0;
 }
 
-.result-header p {
-    font-size: 14px;
-    opacity: 0.9;
+.result-header p{
+    font-size:13px;
+    opacity:0.9;
+    margin-top:4px;
 }
 
-/* Attempt Badge */
-.attempt-badge {
-    display: inline-block;
-    background: #111827;
-    color: #fff;
-    padding: 6px 14px;
-    border-radius: 30px;
-    font-size: 13px;
-    margin-top: 10px;
+/* ATTEMPT BADGE */
+.attempt-badge{
+    display:inline-block;
+    margin-top:10px;
+    padding:6px 14px;
+    border-radius:30px;
+    background:#111827;
+    font-size:12px;
 }
 
-/* Card */
-.result-card {
-    background: #fff;
-    border-radius: 18px;
-    padding: 18px;
-    margin-top: -35px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+/* MAIN CARD */
+.result-card{
+    background:#fff;
+    margin-top:-30px;
+    border-radius:18px;
+    padding:16px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
 }
 
-/* Info grid (mobile friendly) */
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    text-align: center;
-    margin-bottom: 15px;
+/* ================= STUDENT INFO ================= */
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-bottom:16px;
 }
 
-.info-box strong {
-    display: block;
-    font-size: 12px;
-    color: #6b7280;
+.info-box{
+    background:#f9fafb;
+    padding:10px;
+    border-radius:10px;
+    text-align:center;
 }
 
-.info-box p {
-    margin: 4px 0 0;
-    font-size: 14px;
-    font-weight: 600;
+.info-box strong{
+    display:block;
+    font-size:11px;
+    color:#6b7280;
 }
 
-/* Stats */
-.stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-top: 10px;
+.info-box p{
+    margin:4px 0 0;
+    font-size:14px;
+    font-weight:600;
 }
 
-.stat {
-    background: #f9fafb;
-    padding: 12px;
-    border-radius: 12px;
-    text-align: center;
+/* SCORE */
+.score-section{
+    text-align:center;
+    padding:10px 0 15px;
 }
 
-.stat h5 {
-    font-size: 12px;
-    color: #6b7280;
-    margin-bottom: 5px;
+.score{
+    font-size:42px;
+    font-weight:700;
+    color:#111827;
 }
 
-.stat h3 {
-    font-size: 18px;
-    font-weight: bold;
+.score-text{
+    font-size:13px;
+    color:#6b7280;
 }
 
-/* Progress */
-.progress {
-    height: 18px;
-    border-radius: 10px;
+.accuracy{
+    margin-top:4px;
+    font-size:14px;
+    color:#2563eb;
+    font-weight:600;
 }
 
-/* Grade */
-.grade {
-    font-size: 24px;
-    font-weight: bold;
-    padding: 8px 18px;
-    border-radius: 10px;
-    display: inline-block;
+/* PROGRESS */
+.progress{
+    height:10px;
+    border-radius:50px;
+    background:#e5e7eb;
+    overflow:hidden;
+    margin:12px 0 18px;
 }
 
-.message {
-    font-size: 15px;
-    margin-top: 8px;
-    color: #374151;
+.progress-bar{
+    background:linear-gradient(90deg,#22c55e,#16a34a);
 }
 
-/* Buttons */
-.action-buttons {
-    text-align: center;
-    margin-top: 20px;
+/* STATS */
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
 }
 
-.action-buttons a {
-    display: inline-block;
-    width: 48%;
-    margin: 5px 1%;
+.stat-box{
+    background:#f9fafb;
+    padding:12px;
+    border-radius:12px;
+    text-align:center;
 }
 
-@media(max-width: 480px) {
-    .action-buttons a {
-        width: 100%;
-        margin: 6px 0;
+.stat-value{
+    font-size:18px;
+    font-weight:700;
+}
+
+.stat-label{
+    font-size:12px;
+    color:#6b7280;
+}
+
+/* GRADE */
+.grade-box{
+    text-align:center;
+    margin-top:16px;
+}
+
+.grade{
+    display:inline-block;
+    padding:8px 16px;
+    border-radius:10px;
+    color:#fff;
+    font-weight:700;
+    font-size:14px;
+}
+
+.message{
+    margin-top:6px;
+    font-size:14px;
+    color:#374151;
+}
+
+/* ACTIONS */
+.actions{
+    margin-top:18px;
+    text-align:center;
+}
+
+.actions a{
+    display:block;
+    width:100%;
+    margin-top:10px;
+}
+
+@media(min-width:600px){
+    .actions a{
+        display:inline-block;
+        width:auto;
+        margin:6px;
     }
 }
 </style>
 
-<!-- ================= HEADER ================= -->
+<!-- HEADER -->
 <div class="result-header">
     <h2>Quiz Completed 🎉</h2>
     <p>{{ exam.title }}</p>
 
-    <!-- Attempt Counter -->
     <div class="attempt-badge">
         Attempts: {{ used_attempts }} / {{ max_attempts }}
     </div>
@@ -147,10 +189,9 @@ body {
 
 <div class="container">
 
-<!-- ================= MAIN CARD ================= -->
 <div class="result-card">
 
-    <!-- Student Info -->
+    <!-- ================= STUDENT INFO ================= -->
     <div class="info-grid">
 
         <div class="info-box">
@@ -164,98 +205,101 @@ body {
         </div>
 
         <div class="info-box">
-            <strong>Roll</strong>
+            <strong>Roll Number</strong>
             <p>{{ roll_number }}</p>
         </div>
 
         <div class="info-box">
-            <strong>Total</strong>
-            <p>{{ total }}</p>
+            <strong>Exam</strong>
+            <p>{{ exam.title }}</p>
         </div>
 
     </div>
 
-    <hr>
+    <!-- ================= SCORE ================= -->
+    <div class="score-section">
 
-    <!-- Stats -->
-    <div class="stats">
+        <div class="score">{{ score }}</div>
+        <div class="score-text">Your Score</div>
+        <div class="accuracy">{{ "%.1f"|format(percentage) }}% Accuracy</div>
 
-        <div class="stat">
-            <h5>Score</h5>
-            <h3 class="text-success">{{ score }}</h3>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress">
+        <div class="progress-bar"
+             style="width: {{ percentage }}%"></div>
+    </div>
+
+    <!-- ================= STATS ================= -->
+    <div class="stats-grid">
+
+        <div class="stat-box">
+            <div class="stat-value text-success">{{ correct_answers }}</div>
+            <div class="stat-label">Correct</div>
         </div>
 
-        <div class="stat">
-            <h5>Correct</h5>
-            <h3 class="text-success">{{ correct_answers }}</h3>
+        <div class="stat-box">
+            <div class="stat-value text-danger">{{ wrong_answers }}</div>
+            <div class="stat-label">Incorrect</div>
         </div>
 
-        <div class="stat">
-            <h5>Wrong</h5>
-            <h3 class="text-danger">{{ wrong_answers }}</h3>
+        <div class="stat-box">
+            <div class="stat-value text-primary">{{ score }}</div>
+            <div class="stat-label">Final Score</div>
         </div>
 
-        <div class="stat">
-            <h5>Percentage</h5>
-            <h3 class="text-primary">{{ "%.1f"|format(percentage) }}%</h3>
+        <div class="stat-box">
+            <div class="stat-value">{{ "%.1f"|format(percentage) }}%</div>
+            <div class="stat-label">Accuracy</div>
         </div>
 
     </div>
 
-    <hr>
+    <!-- ================= GRADE ================= -->
+    <div class="grade-box">
 
-    <!-- Progress -->
-    <div class="mb-3">
-        <div class="progress">
-            <div class="progress-bar bg-info"
-                 style="width: {{ percentage }}%">
-                {{ "%.1f"|format(percentage) }}%
-            </div>
-        </div>
-    </div>
+        {% if percentage >= 80 %}
+            {% set grade = "A" %}
+            {% set message = "Excellent Performance 🎉" %}
+            {% set color = "#16a34a" %}
+        {% elif percentage >= 50 %}
+            {% set grade = "B" %}
+            {% set message = "Good Performance 👍" %}
+            {% set color = "#f59e0b" %}
+        {% else %}
+            {% set grade = "C" %}
+            {% set message = "Needs Improvement 📘" %}
+            {% set color = "#ef4444" %}
+        {% endif %}
 
-    <!-- Grade -->
-    {% if percentage >= 80 %}
-        {% set grade = "A" %}
-        {% set message = "Excellent Performance 🎉" %}
-        {% set color = "bg-success text-white" %}
-    {% elif percentage >= 50 %}
-        {% set grade = "B" %}
-        {% set message = "Good Job 👍" %}
-        {% set color = "bg-warning text-dark" %}
-    {% else %}
-        {% set grade = "C" %}
-        {% set message = "Needs Improvement 📘" %}
-        {% set color = "bg-danger text-white" %}
-    {% endif %}
-
-    <div class="text-center mt-3">
-        <div class="grade {{ color }}">
+        <div class="grade" style="background:{{ color }}">
             Grade {{ grade }}
         </div>
 
         <div class="message">
             {{ message }}
         </div>
+
     </div>
 
 </div>
 
-<!-- ================= ACTION BUTTONS ================= -->
-<div class="action-buttons">
+<!-- ================= ACTIONS ================= -->
+<div class="actions">
 
     <a href="/" class="btn btn-primary btn-lg">
         Finish
     </a>
 
-    {% if used_attempts < exam.max_attempts_per_mobile %}
+    {% if used_attempts < max_attempts %}
         <a href="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code, new_attempt=1) }}"
            class="btn btn-success btn-lg">
             Start Next Attempt
         </a>
     {% endif %}
 
-    {% if used_attempts >= exam.max_attempts_per_mobile %}
+    {% if used_attempts >= max_attempts %}
         <p class="text-danger mt-3">
             Maximum attempts reached
         </p>
