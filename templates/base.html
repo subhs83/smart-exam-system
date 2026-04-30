@@ -310,6 +310,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     
         window.history.pushState({}, "", url);
+
+        if (newContent) {
+    document.querySelector("#main-content").innerHTML =
+        newContent.innerHTML;
+}
+
+/* 🔥 IMPORTANT: re-init page scripts */
+initAttemptFilter();
     });
     </script>
 

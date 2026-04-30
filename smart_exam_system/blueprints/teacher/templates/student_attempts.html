@@ -147,27 +147,32 @@
 </div>
 
 <script>
-    document.getElementById("attemptFilter").addEventListener("change", function () {
+    function initAttemptFilter() {
     
-        let value = this.value;
-        let rows = document.querySelectorAll("tbody tr[data-auto]");
+        const filter = document.getElementById("attemptFilter");
+        if (!filter) return;
     
-        rows.forEach(row => {
+        filter.onchange = function () {
     
-            let auto = row.getAttribute("data-auto");
-            let violation = row.getAttribute("data-violation");
-            let best = row.getAttribute("data-best");
+            let value = this.value;
+            let rows = document.querySelectorAll("tbody tr[data-auto]");
     
-            let show = true;
+            rows.forEach(row => {
     
-            if (value === "auto" && auto !== "yes") show = false;
-            if (value === "violation" && violation !== "yes") show = false;
-            if (value === "best" && best !== "yes") show = false;
+                let auto = row.dataset.auto;
+                let violation = row.dataset.violation;
+                let best = row.dataset.best;
     
-            row.style.display = show ? "" : "none";
-        });
+                let show = true;
     
-    });
+                if (value === "auto" && auto !== "yes") show = false;
+                if (value === "violation" && violation !== "yes") show = false;
+                if (value === "best" && best !== "yes") show = false;
+    
+                row.style.display = show ? "" : "none";
+            });
+        };
+    }
     </script>
 
 {% endblock %}
