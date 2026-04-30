@@ -55,12 +55,9 @@
     background: var(--bg);
     color: var(--text);
     margin: 0;
-    opacity: 0;
-    transition: opacity 0.15s ease-in;
+ 
   }
-  body.loaded {
-    opacity: 1;
-}
+ 
   html, body {
     scroll-behavior: smooth;
   }
@@ -89,7 +86,16 @@
   }
   
   /* Smooth look */
-
+  #page-loader {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+}
 
 /* ============================
    Base & Body
