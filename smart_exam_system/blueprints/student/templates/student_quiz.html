@@ -310,10 +310,10 @@ async function autoSubmitExam() {
 
     try {
         // ✅ Save current answer before submit
-        await fetch(window.location.href, {
-            method: "POST",
-            body: new FormData(form)
-        });
+        await fetch("{{ url_for('student.quiz_question', quiz_code=request.view_args['quiz_code'], q_index=q_index) }}", {
+    method: "POST",
+    body: new FormData(form)
+});
     } catch (e) {
         console.error("Save failed:", e);
     }
@@ -354,10 +354,10 @@ updateTimer();
     const form = document.getElementById("quiz-form");
     const status = document.getElementById("save-status");
 
-    fetch(window.location.href, {
-        method: "POST",
-        body: new FormData(form)
-    })
+    fetch("{{ url_for('student.quiz_question', quiz_code=request.view_args['quiz_code'], q_index=q_index) }}", {
+    method: "POST",
+    body: new FormData(form)
+})
     .then(res => {
         if(status){
             status.textContent = res.ok ? "✔ Saved" : "❌ Error";
