@@ -39,12 +39,16 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Exam Start Date & Time</label>
-                    <input type="datetime-local" name="start_date" class="form-control" oninput="this.blur()" required>
+                    <input type="datetime-local" id="start_date" name="start_date"
+                           class="form-control"
+                           required>
                 </div>
             
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Exam End Date & Time</label>
-                    <input type="datetime-local" name="end_date" class="form-control" oninput="this.blur()" required>
+                    <input type="datetime-local" id="end_date" name="end_date"
+                           class="form-control"
+                           required>
                 </div>
             </div>
             <div class="d-flex gap-2">
@@ -55,4 +59,33 @@
         </form>
     </div>
 </div>
+<script>
+    function initDateValidation() {
+    
+        const startInput = document.getElementById("start_date");
+        const endInput = document.getElementById("end_date");
+    
+        if (!startInput || !endInput) return;
+    
+        const now = new Date();
+    
+        // format to YYYY-MM-DDTHH:MM
+        const pad = n => n.toString().padStart(2, "0");
+        const formattedNow =
+            now.getFullYear() + "-" +
+            pad(now.getMonth() + 1) + "-" +
+            pad(now.getDate()) + "T" +
+            pad(now.getHours()) + ":" +
+            pad(now.getMinutes());
+    
+        // 🔥 disable past
+        startInput.min = formattedNow;
+        endInput.min = formattedNow;
+    
+        // 🔥 ensure end >= start
+        startInput.addEventListener("change", function () {
+            endInput.min = this.value;
+        });
+    }
+    </script>
 {% endblock %}

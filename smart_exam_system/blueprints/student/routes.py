@@ -21,6 +21,7 @@ from datetime import datetime, timedelta
 
 @student_bp.route("/quiz/<quiz_code>")
 def quiz_page(quiz_code):
+    print("QUIZ PAGE HIT:", request.method, request.url)
     exam = get_exam_by_quiz_code(quiz_code)
     new_attempt = request.args.get("new_attempt")
     if not exam:

@@ -40,6 +40,8 @@ def create_exam_route():
 
         start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M").astimezone(timezone.utc)
         end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M").astimezone(timezone.utc)
+      
+      
         success, msg = create_exam(
             teacher_id=current_user.id,
             school_id=current_user.school_id,

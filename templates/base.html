@@ -274,53 +274,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     </script>
 
-<script>
-    window.AppInit = function () {
-    
-        if (window.initAttemptFilter) {
-            window.initAttemptFilter();
-        }
-    
-    };
-    </script>
-
-    <script>
-        window.initAttemptFilter = function () {
-        
-            const filter = document.getElementById("attemptFilter");
-            if (!filter) return;
-        
-            filter.onchange = function () {
-        
-                let value = this.value;
-                let rows = document.querySelectorAll("tbody tr[data-auto]");
-        
-                rows.forEach(row => {
-        
-                    let auto = row.dataset.auto;
-                    let violation = row.dataset.violation;
-                    let best = row.dataset.best;
-        
-                    let show = true;
-        
-                    if (value === "auto" && auto !== "yes") show = false;
-                    if (value === "violation" && violation !== "yes") show = false;
-                    if (value === "best" && best !== "yes") show = false;
-        
-                    row.style.display = show ? "" : "none";
-                });
-            };
-        };
-
-        </script>
+<!-- Your SPA Script -->
 <script>
     document.addEventListener("click", async function (e) {
-    
         const link = e.target.closest("a");
-    
         if (!link) return;
     
-        // only internal links
+        if (!link.hasAttribute("data-spa")) return;
+    
         if (link.target === "_blank") return;
         if (link.href.includes("#")) return;
     
@@ -328,38 +289,147 @@ document.addEventListener('DOMContentLoaded', function() {
     
         const url = link.href;
     
+        try {
+            const res = await fetch(url, {
+                headers: { "X-Requested-With": "fetch" }
+            });
+    
+            const html = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+    
+            const newContent = doc.querySelector("#main-content");
+    
+            if (newContent) {
+                document.querySelector("#main-content").innerHTML =
+                    newContent.innerHTML;
+            }
+    
+            window.history.pushState({}, "", url);
+    
+            // 🔥 RE-INIT AFTER SPA LOAD
+            if (window.AppInit) {
+                window.AppInit();
+            }
+    
+        } catch {
+            window.location.href = url;
+        }
+    });
+    </script>
+
+<script>
+
+    window.addEventListener("popstate", async function () {
+
+    const url = window.location.href;
+
+    try {
         const res = await fetch(url, {
             headers: {
                 "X-Requested-With": "fetch"
             }
         });
-    
+
         const html = await res.text();
-    
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
-    
+
         const newContent = doc.querySelector("#main-content");
-    
+
         if (newContent) {
             document.querySelector("#main-content").innerHTML =
                 newContent.innerHTML;
         }
+
+        if (window.AppInit) {
+            window.AppInit();
+        }
+
+    } catch {
+        location.reload();
+    }
+    });
+</script>
+
+<script>
+    function initDateValidation() {
     
-        window.history.pushState({}, "", url);
+        const startInput = document.getElementById("start_date");
+        const endInput = document.getElementById("end_date");
+    
+        if (!startInput || !endInput) return;
+    
+        const now = new Date();
+    
+        // format to YYYY-MM-DDTHH:MM
+        const pad = n => n.toString().padStart(2, "0");
+        const formattedNow =
+            now.getFullYear() + "-" +
+            pad(now.getMonth() + 1) + "-" +
+            pad(now.getDate()) + "T" +
+            pad(now.getHours()) + ":" +
+            pad(now.getMinutes());
+    
+        // 🔥 disable past
+        startInput.min = formattedNow;
+        endInput.min = formattedNow;
+    
+        // 🔥 ensure end >= start
+        startInput.addEventListener("change", function () {
+            endInput.min = this.value;
+        });
+    }
+    </script>
 
-        if (newContent) {
-    document.querySelector("#main-content").innerHTML =
-        newContent.innerHTML;
-}
-
-        /* IMPORTANT FIX */
+<!-- Your INIT SYSTEM -->
+<script>
+    function initAttemptFilter() {
+    
+        const filter = document.getElementById("attemptFilter");
+        if (!filter) return;
+    
+        if (filter.dataset.bound === "true") return;
+        filter.dataset.bound = "true";
+    
+        filter.addEventListener("change", function () {
+    
+            let value = this.value;
+            let rows = document.querySelectorAll("tbody tr[data-auto]");
+    
+            rows.forEach(row => {
+    
+                let auto = row.getAttribute("data-auto");
+                let violation = row.getAttribute("data-violation");
+                let best = row.getAttribute("data-best");
+    
+                let show = true;
+    
+                if (value === "auto" && auto !== "yes") show = false;
+                if (value === "violation" && violation !== "yes") show = false;
+                if (value === "best" && best !== "yes") show = false;
+    
+                row.style.display = show ? "" : "none";
+            });
+        });
+    }
+    
+    // 🔥 THIS WAS MISSING
+    window.AppInit = function () {
+        initAttemptFilter();
+        initDateValidation();   // ✅ ADD THIS
+    };
+    </script>
+    
+    
+    <!-- 🔥 RUN ON FIRST LOAD (THIS IS WHAT YOU ASKED) -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
         if (window.AppInit) {
             window.AppInit();
         }
     });
     </script>
-
 
 </body>
 </html>
