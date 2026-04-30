@@ -317,7 +317,9 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 /* 🔥 IMPORTANT: re-init page scripts */
-initAttemptFilter();
+    requestAnimationFrame(() => {
+        initAttemptFilter();
+    });
     });
     </script>
 
