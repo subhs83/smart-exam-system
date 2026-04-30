@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+<!-- ================= HEADER CARD ================= -->
+<div class="card shadow-sm mb-3">
+
+    <div class="card-body d-flex justify-content-between align-items-center">
+
+        <div>
+            <h4 class="mb-1">{{ student.name }} - Attempts</h4>
+            <small class="text-muted">
+                Class: {{ student.class }} | Roll: {{ student.roll }}
+            </small>
+        </div>
+
+        <a href="{{ url_for('teacher.results_route', exam_id=exam_id) }}"
+           class="btn btn-outline-secondary btn-sm">
+            ← Back to Results
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ================= FILTER BAR ================= -->
+<div class="card shadow-sm mb-3">
+
+    <div class="card-body d-flex justify-content-between align-items-center">
+
+        <h6 class="mb-0">Attempt History</h6>
+
+        <select id="attemptFilter" class="form-select form-select-sm" style="width: 180px;">
+            <option value="all">All Attempts</option>
+            <option value="best">Best Only</option>
+            <option value="auto">Auto Submitted</option>
+            <option value="violation">Violations</option>
+        </select>
+
+    </div>
+
+</div>
+
+
+<!-- ================= TABLE CARD ================= -->
+<div class="card shadow-sm">
+
+<div class="card-body p-0">
+
+<div class="table-responsive">
+
+<table class="table table-hover align-middle mb-0">
+
+<thead class="table-light">
+<tr>
+    <th>Attempt</th>
+    <th>Score</th>
+    <th>%</th>
+    <th>Time</th>
+    <th>Status</th>
+    <th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for a in attempts %}
+
+<tr
+    data-auto="{{ 'yes' if a.auto_submitted_reason else 'no' }}"
+    data-violation="{{ 'yes' if a.violation_count else 'no' }}"
+    data-best="{{ 'yes' if a.id == best_attempt_id else 'no' }}"
+>
+
+    <td class="fw-semibold">
+        #{{ a.attempt_number }}
+    </td>
+
+    <td>
+        {{ a.score }} / {{ a.total_marks }}
+    </td>
+
+    <td>
+        <span class="badge bg-primary">
+            {{ "%.2f"|format(a.percentage or 0) }}%
+        </span>
+    </td>
+
+    <td>
+        <small class="text-muted">
+            {{ a.start_time }}<br>
+            → {{ a.end_time }}
+        </small>
+    </td>
+
+    <td>
+
+        {% if a.auto_submitted_reason %}
+            <span class="badge bg-danger">Auto</span>
+        {% elif a.violation_count %}
+            <span class="badge bg-warning text-dark">Violation</span>
+        {% else %}
+            <span class="badge bg-success">Normal</span>
+        {% endif %}
+
+    </td>
+
+    <td>
+        <button class="btn btn-sm btn-outline-primary"
+                data-bs-toggle="collapse"
+                data-bs-target="#detail{{ a.id }}">
+            View
+        </button>
+
+        <a href="{{ url_for('teacher.attempt_detail', attempt_id=a.id) }}"
+           class="btn btn-sm btn-primary">
+            Analysis
+        </a>
+    </td>
+
+</tr>
+
+<tr class="collapse bg-light" id="detail{{ a.id }}">
+    <td colspan="6">
+        <div class="p-3">
+            <strong>Attempt Summary</strong><br>
+            Violation Count: {{ a.violation_count or 0 }}<br>
+            Auto Submit: {{ a.auto_submitted_reason or "No" }}
+        </div>
+    </td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+    document.getElementById("attemptFilter").addEventListener("change", function () {
+    
+        let value = this.value;
+        let rows = document.querySelectorAll("tbody tr[data-auto]");
+    
+        rows.forEach(row => {
+    
+            let auto = row.getAttribute("data-auto");
+            let violation = row.getAttribute("data-violation");
+            let best = row.getAttribute("data-best");
+    
+            let show = true;
+    
+            if (value === "auto" && auto !== "yes") show = false;
+            if (value === "violation" && violation !== "yes") show = false;
+            if (value === "best" && best !== "yes") show = false;
+    
+            row.style.display = show ? "" : "none";
+        });
+    
+    });
+    </script>
+
+{% endblock %}

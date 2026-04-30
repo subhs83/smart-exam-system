@@ -6,9 +6,9 @@
 
     <h4 class="mb-0">Student Report</h4>
 
-    <a href="{{ url_for('teacher.results_route', exam_id=exam_id) }}" 
+    <a href="{{ request.referrer or url_for('teacher.results_route', exam_id=exam_id) }}" 
        class="btn btn-outline-secondary btn-sm">
-        ← Back to Results
+        ← Back
     </a>
 
 </div>

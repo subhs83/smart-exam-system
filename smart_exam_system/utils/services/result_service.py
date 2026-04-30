@@ -6,6 +6,7 @@ import json
 from openpyxl import Workbook
 from datetime import datetime
 from sqlalchemy import desc, asc
+from datetime import datetime
 # ---------------------------------
 # Get attempts Detailed Report
 # ---------------------------------
@@ -76,34 +77,68 @@ def get_attempt_detailed_report(attempt_id):
 # ---------------------------------
 
 
+from collections import defaultdict
+
+from collections import defaultdict
+
 def get_results(exam_id):
 
-    query = AttemptModel.query.filter(
+    attempts = AttemptModel.query.filter(
         AttemptModel.exam_id == exam_id,
         AttemptModel.end_time.isnot(None)
-    ).order_by(
-    AttemptModel.percentage.desc().nullslast(),
-    AttemptModel.end_time.asc()
     ).all()
+
+    grouped = {}
+
+    for a in attempts:
+
+        key = (a.school_id, a.mobile, a.roll_number)
+
+        percentage = float(a.percentage or 0)
+
+        if key not in grouped:
+            grouped[key] = {
+                "best": a,
+                "attempts_count": 1
+            }
+        else:
+            data = grouped[key]
+            data["attempts_count"] += 1
+
+            existing_best = data["best"]
+            existing_percentage = float(existing_best.percentage or 0)
+
+            # keep BEST attempt
+            if percentage > existing_percentage:
+                data["best"] = a
 
     results = []
 
-    for a in query:
-        percentage = float(a.percentage) if a.percentage is not None else 0.0
+    for data in grouped.values():
+
+        a = data["best"]
 
         results.append({
             "id": a.id,
+
+            # student info
             "first_name": a.first_name,
             "last_name": a.last_name,
             "student_class": a.student_class,
             "roll_number": a.roll_number,
             "mobile": a.mobile,
+
+            # BEST attempt data
             "score": a.score,
             "total_marks": a.total_marks,
-            "percentage": percentage,   # ✅ safe
+            "percentage": float(a.percentage or 0),
+
+            # meta
+            "attempts_count": data["attempts_count"],
+
             "start_time": a.start_time,
             "end_time": a.end_time,
-            "ip_address": a.ip_address,
+
             "violation_count": a.violation_count,
             "auto_submitted_reason": a.auto_submitted_reason
         })
@@ -114,41 +149,60 @@ def get_results(exam_id):
 # ---------------------------------
 # Get leaderboard for an exam
 # ---------------------------------
-
-
+ 
 def generate_leaderboard(exam_id):
 
-    attempts_query = AttemptModel.query.filter(
+    attempts = AttemptModel.query.filter(
         AttemptModel.exam_id == exam_id,
         AttemptModel.start_time.isnot(None),
         AttemptModel.end_time.isnot(None),
-
-        # 🔥 ADD THESE (CRITICAL)
         AttemptModel.score.isnot(None),
         AttemptModel.total_marks.isnot(None),
         AttemptModel.percentage.isnot(None)
-    ).order_by(
-        desc(AttemptModel.percentage),
-        asc(AttemptModel.end_time)
-    ).limit(5).all()
+    ).all()
+
+    grouped = {}
+
+    for a in attempts:
+
+        key = (a.school_id, a.mobile, a.roll_number)
+        percentage = float(a.percentage or 0)
+
+        if key not in grouped:
+            grouped[key] = a
+        else:
+            existing = grouped[key]
+
+            existing_percentage = float(existing.percentage or 0)
+
+            # keep BEST attempt
+            if percentage > existing_percentage:
+                grouped[key] = a
+
+            # tie-break → faster completion wins
+            elif percentage == existing_percentage:
+                if a.end_time and existing.end_time:
+                    if a.end_time < existing.end_time:
+                        grouped[key] = a
+
+    # convert to list
+    students = list(grouped.values())
+
+    # final ranking sort
+    students.sort(
+        key=lambda x: (
+            -float(x.percentage or 0),  # highest first
+            x.end_time                  # earlier wins tie
+        )
+    )
 
     leaderboard = []
-    prev_percentage = None
-    rank = 0
+    rank = 1
 
-    for idx, a in enumerate(attempts_query, start=1):
+    for a in students[:5]:   # TOP 5 AFTER grouping
 
         start_time = a.start_time if isinstance(a.start_time, datetime) else datetime.utcnow()
         end_time = a.end_time if isinstance(a.end_time, datetime) else datetime.utcnow()
-        time_taken = end_time - start_time
-
-        percentage = float(a.percentage) if a.percentage is not None else 0.0
-
-        # ✅ REAL RANK LOGIC (tie handling)
-        if percentage != prev_percentage:
-            rank = idx
-
-        prev_percentage = percentage
 
         leaderboard.append({
             "rank": rank,
@@ -157,11 +211,15 @@ def generate_leaderboard(exam_id):
             "student_class": a.student_class,
             "roll_number": a.roll_number,
             "mobile": a.mobile,
+
             "score": a.score,
             "total_marks": a.total_marks,
-            "percentage": percentage,
-            "time_taken": time_taken
+            "percentage": float(a.percentage or 0),
+
+            "time_taken": end_time - start_time
         })
+
+        rank += 1
 
     return leaderboard
 # ---------------------------------

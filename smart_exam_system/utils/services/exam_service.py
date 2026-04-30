@@ -59,6 +59,7 @@ def get_teacher_exams(teacher_id):
         ExamModel.duration_minutes,
         ExamModel.status,
         ExamModel.quiz_code,
+        ExamModel.max_attempts_per_mobile,
         ExamModel.created_at,
         ExamModel.end_date,   # ⚠️ make sure included if used
 

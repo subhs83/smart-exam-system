@@ -143,6 +143,45 @@ def delete_exam_route(exam_id):
     return redirect(url_for('teacher.dashboard'))
 
 # ---------------------------------
+# Student Attempt Overview
+# ---------------------------------
+@teacher_bp.route('/teacher/student/<string:mobile>/<string:roll>/<int:exam_id>')
+@teacher_required
+def student_attempts(mobile, roll, exam_id):
+
+    attempts = AttemptModel.query.filter(
+        AttemptModel.mobile == mobile,
+        AttemptModel.roll_number == roll,
+        AttemptModel.exam_id == exam_id
+    ).order_by(AttemptModel.attempt_number.asc()).all()
+
+    if not attempts:
+        flash("No attempts found", "danger")
+        return redirect(url_for('teacher.results_route', exam_id=exam_id))
+    # find best attempt
+    best_attempt_id = None
+    best_percentage = -1
+
+    for a in attempts:
+        if a.percentage is not None and a.percentage > best_percentage:
+            best_percentage = a.percentage
+            best_attempt_id = a.id
+    print("BEST ID:", best_attempt_id)
+    return render_template(
+        "student_attempts.html",
+        attempts=attempts,
+        exam_id=exam_id,
+        best_attempt_id=best_attempt_id,
+        student={
+            "mobile": mobile,
+            "roll": roll,
+            "name": f"{attempts[0].first_name} {attempts[0].last_name}",
+            "class": attempts[0].student_class
+        },
+        active_page="results_overview"
+    )    
+
+# ---------------------------------
 # Detailed Student Report)
 # ---------------------------------
 
