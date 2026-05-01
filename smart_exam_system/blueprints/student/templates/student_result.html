@@ -7,10 +7,9 @@
 .result-header{
     background:linear-gradient(135deg,#22c55e,#16a34a);
     color:#fff;
-    padding:18px 12px;
+    padding:16px 12px;
     text-align:center;
     border-radius:0 0 18px 18px;
-    font-size:15px;
 }
 
 .result-header h2{
@@ -19,8 +18,8 @@
 }
 
 .result-header p{
-    font-size:14px;
-    opacity:0.9;
+    font-size:16px;
+    font-weight: 600;
     margin-top:4px;
 }
 
@@ -28,10 +27,10 @@
 .attempt-badge{
     display:inline-block;
     margin-top:10px;
-    padding:6px 14px;
+    padding:10px 16px;
     border-radius:30px;
     background:#111827;
-    font-size:13px;
+    font-size:15px;
 }
 
 /* MAIN CARD */
@@ -49,7 +48,7 @@
     display:grid;
     grid-template-columns:repeat(2,1fr);
     gap:10px;
-    margin-bottom:16px;
+    margin-bottom:12px;
 }
 
 .info-box{
@@ -61,7 +60,7 @@
 
 .info-box strong{
     display:block;
-    font-size:12px;
+    font-size:14px;
     color:#6b7280;
 }
 
@@ -90,9 +89,10 @@
 }
 
 .score-sub{
-    font-size:14px;
+    font-size:16px;
     color:#4b5563;
     margin-top:2px;
+    font-weight:600;
 }
 .accuracy{
     margin-top:4px;
@@ -183,7 +183,7 @@
 .rank-box p{
     margin:0;
     font-weight:600;
-    font-size:17px;
+    font-size:18px;
 }
 
 .rank-box span{
@@ -191,6 +191,7 @@
     font-size:14px;
     color:#4b5563;  /* stronger than before */
     margin-top:2px;
+    font-weight:600;
 }
 
 .rank-note{
@@ -198,6 +199,7 @@
     font-size:12px;
     color:#9ca3af;
     margin-top:4px;
+    font-weight:600;
 }
 
 /* ACTIONS */
@@ -212,8 +214,14 @@
     margin-top:10px;
     padding:14px;
     font-size:16px;
+    font-weight:600;
 }
 
+.actions p{
+ 
+    font-size:16px;
+    font-weight:600;
+}
 
 /* Hide less important info on very small screens */
 @media(max-width:480px){
@@ -246,7 +254,7 @@
     }
 
     .container{
-        padding-bottom:120px;
+        padding-bottom:130px;
     }
 }
 </style>
@@ -297,7 +305,7 @@
         <div class="score-text">Your Score</div>
 
         <div class="score-sub">
-            Out of {{ total }} questions
+            <p>Out of  <strong>{{ total }}</strong> questions</p>
         </div>
 
         <div class="accuracy">{{ "%.1f"|format(percentage) }}% Accuracy</div>
