@@ -324,8 +324,8 @@ def submit_quiz(quiz_code):
             **result,
             used_attempts=used_attempts,
             max_attempts=max_attempts,
+            hide_nav=True,
             hide_footer=True,
-            hide_sidebar=True
         )
 
     if attempt.violation_count >= 2:
@@ -346,8 +346,8 @@ def submit_quiz(quiz_code):
     **result,
     used_attempts=used_attempts,
     max_attempts=max_attempts,
+    hide_nav=True,
     hide_footer=True,
-    hide_sidebar=True
 )
 
 # ---------------------------------
