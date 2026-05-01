@@ -48,6 +48,7 @@ html, body {
     overflow-y: auto;             /* 🔥 only this scrolls */
 
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    user-select: none;
 }
 
 .question-card h5 {
@@ -397,26 +398,17 @@ updateTimer();
 
 
 <script>
-    let isInternalNavigation = false;
+    let lastViolationTime = 0;
     
-    // 🔹 Mark navigation actions
-    function markNavigation() {
-        isInternalNavigation = true;
-    
-        // reset after short delay
-        setTimeout(() => {
-            isInternalNavigation = false;
-        }, 1000);
-    }
-    
-    // 🔹 Attach to buttons (IMPORTANT)
-    document.querySelectorAll("a, button").forEach(el => {
-        el.addEventListener("click", markNavigation);
-    });
-    
-    
-    // 🔹 Violation sender
     function sendViolation(reason) {
+    
+        const now = Date.now();
+    
+        // ⛔ Prevent duplicate triggers (VERY IMPORTANT)
+        if (now - lastViolationTime < 2000) return;
+    
+        lastViolationTime = now;
+    
         fetch("/student/quiz/save-violation", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
@@ -424,88 +416,95 @@ updateTimer();
         })
         .then(res => res.json())
         .then(data => {
-
-    if (data.auto_submitted) {
-
-        showBanner("❌ Multiple violations detected. Exam will auto-submit in 3 seconds.", "error");
-
-let seconds = 3;
-
-const interval = setInterval(() => {
-    seconds--;
-
-    if (seconds > 0) {
-        document.getElementById("violation-message").innerText =
-            `❌ Multiple violations detected. Submitting in ${seconds}s...`;
-    } else {
-        clearInterval(interval);
-        window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
-    }
-}, 1000);
-
-    } else {
-
-        showBanner(
-            `⚠️ Do not switch tabs. Violations: ${data.violation_count}. 
-             After ${3 - data.violation_count} more, quiz will auto-submit.`,
-            "warning"
-        );
-    }
-
-});
-    }
     
+            // 🔹 AUTO SUBMIT CASE
+            if (data.auto_submitted) {
     
-    // 🔹 ONLY count real tab switch
-    document.addEventListener("visibilitychange", function () {
+                showBanner(
+                    "⚠️ Too many warnings. Your quiz will be submitted in 3 seconds.",
+                    "error"
+                );
     
-        // ❌ IGNORE internal navigation
-        if (isInternalNavigation) return;
+                let seconds = 3;
     
-        if (document.hidden && !document.hasFocus()) {
-            sendViolation("Tab Switch");
-        }
-    });
-        document.addEventListener("contextmenu", function (e) {
-        e.preventDefault();
-        sendViolation("Right Click");
-        });
-
-        document.addEventListener("copy", function () {
-            sendViolation("Copy Attempt");
-        });
-
-        document.addEventListener("paste", function () {
-            sendViolation("Paste Attempt");
-        });
-
-        document.addEventListener("keydown", function (e) {
-
-        // 🔹 IGNORE typing inside input/textarea
-        const tag = document.activeElement.tagName.toLowerCase();
-        if (tag === "input" || tag === "textarea") return;
-
-        // Ctrl + C / V / U / S
-        if (e.ctrlKey && ["c", "v", "u", "s"].includes(e.key.toLowerCase())) {
-            sendViolation("Keyboard Shortcut: Ctrl+" + e.key.toUpperCase());
-        }
-
-        // F12
-        if (e.key === "F12") {
-            sendViolation("DevTools Open Attempt");
-        }
-        });
-        window.addEventListener("blur", function () {
-            if (!isInternalNavigation) {
-                sendViolation("Window Blur / Alt-Tab");
+                const interval = setInterval(() => {
+                    seconds--;
+    
+                    if (seconds > 0) {
+                        document.getElementById("violation-message").innerText =
+                            `Submitting your quiz in ${seconds}s...`;
+                    } else {
+                        clearInterval(interval);
+                        window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
+                    }
+                }, 1000);
+    
+            } else {
+    
+                // 🔹 CLEAN STRICT MESSAGE
+                let message = "";
+    
+                if (reason === "Tab Switch") {
+                    message = "⚠️ Tab switching is not allowed during the quiz.";
+                } else if (reason === "Window Blur") {
+                    message = "⚠️ You left the quiz screen.";
+                } else if (reason === "Fullscreen Exit") {
+                    message = "⚠️ Fullscreen must remain active during the quiz.";
+                } else {
+                    message = "⚠️ This action is not allowed during the quiz.";
+                }
+    
+                showBanner(
+                    `${message} (${data.violation_count}/3 warnings). Quiz will auto-submit after 3 warnings.`,
+                    "warning"
+                );
             }
+    
         });
-
-        document.addEventListener("fullscreenchange", function () {
-            if (!document.fullscreenElement) {
-                sendViolation("Fullscreen Exit");
-            }
-        });
+    }
     </script>
+
+<script>
+let isInternalNavigation = false;
+
+// 🔹 Mark navigation actions
+function markNavigation() {
+    isInternalNavigation = true;
+
+    setTimeout(() => {
+        isInternalNavigation = false;
+    }, 1000);
+}
+
+// 🔹 Attach to buttons
+document.querySelectorAll("a, button").forEach(el => {
+    el.addEventListener("click", markNavigation);
+});
+
+// 🔹 TAB SWITCH
+document.addEventListener("visibilitychange", function () {
+
+    if (isInternalNavigation) return;
+
+    if (document.hidden) {
+        sendViolation("Tab Switch");
+    }
+});
+
+// 🔹 WINDOW BLUR
+window.addEventListener("blur", function () {
+
+    if (isInternalNavigation) return;
+
+    sendViolation("Window Blur");
+});
+
+// 🔹 FULLSCREEN EXIT
+document.addEventListener("fullscreenchange", function () {
+    if (!document.fullscreenElement) {
+        sendViolation("Fullscreen Exit");
+    }
+});
+</script>
 
 {% endblock %}
