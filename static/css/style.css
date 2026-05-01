@@ -329,7 +329,7 @@ main { flex: 1; }
 /* rank badge */
 .rank-badge {
     position: absolute;
-    bottom: -12px;
+    bottom: -25x;
     left: 50%;
     transform: translateX(-50%);
     background: #375683;
