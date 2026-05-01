@@ -277,11 +277,11 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Your SPA Script -->
 <script>
     document.addEventListener("click", async function (e) {
+    
         const link = e.target.closest("a");
         if (!link) return;
     
         if (!link.hasAttribute("data-spa")) return;
-    
         if (link.target === "_blank") return;
         if (link.href.includes("#")) return;
     
@@ -295,24 +295,40 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     
             const html = await res.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, "text/html");
     
-            const newContent = doc.querySelector("#main-content");
+            // 🔥 fast parse
+            const tempDoc = document.createElement("div");
+            tempDoc.innerHTML = html;
     
-            if (newContent) {
-                document.querySelector("#main-content").innerHTML =
-                    newContent.innerHTML;
+            const newContent = tempDoc.querySelector("#main-content");
+            const container = document.querySelector("#main-content");
+    
+            // ✅ NULL SAFETY (correct placement)
+            if (!container || !newContent) {
+                console.warn("SPA failed: main-content not found");
+                window.location.href = url;
+                return;
             }
+            // 🔥 fade out slightly (before swap)
+            container.style.opacity = "0.6";
+
+            // 🔥 smooth swap
+            const temp = document.createElement("div");
+            temp.innerHTML = newContent.innerHTML;
+    
+            container.replaceChildren(...temp.childNodes);
+            // 🔥 fade back in (after swap)
+            container.style.opacity = "1";
     
             window.history.pushState({}, "", url);
     
-            // 🔥 RE-INIT AFTER SPA LOAD
+            // 🔥 re-init
             if (window.AppInit) {
                 window.AppInit();
             }
     
-        } catch {
+        } catch (err) {
+            console.error("SPA error:", err);
             window.location.href = url;
         }
     });
@@ -320,36 +336,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 
-    window.addEventListener("popstate", async function () {
+window.addEventListener("popstate", async function () {
 
-    const url = window.location.href;
+const url = window.location.href;
 
-    try {
-        const res = await fetch(url, {
-            headers: {
-                "X-Requested-With": "fetch"
-            }
-        });
-
-        const html = await res.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-
-        const newContent = doc.querySelector("#main-content");
-
-        if (newContent) {
-            document.querySelector("#main-content").innerHTML =
-                newContent.innerHTML;
+try {
+    const res = await fetch(url, {
+        headers: {
+            "X-Requested-With": "fetch"
         }
-
-        if (window.AppInit) {
-            window.AppInit();
-        }
-
-    } catch {
-        location.reload();
-    }
     });
+
+    const html = await res.text();
+
+    // 🔥 faster parse
+    const tempDoc = document.createElement("div");
+    tempDoc.innerHTML = html;
+
+    const newContent = tempDoc.querySelector("#main-content");
+    const container = document.querySelector("#main-content");
+
+    // ✅ ADD HERE ALSO
+    if (!container || !newContent) {
+        location.reload();
+        return;
+    }
+
+        // 🔥 fade out slightly (before swap)
+        container.style.opacity = "0.6";
+
+        // 🔥 smooth swap
+        const temp = document.createElement("div");
+        temp.innerHTML = newContent.innerHTML;
+
+        container.replaceChildren(...temp.childNodes);
+        // 🔥 fade back in (after swap)
+        container.style.opacity = "1";
+
+        window.history.pushState({}, "", url);
+
+
+    // 🔥 re-init JS
+    if (window.AppInit) {
+        window.AppInit();
+    }
+
+} catch {
+    location.reload();
+}
+});
 </script>
 
 <script>

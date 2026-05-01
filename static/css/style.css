@@ -109,7 +109,9 @@ body {
     display: flex;
     flex-direction: column;
 }
-
+#main-content {
+    transition: opacity 0.15s ease;
+}
 /* Only when navbar exists */
 body.with-navbar {
     padding-top: 60px;
