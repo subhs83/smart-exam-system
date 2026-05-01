@@ -78,21 +78,27 @@
 }
 
 .score{
-    font-size:42px;
+    font-size:36px;
     font-weight:700;
     color:#111827;
 }
 
 .score-text{
     font-size:14px;
-    color:#6b7280;
+    color:#374151;
+    font-weight:500;
 }
 
+.score-sub{
+    font-size:14px;
+    color:#4b5563;
+    margin-top:2px;
+}
 .accuracy{
     margin-top:4px;
-    font-size:16px;
-    color:#2563eb;
-    font-weight:600;
+    font-size:18px;
+    color:#1d4ed8;   /* deeper blue */
+    font-weight:700;
 }
 
 /* PROGRESS */
@@ -124,14 +130,14 @@
 
 .stat-value{
     font-size:22px;
-    font-weight:700;
+    font-weight:800;  /* stronger */
 }
 
 .stat-label{
     font-size:13px;
-    color:#6b7280;
+    color:#374151;   /* darker */
+    font-weight:500; /* slightly bold */
 }
-
 /* Not Attempted */
 .text-warning{
     color:#f59e0b;
@@ -141,7 +147,7 @@
 .attempt-info{
     text-align:center;
     font-size:14px;
-    color:#6b7280;
+    color:#374151;   /* darker */
     margin-top:10px;
 }
 
@@ -183,7 +189,7 @@
 .rank-box span{
     display:block;
     font-size:14px;
-    color:#6b7280;
+    color:#4b5563;  /* stronger than before */
     margin-top:2px;
 }
 
@@ -207,6 +213,7 @@
     padding:14px;
     font-size:16px;
 }
+
 
 /* Hide less important info on very small screens */
 @media(max-width:480px){
@@ -239,7 +246,7 @@
     }
 
     .container{
-        padding-bottom:90px;
+        padding-bottom:120px;
     }
 }
 </style>
@@ -288,6 +295,11 @@
 
         <div class="score">{{ score }}</div>
         <div class="score-text">Your Score</div>
+
+        <div class="score-sub">
+            Out of {{ total }} questions
+        </div>
+
         <div class="accuracy">{{ "%.1f"|format(percentage) }}% Accuracy</div>
 
     </div>

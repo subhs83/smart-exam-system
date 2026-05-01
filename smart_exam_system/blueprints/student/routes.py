@@ -308,7 +308,6 @@ def submit_quiz(quiz_code):
         return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
 
     if attempt.is_submitted:
-        flash("This attempt has already been submitted.", "warning")
         result = get_student_result(attempt_id)
 
         used_attempts = AttemptModel.query.filter_by(
