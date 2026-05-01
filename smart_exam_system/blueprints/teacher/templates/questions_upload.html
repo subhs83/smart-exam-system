@@ -11,7 +11,7 @@
             <input type="file" name="excel_file" accept=".xlsx,.xls" class="form-control" required>
         </div>
         <button type="submit" class="btn btn-primary">Upload</button>
-        <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-secondary" data-spa>Back</a>
     </form>
     <p class="mt-3 text-muted">Format: Question, Option A, Option B, Option C, Option D, Answer, Marks</p>
 </div>

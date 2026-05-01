@@ -14,7 +14,7 @@
     <!-- Dashboard -->
     <li class="nav-item mb-2">
         <a href="{{ url_for('school_admin.dashboard') }}"
-           class="nav-link {% if active_page=='dashboard' %}active{% endif %}">
+           class="nav-link {% if active_page=='dashboard' %}active{% endif %}" data-spa>
             <i class="fas fa-tachometer-alt me-2"></i> Dashboard
         </a>
     </li>
@@ -24,14 +24,14 @@
   
     <li class="nav-item">
         <a href="{{ url_for('school_admin.view_teachers') }}"
-           class="nav-link {% if active_page=='teachers' %}active{% endif %}">
+           class="nav-link {% if active_page=='teachers' %}active{% endif %}"data-spa>
             <i class="fas fa-user-friends me-2"></i> View Teachers
         </a>
     </li>
   
     <li class="nav-item">
         <a href="{{ url_for('school_admin.add_teacher') }}"
-           class="nav-link {% if active_page=='add_teacher' %}active{% endif %}">
+           class="nav-link {% if active_page=='add_teacher' %}active{% endif %}"data-spa>
             <i class="fas fa-user-plus me-2"></i> Add Teacher
         </a>
     </li>
@@ -41,7 +41,7 @@
   
     <li class="nav-item">
         <a href="{{ url_for('school_admin.teachers') }}"
-           class="nav-link {% if active_page=='exams' %}active{% endif %}">
+           class="nav-link {% if active_page=='exams' %}active{% endif %}" data-spa>
             <i class="fas fa-file-alt me-2"></i> View Exams
         </a>
     </li>
@@ -51,7 +51,7 @@
   
     <li class="nav-item">
         <a href="{{ url_for('school_admin.reports') }}"
-           class="nav-link {% if active_page=='reports' %}active{% endif %}">
+           class="nav-link {% if active_page=='reports' %}active{% endif %}" data-spa>
             <i class="fas fa-file-invoice me-2"></i> Reports
         </a>
     </li>

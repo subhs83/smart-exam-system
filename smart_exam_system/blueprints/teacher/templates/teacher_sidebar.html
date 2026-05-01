@@ -17,17 +17,17 @@
         <!-- Dashboard -->
         <li class="nav-item mb-2">
             <a href="{{ url_for('teacher.dashboard') }}"
-               class="nav-link {% if active_page=='dashboard' %}active{% endif %}">
+               class="nav-link {% if active_page=='dashboard' %}active{% endif %}" data-spa>
                 <i class="fas fa-home me-2"></i> Dashboard
             </a>
         </li>
 
         <!-- ===== EXAMS ===== -->
-        <li class="sidebar-section mt-3 mb-2 text-light">Exams</li>
+        <li class="sidebar-section mt-3 mb-2 text-light" data-spa>Exams</li>
 
         <li class="nav-item">
             <a href="{{ url_for('teacher.create_exam_route') }}"
-               class="nav-link {% if active_page=='exams_create' %}active{% endif %}">
+               class="nav-link {% if active_page=='exams_create' %}active{% endif %}" data-spa>
                 <i class="fas fa-plus-circle me-2"></i> Create Exam
             </a>
         </li>
@@ -44,14 +44,14 @@
 
         <li class="nav-item">
             <a href="{{ url_for('teacher.results_overview') }}"
-               class="nav-link {% if active_page=='results_overview' %}active{% endif %}">
+               class="nav-link {% if active_page=='results_overview' %}active{% endif %}" data-spa>
                 <i class="fas fa-chart-bar me-2"></i> Results
             </a>
         </li>
 
         <li class="nav-item">
             <a href="{{ url_for('teacher.leaderboard_overview') }}"
-               class="nav-link {% if active_page=='leaderboard_overview' %}active{% endif %}">
+               class="nav-link {% if active_page=='leaderboard_overview' %}active{% endif %}" data-spa>
                 <i class="fas fa-trophy me-2"></i> Leaderboard
             </a>
         </li>

@@ -79,10 +79,10 @@
       <div class="card-body text-center">
         <p class="text-muted">Add or manage teachers in your school</p>
         <div class="d-flex justify-content-center gap-2 mt-3">
-          <a href="{{ url_for('school_admin.add_teacher') }}" class="btn btn-primary">
+          <a href="{{ url_for('school_admin.add_teacher') }}" class="btn btn-primary" data-spa>
             <i class="fas fa-user-plus me-1"></i> Add Teacher
           </a>
-          <a href="{{ url_for('school_admin.view_teachers') }}" class="btn btn-outline-primary">
+          <a href="{{ url_for('school_admin.view_teachers') }}" class="btn btn-outline-primary" data-spa>
             <i class="fas fa-users-cog me-1"></i> Manage Teachers
           </a>
         </div>

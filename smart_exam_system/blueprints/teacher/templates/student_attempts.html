@@ -16,7 +16,7 @@
         </div>
 
         <a href="{{ url_for('teacher.results_route', exam_id=exam_id) }}"
-           class="btn btn-outline-secondary btn-sm">
+           class="btn btn-outline-secondary btn-sm" data-spa>
             ← Back to Results
         </a>
 
@@ -115,7 +115,7 @@
         </button>
 
         <a href="{{ url_for('teacher.attempt_detail', attempt_id=a.id) }}"
-           class="btn btn-sm btn-primary">
+           class="btn btn-sm btn-primary" data-spa>
             Analysis
         </a>
     </td>
