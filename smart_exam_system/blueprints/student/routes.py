@@ -350,10 +350,6 @@ def submit_quiz(quiz_code):
     hide_sidebar=True
 )
 
-    # -------------------------------
-    # Save Violation
-    # -------------------------------
-
 # ---------------------------------
 # Save Violation (FINAL CLEAN)
 # ---------------------------------

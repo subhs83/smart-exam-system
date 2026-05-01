@@ -299,8 +299,7 @@ def get_student_result(attempt_id):
     total = get_total_questions(exam.id)
     score = get_student_score(attempt_id)
 
-    # ⏱️ TIME CHECK
-    from datetime import datetime, timezone
+
     end_time = attempt.start_time + timedelta(minutes=exam.duration_minutes)
     is_time_up = datetime.utcnow() > end_time
 
@@ -329,6 +328,47 @@ def get_student_result(attempt_id):
     wrong_answers = max(0, attempted - score)
     not_attempted = max(0, total - attempted)
 
+    # ===============================
+    # TIE-AWARE RANKING
+    # ===============================
+
+    base_query = AttemptModel.query.filter(
+        AttemptModel.exam_id == attempt.exam_id,
+        AttemptModel.is_submitted == True
+    )
+
+    # Total participants
+    total_participants = base_query.count()
+
+    # Rank (competition ranking: 1,1,3)
+    rank = base_query.filter(
+        AttemptModel.percentage > percentage
+    ).count() + 1
+
+    # Count how many have SAME percentage (for display or future use)
+    same_score_count = base_query.filter(
+        AttemptModel.percentage == percentage
+    ).count()
+
+    # ===============================
+    # Percentile (tie-aware)
+    # ===============================
+
+    # Count how many scored BELOW you
+    below_count = base_query.filter(
+        AttemptModel.percentage < percentage
+    ).count()
+
+    if total_participants > 0:
+        percentile = round((below_count / total_participants) * 100)
+    else:
+        percentile = 0
+
+    # Edge case
+    if total_participants == 1:
+        percentile = 100
+
+    percentile = max(0, min(100, percentile))
     return {
         "score": score,
         "total": total,
@@ -341,7 +381,9 @@ def get_student_result(attempt_id):
         "student_name": f"{attempt.first_name} {attempt.last_name}",
         "student_class": attempt.student_class,
         "roll_number": attempt.roll_number,
-
+        "rank": rank,
+        "total_participants": total_participants,
+        "percentile": percentile,
         "exam": exam
     }
 # ----------------------------------

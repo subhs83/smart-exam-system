@@ -12,7 +12,7 @@ body{
 .result-header{
     background:linear-gradient(135deg,#22c55e,#16a34a);
     color:#fff;
-    padding:24px 16px;
+    padding:18px 12px;
     text-align:center;
     border-radius:0 0 18px 18px;
 }
@@ -43,7 +43,7 @@ body{
     background:#fff;
     margin-top:-30px;
     border-radius:18px;
-    padding:16px;
+    padding:14px;
     box-shadow:0 6px 18px rgba(0,0,0,0.08);
 }
 
@@ -70,9 +70,10 @@ body{
 
 .info-box p{
     margin:4px 0 0;
-    font-size:14px;
+    font-size:13px;
     font-weight:600;
 }
+
 
 /* SCORE */
 .score-section{
@@ -81,7 +82,7 @@ body{
 }
 
 .score{
-    font-size:42px;
+    font-size:36px;
     font-weight:700;
     color:#111827;
 }
@@ -120,13 +121,13 @@ body{
 
 .stat-box{
     background:#f9fafb;
-    padding:12px;
+    padding:14px;
     border-radius:12px;
     text-align:center;
 }
 
 .stat-value{
-    font-size:18px;
+    font-size:20px;
     font-weight:700;
 }
 
@@ -134,7 +135,18 @@ body{
     font-size:12px;
     color:#6b7280;
 }
+/* Not Attempted color */
+.text-warning{
+    color:#f59e0b;
+}
 
+/* Attempt info text */
+.attempt-info{
+    text-align:center;
+    font-size:13px;
+    color:#6b7280;
+    margin-top:10px;
+}
 /* GRADE */
 .grade-box{
     text-align:center;
@@ -166,13 +178,52 @@ body{
     display:block;
     width:100%;
     margin-top:10px;
+    padding:12px;
+    font-size:15px;
+}
+.rank-box{
+    text-align:center;
+    margin-top:10px;
+    font-size:14px;
+    color:#374151;
+}
+
+.rank-box p{
+    margin:0;
+    font-weight:600;
+}
+
+.rank-box span{
+    display:block;
+    font-size:12px;
+    color:#6b7280;
+    margin-top:2px;
+}
+.rank-note{
+    display:block;
+    font-size:11px;
+    color:#9ca3af;
+    margin-top:4px;
+}
+/* Hide less important info on very small screens */
+@media(max-width:480px){
+    .info-box:nth-child(3),
+    .info-box:nth-child(4){
+        display:none;
+    }
 }
 
 @media(min-width:600px){
     .actions a{
-        display:inline-block;
+        display:inline-block;   
         width:auto;
         margin:6px;
+    }
+    .actions{
+        position:sticky;
+        bottom:0;
+        background:#fff;
+        padding-bottom:10px;
     }
 }
 </style>
@@ -224,7 +275,15 @@ body{
         <div class="accuracy">{{ "%.1f"|format(percentage) }}% Accuracy</div>
 
     </div>
-
+     <!-- ================= Rank & Percentile ================= -->
+    <!-- ================= RANK ================= -->
+<div class="rank-box">
+    <p>🏆 Rank #{{ rank }} out of {{ total_participants }}</p>
+    <span>Better than {{ percentile }}% students</span>
+    <span class="rank-note">
+        *Rank may change as more students submit
+    </span>
+</div>
     <!-- PROGRESS -->
     <div class="progress">
         <div class="progress-bar"
@@ -232,29 +291,35 @@ body{
     </div>
 
     <!-- ================= STATS ================= -->
-    <div class="stats-grid">
+    <!-- ================= STATS (UPDATED) ================= -->
+<div class="stats-grid">
 
-        <div class="stat-box">
-            <div class="stat-value text-success">{{ correct_answers }}</div>
-            <div class="stat-label">Correct</div>
-        </div>
-
-        <div class="stat-box">
-            <div class="stat-value text-danger">{{ wrong_answers }}</div>
-            <div class="stat-label">Incorrect</div>
-        </div>
-
-        <div class="stat-box">
-            <div class="stat-value text-primary">{{ score }}</div>
-            <div class="stat-label">Final Score</div>
-        </div>
-
-        <div class="stat-box">
-            <div class="stat-value">{{ "%.1f"|format(percentage) }}%</div>
-            <div class="stat-label">Accuracy</div>
-        </div>
-
+    <div class="stat-box">
+        <div class="stat-value text-success">{{ correct_answers }}</div>
+        <div class="stat-label">Correct</div>
     </div>
+
+    <div class="stat-box">
+        <div class="stat-value text-danger">{{ wrong_answers }}</div>
+        <div class="stat-label">Incorrect</div>
+    </div>
+
+    <div class="stat-box">
+        <div class="stat-value text-warning">{{ not_attempted }}</div>
+        <div class="stat-label">Not Attempted</div>
+    </div>
+
+    <div class="stat-box">
+        <div class="stat-value">{{ total }}</div>
+        <div class="stat-label">Total Questions</div>
+    </div>
+
+</div>
+
+<!-- Attempt insight -->
+<p class="attempt-info">
+    You attempted {{ correct_answers + wrong_answers }} out of {{ total }} questions
+</p>
 
     <!-- ================= GRADE ================= -->
     <div class="grade-box">

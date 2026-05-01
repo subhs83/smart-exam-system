@@ -40,6 +40,10 @@ class AttemptModel(db.Model):
     last_violation_time = db.Column(db.DateTime, nullable=True)
     # Relationships
     exam = db.relationship(ExamModel, backref="attempts")
+    __table_args__ = (
+    db.Index('idx_exam_submitted_percentage',
+             'exam_id', 'is_submitted', 'percentage'),
+)
 
 class Attempt:
 
