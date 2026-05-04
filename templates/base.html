@@ -66,21 +66,21 @@
 
                 <li class="nav-item">
                     <a class="nav-link nav-modern {% if request.path == '/' %}active{% endif %}" 
-                    href="{{ url_for('home.home') }}" data-spa>Home</a>
+                    href="{{ url_for('home.home') }}">Home</a>
                 </li>
 
                 <li class="nav-item">
                     <a class="nav-link nav-modern {% if request.path == '/features' %}active{% endif %}" 
-                    href="{{ url_for('home.features') }}"data-spa>Features</a>
+                    href="{{ url_for('home.features') }}">Features</a>
                 </li>
 
                 <li class="nav-item">
                     <a class="nav-link nav-modern {% if request.path == '/contact' %}active{% endif %}" 
-                    href="{{ url_for('home.contact') }}"data-spa>Contact</a>
+                    href="{{ url_for('home.contact') }}">Contact</a>
                 </li>
 
                 <li class="nav-item ms-2">
-                    <a href="{{ url_for('home.demo') }}" class="btn btn-gradient" data-spa>
+                    <a href="{{ url_for('home.demo') }}" class="btn btn-gradient" >
                         Book Demo
                     </a>
                 </li>
