@@ -195,10 +195,27 @@ input[type="radio"]:checked + label {
 <div class="quiz-header">
 
     <!-- LEFT: Branding -->
-    <div class="d-flex align-items-center gap-2">
-        <strong><i class="fas fa-graduation-cap me-2"></i>
-            <span>IndiaEduCore</span></strong>
-    </div>
+   <!-- LEFT: Branding -->
+<div class="d-flex align-items-center gap-2">
+
+    {% if exam.school.logo %}
+        <img 
+            src="{{ url_for('static', filename='uploads/schools/' ~ indiaeducore.logo) }}"
+            alt="School Logo"
+            style="
+                width: 40px;
+                height: 40px;
+                object-fit: cover;
+                border-radius: 50%;
+            "
+        >
+    {% endif %}
+
+    <strong>
+        Indiaeducore
+    </strong>
+
+</div>
 
     <!-- CENTER: Progress -->
     <div>
@@ -311,7 +328,7 @@ async function autoSubmitExam() {
 
     try {
         // ✅ Save current answer before submit
-        await fetch("{{ url_for('student.quiz_question', quiz_code=request.view_args['quiz_code'], q_index=q_index) }}", {
+        await fetch("{{ url_for('student.quiz_question',school_slug=exam.school.slug,quiz_code=request.view_args['quiz_code'],q_index=q_index) }}", {
     method: "POST",
     body: new FormData(form)
 });
@@ -320,9 +337,10 @@ async function autoSubmitExam() {
     }
 
     // ✅ Then submit exam
-    window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
+    window.location.href = "{{ url_for('student.submit_quiz',school_slug=exam.school.slug,quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
 }
 let timeLeft = {{ remaining_time }};
+
 
 function updateTimer(){
     if(timeLeft <= 0){
@@ -355,7 +373,7 @@ updateTimer();
     const form = document.getElementById("quiz-form");
     const status = document.getElementById("save-status");
 
-    fetch("{{ url_for('student.quiz_question', quiz_code=request.view_args['quiz_code'], q_index=q_index) }}", {
+    fetch("{{ url_for('student.quiz_question',  school_slug=exam.school.slug, quiz_code=request.view_args['quiz_code'], q_index=q_index) }}", {
     method: "POST",
     body: new FormData(form)
 })
