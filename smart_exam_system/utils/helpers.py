@@ -30,3 +30,17 @@ def no_cache(response):
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
+
+
+import re
+
+def generate_slug(name):
+    slug = name.lower().strip()
+
+    # replace spaces with -
+    slug = re.sub(r"\s+", "-", slug)
+
+    # remove special characters
+    slug = re.sub(r"[^a-z0-9\-]", "", slug)
+
+    return slug

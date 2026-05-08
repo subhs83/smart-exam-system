@@ -9,6 +9,7 @@ from smart_exam_system.extensions import db
 from smart_exam_system.models.democontact import DemoRequest, ContactMessage
 from smart_exam_system.utils.decorators import super_admin_required
 from smart_exam_system.utils.security import hash_password
+from smart_exam_system.utils.helpers import generate_slug
 import secrets, string
 from sqlalchemy import func
 from datetime import datetime, timedelta
@@ -99,8 +100,15 @@ def schools():
 @super_admin_required
 def add_school():
     if request.method == "POST":
-
         name = request.form["name"].strip()
+
+        slug = generate_slug(name)
+
+        # 🔥 Ensure unique slug
+        existing_slug = SchoolModel.query.filter_by(slug=slug).first()
+
+        if existing_slug:
+            slug = f"{slug}-{int(datetime.utcnow().timestamp())}"
         address = request.form["address"].strip()
         phone = request.form["phone"].strip()
         email = request.form["email"].strip()
@@ -126,8 +134,17 @@ def add_school():
             expiry_date = datetime.utcnow() + timedelta(days=int(duration_days))
 
         # 🔥 STEP 4: CREATE
+        slug = generate_slug(name)
+
+        # 🔥 Ensure unique slug
+        existing_slug = SchoolModel.query.filter_by(slug=slug).first()
+
+        if existing_slug:
+            slug = f"{slug}-{int(datetime.utcnow().timestamp())}"
+
         new_school = SchoolModel(
             name=name,
+            slug=slug,
             address=address,
             phone=phone,
             email=email,
@@ -162,6 +179,18 @@ def edit_school(school_id):
 
     if request.method == "POST":
         name = request.form["name"].strip()
+
+        slug = generate_slug(name)
+
+        existing_slug = SchoolModel.query.filter(
+            SchoolModel.slug == slug,
+            SchoolModel.id != school.id
+        ).first()
+
+        if existing_slug:
+            slug = f"{slug}-{school.id}"
+
+        school.slug = slug
         address = request.form["address"].strip()
         phone = request.form["phone"].strip()
         email = request.form["email"].strip()

@@ -19,7 +19,7 @@ from smart_exam_system.models.exam import ExamModel
 from datetime import datetime, timedelta
 
 
-@student_bp.route("/quiz/<quiz_code>")
+@student_bp.route(" /<school_slug>/quiz/<quiz_code>")
 def quiz_page(quiz_code):
     print("QUIZ PAGE HIT:", request.method, request.url)
     exam = get_exam_by_quiz_code(quiz_code)
@@ -98,6 +98,7 @@ def quiz_page(quiz_code):
             # -------------------------------
             return redirect(url_for(
                 "student.submit_quiz",
+                school_slug=school_slug,
                 quiz_code=quiz_code,
                 attempt_id=last_attempt.id
             ))
@@ -113,6 +114,7 @@ def quiz_page(quiz_code):
     max_attempts = exam.max_attempts_per_mobile or 1
     return render_template(
     "student_register.html",
+    school_slug=school_slug,
     quiz_code=quiz_code,
     exam=exam,
     used_attempts=used_attempts,
@@ -126,14 +128,14 @@ def quiz_page(quiz_code):
 # -----------------------------
 # Start Quiz
 # -----------------------------
-@student_bp.route("/quiz/<quiz_code>/start", methods=["POST"])
+@student_bp.route("/<school_slug>/quiz/<quiz_code>/start", methods=["POST"])
 def start_quiz(quiz_code):
 
     exam = ExamModel.query.filter_by(quiz_code=quiz_code).first()
 
     if not exam:
         flash("Invalid quiz link", "danger")
-        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+        return redirect(url_for("student.quiz_page", school_slug=school_slug,quiz_code=quiz_code))
 
     attempt, error = start_student_attempt(
         exam.id,
@@ -144,7 +146,7 @@ def start_quiz(quiz_code):
 
     if error:
         flash(error, "danger")
-        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+        return redirect(url_for("student.quiz_page", school_slug=school_slug,quiz_code=quiz_code))
 
     response = make_response(redirect(url_for(
         "student.quiz_question",
@@ -165,7 +167,7 @@ def start_quiz(quiz_code):
     return response
 
 
-@student_bp.route("/quiz/<quiz_code>/<int:q_index>", methods=["GET", "POST"])
+@student_bp.route("/<school_slug>/quiz/<quiz_code>/<int:q_index>", methods=["GET", "POST"])
 def quiz_question(quiz_code, q_index):
 
     # -------------------------------
@@ -174,18 +176,18 @@ def quiz_question(quiz_code, q_index):
     attempt_id = session.get("attempt_id") or request.args.get("attempt_id")
 
     if not attempt_id:
-        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+        return redirect(url_for("student.quiz_page", school_slug=school_slug,quiz_code=quiz_code))
 
     # ✅ Convert to int safely
     try:
         attempt_id = int(attempt_id)
     except (TypeError, ValueError):
-        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+        return redirect(url_for("student.quiz_page", school_slug=school_slug,quiz_code=quiz_code))
 
     attempt = AttemptModel.query.get(attempt_id)
 
     if not attempt:
-        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+        return redirect(url_for("student.quiz_page", school_slug=school_slug,quiz_code=quiz_code))
 
     # -------------------------------
     # 🔹 Prevent answering after submit
@@ -206,7 +208,7 @@ def quiz_question(quiz_code, q_index):
     remaining_time = int((end_time - datetime.utcnow()).total_seconds())
 
     if remaining_time <= 0:
-        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code,attempt_id=attempt.id))
+        return redirect(url_for("student.submit_quiz", school_slug=school_slug,quiz_code=quiz_code,attempt_id=attempt.id))
 
     # -------------------------------
     # 🔹 Question order & index safety
@@ -219,7 +221,7 @@ def quiz_question(quiz_code, q_index):
         q_index = 0
 
     if q_index >= total_questions:
-        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code,attempt_id=attempt.id))
+        return redirect(url_for("student.submit_quiz", school_slug=school_slug,quiz_code=quiz_code,attempt_id=attempt.id))
 
     # -------------------------------
     # 🔹 POST: Save answer + navigation
@@ -237,6 +239,7 @@ def quiz_question(quiz_code, q_index):
         if goto_index is not None:
             return redirect(url_for(
                 "student.quiz_question",
+                school_slug=school_slug,
                 quiz_code=quiz_code,
                 q_index=int(goto_index)
             ))
@@ -244,6 +247,7 @@ def quiz_question(quiz_code, q_index):
         if "next" in request.form:
             return redirect(url_for(
                 "student.quiz_question",
+                school_slug=school_slug,
                 quiz_code=quiz_code,
                 q_index=min(q_index + 1, total_questions - 1)
             ))
@@ -251,6 +255,7 @@ def quiz_question(quiz_code, q_index):
         elif "prev" in request.form:
             return redirect(url_for(
                 "student.quiz_question",
+                school_slug=school_slug,
                 quiz_code=quiz_code,
                 q_index=max(q_index - 1, 0)
             ))
@@ -258,6 +263,7 @@ def quiz_question(quiz_code, q_index):
         elif "submit" in request.form:
             return redirect(url_for(
                 "student.submit_quiz",
+                school_slug=school_slug,
                 quiz_code=quiz_code,
                 attempt_id=attempt.id
             ))
@@ -269,7 +275,7 @@ def quiz_question(quiz_code, q_index):
     palette = get_question_palette(attempt_id, exam.id)
 
     if not question:
-        return redirect(url_for("student.submit_quiz", quiz_code=quiz_code,attempt_id=attempt.id))
+        return redirect(url_for("student.submit_quiz", school_slug=school_slug,quiz_code=quiz_code,attempt_id=attempt.id))
 
     response = make_response(render_template(
         "student_quiz.html",
@@ -287,25 +293,25 @@ def quiz_question(quiz_code, q_index):
 # -----------------------------
 # Submit Quiz
 # -----------------------------
-@student_bp.route("/quiz/<quiz_code>/submit", methods=["GET", "POST"])
+@student_bp.route("/<school_slug>/quiz/<quiz_code>/submit", methods=["GET", "POST"])
 def submit_quiz(quiz_code):
 
     attempt_id = request.args.get("attempt_id") or session.get("attempt_id")
 
     if not attempt_id:
         flash("No active attempt found", "danger")
-        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+        return redirect(url_for("student.quiz_page", school_slug=school_slug,quiz_code=quiz_code))
 
     try:
         attempt_id = int(attempt_id)
     except (TypeError, ValueError):
         flash("Invalid attempt ID", "danger")
-        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+        return redirect(url_for("student.quiz_page", school_slug=school_slug,quiz_code=quiz_code))
 
     attempt = AttemptModel.query.get(attempt_id)
     if not attempt:
         flash("Attempt not found", "danger")
-        return redirect(url_for("student.quiz_page", quiz_code=quiz_code))
+        return redirect(url_for("student.quiz_page", school_slug=school_slug,quiz_code=quiz_code))
 
     if attempt.is_submitted:
         result = get_student_result(attempt_id)
