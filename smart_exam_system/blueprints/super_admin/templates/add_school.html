@@ -5,8 +5,8 @@
 
 <form method="POST"
       action="{{ url_for('super_admin.add_school') }}"
-      enctype="multipart/form-data"   <!-- 🔹 required for file upload -->
-      class="card p-4 shadow-sm">
+      enctype="multipart/form-data"   
+      class="card p-4 shadow-sm"><!-- 🔹 required for file upload -->
 
     <input type="hidden" name="demo_id" value="{{ demo.id if demo else '' }}">
 
