@@ -5,6 +5,7 @@
 
 <form method="POST"
       action="{{ url_for('super_admin.add_school') }}"
+      enctype="multipart/form-data"   <!-- 🔹 required for file upload -->
       class="card p-4 shadow-sm">
 
     <input type="hidden" name="demo_id" value="{{ demo.id if demo else '' }}">
@@ -18,7 +19,7 @@
     <div class="mb-3">
         <label class="form-label">Address</label>
         <input type="text" name="address" class="form-control"
-       placeholder="Enter full school address">
+               placeholder="Enter full school address">
     </div>
 
     <div class="mb-3">
@@ -32,10 +33,18 @@
         <input type="email" name="email" class="form-control"
                value="{{ demo.email if demo else '' }}">
     </div>
+
     <div class="mb-3">
         <label class="form-label">Access Duration (Days)</label>
         <input type="number" name="duration_days" class="form-control" placeholder="e.g. 30">
     </div>
+
+    <!-- 🔹 Logo Upload -->
+    <div class="mb-3">
+        <label class="form-label">School Logo</label>
+        <input type="file" name="logo" class="form-control" accept="image/*">
+    </div>
+
     <button type="submit" class="btn btn-success">
         Create School
     </button>
@@ -43,7 +52,7 @@
     <a href="{{ url_for('super_admin.schools') }}" class="btn btn-secondary">
         Cancel
     </a>
-
 </form>
+
 
 {% endblock %}

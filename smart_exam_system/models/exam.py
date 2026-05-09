@@ -26,7 +26,10 @@ class ExamModel(db.Model):
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     published_at = db.Column(db.DateTime, nullable=True)
-
+    # ✅ Explicit foreign key
+    school_id = db.Column(db.Integer, db.ForeignKey("schools.id"), nullable=False)
+    # ✅ Add this relationship
+    school = db.relationship("SchoolModel", backref="exams")
     def __repr__(self):
         return f"<Exam {self.title}>"
 

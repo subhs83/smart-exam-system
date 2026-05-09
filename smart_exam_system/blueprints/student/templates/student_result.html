@@ -394,7 +394,7 @@
     </a>
 
     {% if used_attempts < max_attempts %}
-        <a href="{{ url_for('student.quiz_page', quiz_code=exam.quiz_code, new_attempt=1) }}"
+        <a href="{{ url_for('student.quiz_page', school_slug=school_slug,quiz_code=exam.quiz_code, new_attempt=1) }}"
            class="btn btn-success btn-lg">
             Start Next Attempt
         </a>

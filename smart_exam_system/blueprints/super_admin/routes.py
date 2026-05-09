@@ -101,24 +101,22 @@ def schools():
 def add_school():
     if request.method == "POST":
         name = request.form["name"].strip()
-
         slug = generate_slug(name)
 
         # 🔥 Ensure unique slug
         existing_slug = SchoolModel.query.filter_by(slug=slug).first()
-
         if existing_slug:
             slug = f"{slug}-{int(datetime.utcnow().timestamp())}"
+
         address = request.form["address"].strip()
         phone = request.form["phone"].strip()
         email = request.form["email"].strip()
         duration_days = request.form.get("duration_days")
 
-        # 🔥 STEP 1: CHECK DUPLICATES FIRST
+        # 🔥 STEP 1: CHECK DUPLICATES
         existing_school = SchoolModel.query.filter(
             (SchoolModel.email == email) | (SchoolModel.name == name)
         ).first()
-
         if existing_school:
             flash("School already exists with same name or email.", "danger")
             return redirect(url_for("super_admin.add_school"))
@@ -133,27 +131,27 @@ def add_school():
         if duration_days:
             expiry_date = datetime.utcnow() + timedelta(days=int(duration_days))
 
-        # 🔥 STEP 4: CREATE
-        slug = generate_slug(name)
+        # 🔥 STEP 4: HANDLE LOGO UPLOAD
+        logo_file = request.files.get("logo")
+        logo_filename = None
+        if logo_file and logo_file.filename:
+            from werkzeug.utils import secure_filename
+            logo_filename = secure_filename(logo_file.filename)
+            logo_file.save(os.path.join("static/uploads/schools", logo_filename))
 
-        # 🔥 Ensure unique slug
-        existing_slug = SchoolModel.query.filter_by(slug=slug).first()
-
-        if existing_slug:
-            slug = f"{slug}-{int(datetime.utcnow().timestamp())}"
-
+        # 🔥 STEP 5: CREATE SCHOOL
         new_school = SchoolModel(
             name=name,
             slug=slug,
             address=address,
             phone=phone,
             email=email,
-            expiry_date=expiry_date
+            expiry_date=expiry_date,
+            logo=logo_filename  # ✅ save logo filename in DB
         )
 
         db.session.add(new_school)
 
-        # Demo conversion
         demo_id = request.form.get("demo_id")
         if demo_id:
             demo = DemoRequest.query.get(demo_id)
@@ -166,6 +164,7 @@ def add_school():
         return redirect(url_for("super_admin.schools"))
 
     return render_template("add_school.html")
+
 
 # =========================
 # EDIT SCHOOL

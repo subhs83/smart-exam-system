@@ -53,7 +53,7 @@ body {
             <h5 class="mb-3">Student Registration</h5>
 
             <form method="POST"
-      action="{{ url_for('student.start_quiz', quiz_code=quiz_code) }}">
+      action="{{ url_for('student.start_quiz', school_slug=school_slug, quiz_code=quiz_code) }}">
 
 <div class="row">
 

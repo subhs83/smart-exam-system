@@ -16,14 +16,17 @@ from smart_exam_system.utils.services.student_service import (
 from smart_exam_system.utils.helpers import no_cache
 from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.models.exam import ExamModel
+from smart_exam_system.models.school import SchoolModel
 from datetime import datetime, timedelta
 
 
-@student_bp.route(" /<school_slug>/quiz/<quiz_code>")
-def quiz_page(quiz_code):
-    print("QUIZ PAGE HIT:", request.method, request.url)
+@student_bp.route("/<school_slug>/quiz/<quiz_code>")
+def quiz_page(school_slug, quiz_code):
+    school = SchoolModel.query.filter_by(slug=school_slug).first_or_404()
     exam = get_exam_by_quiz_code(quiz_code)
+
     new_attempt = request.args.get("new_attempt")
+
     if not exam:
         flash("Invalid Quiz Link", "danger")
         return "Invalid Quiz Link"
@@ -65,6 +68,7 @@ def quiz_page(quiz_code):
                 if len(attempts) >= max_attempts:
                     return redirect(url_for(
                         "student.submit_quiz",
+                        school_slug=school_slug,
                         quiz_code=quiz_code,
                         attempt_id=last_attempt.id
                     ))
@@ -86,6 +90,7 @@ def quiz_page(quiz_code):
                     session["attempt_id"] = attempt.id
                     return redirect(url_for(
                         "student.quiz_question",
+                        school_slug=school_slug,
                         quiz_code=quiz_code,
                         q_index=0,
                         hide_nav=True,
@@ -129,10 +134,10 @@ def quiz_page(quiz_code):
 # Start Quiz
 # -----------------------------
 @student_bp.route("/<school_slug>/quiz/<quiz_code>/start", methods=["POST"])
-def start_quiz(quiz_code):
+def start_quiz(school_slug,quiz_code):
+    school = SchoolModel.query.filter_by(slug=school_slug).first_or_404()
 
     exam = ExamModel.query.filter_by(quiz_code=quiz_code).first()
-
     if not exam:
         flash("Invalid quiz link", "danger")
         return redirect(url_for("student.quiz_page", school_slug=school_slug,quiz_code=quiz_code))
@@ -151,6 +156,7 @@ def start_quiz(quiz_code):
     response = make_response(redirect(url_for(
         "student.quiz_question",
         quiz_code=quiz_code,
+        school_slug=school_slug,
         q_index=0
     )))
 
@@ -168,7 +174,8 @@ def start_quiz(quiz_code):
 
 
 @student_bp.route("/<school_slug>/quiz/<quiz_code>/<int:q_index>", methods=["GET", "POST"])
-def quiz_question(quiz_code, q_index):
+def quiz_question(school_slug, quiz_code, q_index):
+    school = SchoolModel.query.filter_by(slug=school_slug).first_or_404()
 
     # -------------------------------
     # 🔹 Get attempt safely
@@ -195,6 +202,7 @@ def quiz_question(quiz_code, q_index):
     if attempt.is_submitted:
         return redirect(url_for(
             "student.submit_quiz",
+            school_slug=school_slug,
             quiz_code=quiz_code,
             attempt_id=attempt.id
         ))
@@ -285,6 +293,8 @@ def quiz_question(quiz_code, q_index):
         total_questions=total_questions,
         remaining_time=remaining_time,
         exam=exam,
+        school_slug=school_slug,   # 🔹 add this
+        quiz_code=quiz_code,       # 🔹 add this
         hide_nav=True,
         hide_footer=True,
         hide_sidebar=True
@@ -294,10 +304,11 @@ def quiz_question(quiz_code, q_index):
 # Submit Quiz
 # -----------------------------
 @student_bp.route("/<school_slug>/quiz/<quiz_code>/submit", methods=["GET", "POST"])
-def submit_quiz(quiz_code):
+def submit_quiz(school_slug, quiz_code):
 
     attempt_id = request.args.get("attempt_id") or session.get("attempt_id")
-
+     # ✅ Resolve school from slug
+    school = SchoolModel.query.filter_by(slug=school_slug).first_or_404()
     if not attempt_id:
         flash("No active attempt found", "danger")
         return redirect(url_for("student.quiz_page", school_slug=school_slug,quiz_code=quiz_code))
@@ -329,6 +340,7 @@ def submit_quiz(quiz_code):
             **result,
             used_attempts=used_attempts,
             max_attempts=max_attempts,
+            school_slug=school_slug,   # ✅ add this
             hide_nav=True,
             hide_footer=True,
         )
@@ -351,16 +363,16 @@ def submit_quiz(quiz_code):
     **result,
     used_attempts=used_attempts,
     max_attempts=max_attempts,
+    school_slug=school_slug,   # ✅ add this
     hide_nav=True,
     hide_footer=True,
 )
 
 # ---------------------------------
-# Save Violation (FINAL CLEAN)
+# Save Violation (with slug + quiz_code)
 # ---------------------------------
-@student_bp.route("/quiz/save-violation", methods=["POST"])
-def save_violation():
-
+@student_bp.route("/<school_slug>/quiz/<quiz_code>/save-violation", methods=["POST"])
+def save_violation(school_slug, quiz_code):
     attempt_id = session.get("attempt_id")
 
     if not attempt_id:
@@ -370,8 +382,9 @@ def save_violation():
     reason = data.get("reason", "Unknown")
 
     result = record_violation(attempt_id, reason)
-    print("Violation API HIT")
+    print(f"Violation API HIT for {school_slug}/{quiz_code}")
     return result
+
 # -----------------------------
 # Auto Save Answer (AJAX)
 # -----------------------------

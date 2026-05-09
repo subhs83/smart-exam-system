@@ -5,6 +5,7 @@ from smart_exam_system.utils.services.exam_service import create_exam, get_teach
 from smart_exam_system.utils.services.question_service import upload_questions, get_exam_questions
 from smart_exam_system.utils.services.result_service import get_results, generate_leaderboard,get_attempt_detailed_report
 from smart_exam_system.models.attempt import AttemptModel
+from smart_exam_system.models.school import SchoolModel
 from smart_exam_system.blueprints.teacher import teacher_bp
 from datetime import datetime,timezone
 
@@ -17,8 +18,8 @@ from datetime import datetime,timezone
 def dashboard():
 
     exams = get_teacher_exams(current_user.id)
-
-    return render_template('teacher_dashboard.html', exams=exams,active_page='dashboard')
+    school = SchoolModel.query.get(current_user.school_id)  # or however you get the teacher's school
+    return render_template('teacher_dashboard.html', school_slug=school.slug,exams=exams,active_page='dashboard')
 
 
 # ---------------------------------

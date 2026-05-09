@@ -186,6 +186,13 @@ input[type="radio"]:checked + label {
 .violation-banner.error {
     background: #dc3545;
 }
+.school-logo-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
 </style>
 <!-- ================= Violation Banner ================= -->
 <div id="violation-banner" class="violation-banner d-none">
@@ -197,20 +204,22 @@ input[type="radio"]:checked + label {
     <!-- LEFT: Branding -->
    <!-- LEFT: Branding -->
 <div class="d-flex align-items-center gap-2">
-
-    {% if exam.school.logo %}
-        <img 
-            src="{{ url_for('static', filename='uploads/schools/' ~ indiaeducore.logo) }}"
-            alt="School Logo"
-            style="
-                width: 40px;
-                height: 40px;
-                object-fit: cover;
-                border-radius: 50%;
-            "
-        >
-    {% endif %}
-
+    <div class="school-logo">
+        {% if exam.school.logo %}
+            <img 
+                src="{{ url_for('static', filename='uploads/schools/' ~ exam.school.logo) }}"
+                alt="School Logo"
+                class="school-logo-img"
+            >
+        {% else %}
+            <img 
+                src="{{ url_for('static', filename='uploads/schools/indiaeducore.png') }}"
+                alt="Default Logo"
+                class="school-logo-img"
+            >
+        {% endif %}
+    </div>
+    
     <strong>
         Indiaeducore
     </strong>
@@ -328,7 +337,7 @@ async function autoSubmitExam() {
 
     try {
         // ✅ Save current answer before submit
-        await fetch("{{ url_for('student.quiz_question',school_slug=exam.school.slug,quiz_code=request.view_args['quiz_code'],q_index=q_index) }}", {
+        await fetch("{{ url_for('student.quiz_question',school_slug=school_slug,quiz_code=request.view_args['quiz_code'],q_index=q_index) }}", {
     method: "POST",
     body: new FormData(form)
 });
@@ -337,7 +346,7 @@ async function autoSubmitExam() {
     }
 
     // ✅ Then submit exam
-    window.location.href = "{{ url_for('student.submit_quiz',school_slug=exam.school.slug,quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
+    window.location.href = "{{ url_for('student.submit_quiz',school_slug=school_slug, quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
 }
 let timeLeft = {{ remaining_time }};
 
@@ -373,10 +382,11 @@ updateTimer();
     const form = document.getElementById("quiz-form");
     const status = document.getElementById("save-status");
 
-    fetch("{{ url_for('student.quiz_question',  school_slug=exam.school.slug, quiz_code=request.view_args['quiz_code'], q_index=q_index) }}", {
+    fetch("{{ url_for('student.save_answer_ajax') }}", {
     method: "POST",
     body: new FormData(form)
 })
+
     .then(res => {
         if(status){
             status.textContent = res.ok ? "✔ Saved" : "❌ Error";
@@ -397,7 +407,7 @@ updateTimer();
 </script>
 
 <script>
-    function showBanner(message, type = "warning") {
+    function showBanner(message, type = "warning") {    
         const banner = document.getElementById("violation-banner");
         const text = document.getElementById("violation-message");
     
@@ -426,12 +436,12 @@ updateTimer();
         if (now - lastViolationTime < 2000) return;
     
         lastViolationTime = now;
-    
-        fetch("/student/quiz/save-violation", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ reason })
-        })
+        
+        fetch("{{ url_for('student.save_violation', school_slug=school_slug, quiz_code=quiz_code) }}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ reason })
+    })
         .then(res => res.json())
         .then(data => {
     
@@ -453,7 +463,7 @@ updateTimer();
                             `Submitting your quiz in ${seconds}s...`;
                     } else {
                         clearInterval(interval);
-                        window.location.href = "{{ url_for('student.submit_quiz', quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
+                        window.location.href = "{{ url_for('student.submit_quiz', school_slug=school_slug, quiz_code=request.view_args['quiz_code']) }}?attempt_id={{ session['attempt_id'] }}";
                     }
                 }, 1000);
     
