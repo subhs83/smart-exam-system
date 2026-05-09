@@ -16,20 +16,6 @@ from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 import os
 
-
-@super_admin_bp.route("/run-slug-fix")
-def run_slug_fix():
-
-    schools = SchoolModel.query.all()
-
-    for school in schools:
-
-        if not school.slug:
-            school.slug = generate_slug(school.name)
-
-    db.session.commit()
-
-    return "Slug fix completed"
 # =========================
 # SUPER ADMIN DASHBOARD
 # =========================
