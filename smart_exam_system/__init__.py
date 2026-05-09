@@ -48,41 +48,7 @@ def create_app():
     app.register_blueprint(footer_bp)
 
     with app.app_context():
-
         db.create_all()
-
-        from sqlalchemy import text
-
-        try:
-            db.session.execute(
-                text("ALTER TABLE schools ADD COLUMN slug VARCHAR(255)")
-            )
-            db.session.commit()
-
-        except Exception as e:
-            print(e)
-
-        try:
-            db.session.execute(
-                text("ALTER TABLE schools ADD COLUMN logo VARCHAR(255)")
-            )
-            db.session.commit()
-
-        except Exception as e:
-            print(e)
-
-        from smart_exam_system.models.school import SchoolModel
-        from smart_exam_system.utils.helpers import generate_slug
-
-        schools = SchoolModel.query.all()
-
-        for school in schools:
-
-            if not school.slug:
-                school.slug = generate_slug(school.name)
-
-        db.session.commit()
-
         create_default_super_admin()
 
     return app
