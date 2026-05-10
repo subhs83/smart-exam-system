@@ -138,3 +138,33 @@ def delete_exam(exam_id):
 
     return True, "Exam deleted successfully."
 
+
+
+
+def parse_exam_datetime(datetime_string):
+
+    return datetime.strptime(
+        datetime_string,
+        "%Y-%m-%dT%H:%M"
+    ).astimezone(timezone.utc)
+
+
+def extract_exam_form_data(form_data):
+
+    start_date = parse_exam_datetime(
+        form_data.get('start_date')
+    )
+
+    end_date = parse_exam_datetime(
+        form_data.get('end_date')
+    )
+
+    return {
+        "title": form_data.get('title'),
+        "duration": form_data.get('duration'),
+        "marks": form_data.get('marks'),
+        "negative": form_data.get('negative'),
+        "max_attempts": form_data.get('max_attempts'),
+        "start_date": start_date,
+        "end_date": end_date
+    }

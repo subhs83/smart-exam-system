@@ -273,3 +273,45 @@ def export_results_to_excel(exam_id, file_path):
 
     return True, f"Results exported to {file_path}"
 
+
+def get_student_attempts(mobile, roll, exam_id):
+
+    return AttemptModel.query.filter(
+        AttemptModel.mobile == mobile,
+        AttemptModel.roll_number == roll,
+        AttemptModel.exam_id == exam_id
+    ).order_by(
+        AttemptModel.attempt_number.asc()
+    ).all()
+
+def get_best_attempt_id(attempts):
+
+    best_attempt_id = None
+    best_percentage = -1
+
+    for attempt in attempts:
+
+        if (
+            attempt.percentage is not None
+            and attempt.percentage > best_percentage
+        ):
+            best_percentage = attempt.percentage
+            best_attempt_id = attempt.id
+
+    return best_attempt_id
+
+
+
+def build_student_summary(attempts):
+
+    first_attempt = attempts[0]
+
+    return {
+        "mobile": first_attempt.mobile,
+        "roll": first_attempt.roll_number,
+        "name": (
+            f"{first_attempt.first_name} "
+            f"{first_attempt.last_name}"
+        ),
+        "class": first_attempt.student_class
+    }

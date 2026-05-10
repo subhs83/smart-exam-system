@@ -1,9 +1,22 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from smart_exam_system.utils.decorators import teacher_required, exam_owner_required
-from smart_exam_system.utils.services.exam_service import create_exam, get_teacher_exams, publish_exam, delete_exam
+from smart_exam_system.utils.services.exam_service import ( 
+    create_exam, 
+    get_teacher_exams, 
+    publish_exam, 
+    delete_exam,
+    parse_exam_datetime,
+    extract_exam_form_data
+    )
 from smart_exam_system.utils.services.question_service import upload_questions, get_exam_questions
-from smart_exam_system.utils.services.result_service import get_results, generate_leaderboard,get_attempt_detailed_report
+from smart_exam_system.utils.services.result_service import(
+    generate_leaderboard,
+    get_attempt_detailed_report,
+    get_student_attempts,
+    get_best_attempt_id,
+    build_student_summary
+)
 from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.models.school import SchoolModel
 from smart_exam_system.blueprints.teacher import teacher_bp
@@ -33,26 +46,12 @@ def create_exam_route():
 
     if request.method == 'POST':
 
-        start_date = request.form.get('start_date')
-        end_date = request.form.get('end_date')
+        exam_data = extract_exam_form_data(request.form  )
 
-        # convert to datetime
-        from datetime import datetime, timezone
-
-        start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M").astimezone(timezone.utc)
-        end_date = datetime.strptime(end_date, "%Y-%m-%dT%H:%M").astimezone(timezone.utc)
-      
-      
         success, msg = create_exam(
             teacher_id=current_user.id,
             school_id=current_user.school_id,
-            title=request.form.get('title'),
-            duration=request.form.get('duration'),
-            marks=request.form.get('marks'),
-            negative=request.form.get('negative'),
-            max_attempts=request.form.get('max_attempts'),
-            start_date=start_date,
-            end_date=end_date
+            **exam_data
         )
 
         flash(msg, 'success' if success else 'danger')
@@ -152,35 +151,19 @@ def delete_exam_route(exam_id):
 @teacher_required
 def student_attempts(mobile, roll, exam_id):
 
-    attempts = AttemptModel.query.filter(
-        AttemptModel.mobile == mobile,
-        AttemptModel.roll_number == roll,
-        AttemptModel.exam_id == exam_id
-    ).order_by(AttemptModel.attempt_number.asc()).all()
+    attempts = get_student_attempts(mobile, roll, exam_id)
 
     if not attempts:
         flash("No attempts found", "danger")
         return redirect(url_for('teacher.results_route', exam_id=exam_id))
     # find best attempt
-    best_attempt_id = None
-    best_percentage = -1
-
-    for a in attempts:
-        if a.percentage is not None and a.percentage > best_percentage:
-            best_percentage = a.percentage
-            best_attempt_id = a.id
-    print("BEST ID:", best_attempt_id)
+    best_attempt_id = get_best_attempt_id(attempts)
     return render_template(
         "student_attempts.html",
         attempts=attempts,
         exam_id=exam_id,
         best_attempt_id=best_attempt_id,
-        student={
-            "mobile": mobile,
-            "roll": roll,
-            "name": f"{attempts[0].first_name} {attempts[0].last_name}",
-            "class": attempts[0].student_class
-        },
+        student=build_student_summary(attempts),
         active_page="results_overview"
     )    
 
