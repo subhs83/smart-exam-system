@@ -44,3 +44,5 @@ def generate_slug(name):
     slug = re.sub(r"[^a-z0-9\-]", "", slug)
 
     return slug
+
+

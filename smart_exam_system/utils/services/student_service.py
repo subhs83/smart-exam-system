@@ -1,4 +1,4 @@
-from flask import session
+from flask import session,render_template
 import random
 from sqlalchemy import func
 from datetime import datetime, timezone, timedelta
@@ -8,7 +8,6 @@ from smart_exam_system.models.exam import ExamModel
 from smart_exam_system.models.question import QuestionModel
 from smart_exam_system.models.answer import StudentAnswerModel
 import json
-from datetime import datetime
  
 # -------------------------------
 # Get Exam by Quiz Code
@@ -501,3 +500,200 @@ def record_violation(attempt_id, reason):
         "violation_count": attempt.violation_count,
         "auto_submitted": attempt.is_submitted
     }
+
+
+# student_service.py
+
+def get_submitted_attempts(exam_id, mobile):
+    return AttemptModel.query.filter_by(
+        exam_id=exam_id,
+        mobile=mobile,
+        is_submitted=True
+    ).order_by(AttemptModel.id.desc()).all()
+
+# student_service.py
+
+def get_last_attempt_by_ip(exam_id, ip_address):
+    return AttemptModel.query.filter_by(
+        exam_id=exam_id,
+        ip_address=ip_address
+    ).order_by(AttemptModel.id.desc()).first()
+
+
+def can_start_new_attempt(exam, attempts):
+    max_attempts = exam.max_attempts_per_mobile or 1
+    return len(attempts) < max_attempts
+
+
+def create_retry_attempt(exam, last_attempt, ip_address):
+
+    student_data = {
+        "first_name": last_attempt.first_name,
+        "last_name": last_attempt.last_name,
+        "mobile": last_attempt.mobile,
+        "student_class": last_attempt.student_class,
+        "roll_number": last_attempt.roll_number,
+    }
+
+    return start_student_attempt(
+        exam.id,
+        exam.school_id,
+        student_data,
+        ip_address
+    )
+
+
+def resolve_student_mobile(exam_id, ip_address):
+
+    student_mobile = (
+        session.get("student_mobile")
+        or request.cookies.get("student_mobile")
+    )
+
+    if student_mobile:
+        return student_mobile
+
+    last_attempt = get_last_attempt_by_ip(
+        exam_id,
+        ip_address
+    )
+
+    if last_attempt:
+        session["student_mobile"] = last_attempt.mobile
+        return last_attempt.mobile
+
+    return None
+
+
+def get_attempt_state(exam, attempts):
+
+    if not attempts:
+        return {
+            "has_attempts": False,
+            "latest_attempt": None,
+            "can_retry": True
+        }
+
+    latest_attempt = attempts[0]
+
+    return {
+        "has_attempts": True,
+        "latest_attempt": latest_attempt,
+        "can_retry": can_start_new_attempt(exam, attempts)
+    }
+
+
+def persist_student_identity(response, attempt):
+
+    session["attempt_id"] = attempt.id
+    session["student_mobile"] = attempt.mobile
+
+    response.set_cookie(
+        "student_mobile",
+        attempt.mobile,
+        max_age=30 * 24 * 60 * 60
+    )
+
+    return response
+
+
+
+def extract_student_form_data(form_data):
+
+    return {
+        "first_name": form_data.get("first_name", "").strip(),
+        "last_name": form_data.get("last_name", "").strip(),
+        "mobile": form_data.get("mobile", "").strip(),
+        "student_class": form_data.get("student_class", "").strip(),
+        "roll_number": form_data.get("roll_number", "").strip(),
+    }
+
+
+def resolve_attempt(attempt_id):
+
+    if not attempt_id:
+        return None
+
+    try:
+        attempt_id = int(attempt_id)
+    except (TypeError, ValueError):
+        return None
+
+    return AttemptModel.query.get(attempt_id)
+
+
+def calculate_remaining_time(attempt, exam):
+
+    end_time = (
+        attempt.start_time
+        + timedelta(minutes=exam.duration_minutes)
+    )
+
+    return int(
+        (end_time - datetime.utcnow()).total_seconds()
+    )
+
+
+def normalize_question_index(q_index, total_questions):
+
+    if q_index < 0:
+        return 0
+
+    if q_index >= total_questions:
+        return None
+
+    return q_index
+
+
+def resolve_quiz_navigation_action(form_data):
+
+    goto_index = form_data.get("goto")
+
+    if goto_index is not None:
+        return {
+            "action": "goto",
+            "target_index": int(goto_index)
+        }
+
+    if "next" in form_data:
+        return {
+            "action": "next"
+        }
+
+    if "prev" in form_data:
+        return {
+            "action": "prev"
+        }
+
+    if "submit" in form_data:
+        return {
+            "action": "submit"
+        }
+
+    return {
+        "action": None
+    }
+
+
+def get_attempt_question_order(attempt):
+
+    question_order = json.loads(attempt.question_order)
+
+    return {
+        "question_order": question_order,
+        "total_questions": len(question_order)
+    }
+
+def get_used_attempt_count(exam_id, mobile):
+
+    return AttemptModel.query.filter_by(
+        exam_id=exam_id,
+        mobile=mobile,
+        is_submitted=True
+    ).count()
+
+def get_max_attempts(exam):
+
+    return exam.max_attempts_per_mobile or 1
+
+
