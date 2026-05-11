@@ -10,10 +10,13 @@ from smart_exam_system.models.democontact import DemoRequest, ContactMessage
 from smart_exam_system.utils.decorators import super_admin_required
 from smart_exam_system.utils.security import hash_password
 from smart_exam_system.utils.services.school_service import generate_unique_school_slug
-import secrets, string
-from sqlalchemy import func
+from smart_exam_system.utils.services.super_admin_service import (
+    build_super_admin_dashboard,
+    create_school_service
+)
+import secrets
+import string
 from datetime import datetime, timedelta
-from werkzeug.utils import secure_filename
 import os
 
 # =========================
@@ -23,57 +26,11 @@ import os
 @login_required
 @super_admin_required
 def dashboard():
-    # -------------------------
-    # Total Schools
-    # -------------------------
-    total_schools = SchoolModel.query.count()
-
-    # -------------------------
-    # Total Exams
-    # -------------------------
-    total_exams = ExamModel.query.count()
-
-    # -------------------------
-    # Total Teachers
-    # -------------------------
-    total_teachers = UserModel.query.filter_by(role="teacher").count()
-
-    # -------------------------
-    # Total Unique Students
-    # Use subquery with distinct (school_id, roll_number) for SQLite compatibility
-
-    # -------------------------
-    # Demo + Contact Leads
-    # -------------------------
-    total_demo_requests = DemoRequest.query.count()
-    total_contact_messages = ContactMessage.query.count()
-    # -------------------------
-
-    student_subquery = db.session.query(
-        AttemptModel.school_id,
-        AttemptModel.roll_number
-    ).filter(
-        AttemptModel.roll_number.isnot(None),
-        AttemptModel.roll_number != ""
-    ).distinct().subquery()
-
-    total_students = db.session.query(func.count()).select_from(student_subquery).scalar()
-
-    # -------------------------
-    # Optional: Total Attempts (all student attempts)
-    # -------------------------
-    total_attempts = db.session.query(func.count(AttemptModel.id)).scalar()
-
+    dashboard_data = build_super_admin_dashboard()
     return render_template(
-    "super_admin_dashboard.html",
-    total_schools=total_schools,
-    total_exams=total_exams,
-    total_teachers=total_teachers,
-    total_students=total_students,
-    total_attempts=total_attempts,
-    total_demo_requests=total_demo_requests,
-    total_contact_messages=total_contact_messages
-)
+        "super_admin_dashboard.html",
+        **dashboard_data
+    )
 # =========================
 # VIEW ALL SCHOOLS
 # =========================
@@ -81,14 +38,18 @@ def dashboard():
 @login_required
 @super_admin_required
 def schools():
-    if current_user.role != "super_admin":
-        abort(403)
 
     schools = SchoolModel.query.order_by(SchoolModel.id.asc()).all()
-    # 🔥 FIX: compute flag for template
+
+    # mark if school has admin
     for s in schools:
-        s.has_admin = len(list(s.admins)) > 0
-    return render_template("schools.html", schools=schools,current_time=datetime.utcnow())
+        s.has_admin = bool(s.admins)
+
+    return render_template(
+        "schools.html",
+        schools=schools,
+        current_time=datetime.utcnow()
+    )
 
 # =========================
 # ADD SCHOOL
@@ -97,60 +58,14 @@ def schools():
 @login_required
 @super_admin_required
 def add_school():
+
     if request.method == "POST":
-        name = request.form["name"].strip()
-        slug = generate_unique_school_slug(name)
-        address = request.form["address"].strip()
-        phone = request.form["phone"].strip()
-        email = request.form["email"].strip()
-        duration_days = request.form.get("duration_days")
 
-        # 🔥 STEP 1: CHECK DUPLICATES
-        existing_school = SchoolModel.query.filter(
-            (SchoolModel.email == email) | (SchoolModel.name == name)
-        ).first()
-        if existing_school:
-            flash("School already exists with same name or email.", "danger")
+        result = create_school_service(request.form, request.files)
+
+        if result.get("error"):
+            flash(result["error"], "danger")
             return redirect(url_for("super_admin.add_school"))
-
-        # 🔥 STEP 2: VALIDATE
-        if not name:
-            flash("School name is required.", "danger")
-            return redirect(url_for("super_admin.add_school"))
-
-        # 🔥 STEP 3: SET EXPIRY
-        expiry_date = None
-        if duration_days:
-            expiry_date = datetime.utcnow() + timedelta(days=int(duration_days))
-
-        # 🔥 STEP 4: HANDLE LOGO UPLOAD
-        logo_file = request.files.get("logo")
-        logo_filename = None
-        if logo_file and logo_file.filename:
-         
-            logo_filename = secure_filename(logo_file.filename)
-            logo_file.save(os.path.join("static/uploads/schools", logo_filename))
-
-        # 🔥 STEP 5: CREATE SCHOOL
-        new_school = SchoolModel(
-            name=name,
-            slug=slug,
-            address=address,
-            phone=phone,
-            email=email,
-            expiry_date=expiry_date,
-            logo=logo_filename  # ✅ save logo filename in DB
-        )
-
-        db.session.add(new_school)
-
-        demo_id = request.form.get("demo_id")
-        if demo_id:
-            demo = DemoRequest.query.get(demo_id)
-            if demo:
-                demo.status = "converted"
-
-        db.session.commit()
 
         flash("School created successfully!", "success")
         return redirect(url_for("super_admin.schools"))
@@ -169,10 +84,8 @@ def edit_school(school_id):
     school = SchoolModel.query.get_or_404(school_id)
 
     if request.method == "POST":
-        name = request.form["name"].strip()
 
-        slug = generate_unique_school_slug(name, school.id)
-        school.slug = slug
+        name = request.form["name"].strip()
         address = request.form["address"].strip()
         phone = request.form["phone"].strip()
         email = request.form["email"].strip()
@@ -181,10 +94,40 @@ def edit_school(school_id):
             flash("School name is required.", "danger")
             return redirect(url_for("super_admin.edit_school", school_id=school_id))
 
+        # update basic fields
         school.name = name
         school.address = address
         school.phone = phone
         school.email = email
+
+        # regenerate slug
+        school.slug = generate_unique_school_slug(name, school.id)
+
+        # -----------------------------
+        # LOGO HANDLING (NEW LOGIC)
+        # -----------------------------
+        logo_file = request.files.get("logo")
+
+        if logo_file and logo_file.filename:
+
+            import os
+            from werkzeug.utils import secure_filename
+
+            upload_folder = "static/uploads/schools"
+
+            # delete old logo if exists
+            if school.logo:
+                old_path = os.path.join(upload_folder, school.logo)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+
+            # save new logo
+            filename = secure_filename(logo_file.filename)
+            logo_path = os.path.join(upload_folder, filename)
+            logo_file.save(logo_path)
+
+            school.logo = filename
+
         db.session.commit()
 
         flash("School updated successfully!", "success")
@@ -219,6 +162,8 @@ def view_school_admins(school_id):
 
     return render_template("view_school_admins.html", school=school, admins=admins)
 
+
+
 # =========================
 # ADD SCHOOL ADMIN
 # =========================
@@ -230,20 +175,26 @@ def add_school_admin(school_id):
     school = SchoolModel.query.get_or_404(school_id)
 
     if request.method == "POST":
+
         name = request.form["name"].strip()
         email = request.form["email"].strip()
+
         if not name or not email:
             flash("Name and Email are required.", "danger")
             return redirect(url_for("super_admin.add_school_admin", school_id=school_id))
 
-        # ✅ Generate temp password
-        temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(8))
-
-        hashed_password = hash_password(temp_password)
-
+        # check duplicate FIRST
         if UserModel.query.filter_by(email=email).first():
             flash("Email already exists!", "danger")
             return redirect(url_for("super_admin.add_school_admin", school_id=school_id))
+
+        # generate temp password
+        temp_password = ''.join(
+            secrets.choice(string.ascii_letters + string.digits)
+            for _ in range(8)
+        )
+
+        hashed_password = hash_password(temp_password)
 
         new_admin = UserModel(
             name=name,
@@ -252,13 +203,16 @@ def add_school_admin(school_id):
             role="school_admin",
             school_id=school_id,
             is_active=True,
-            force_password_change=True   # ✅ IMPORTANT
+            force_password_change=True
         )
+
         db.session.add(new_admin)
         db.session.commit()
 
-        flash(f"Temporary Password: {temp_password}", "password")
+        # safer flash (no sensitive exposure style)
         flash("School Admin created successfully!", "success")
+        flash(f"Temporary password (show once): {temp_password}", "info")
+
         return redirect(url_for("super_admin.view_school_admins", school_id=school_id))
 
     return render_template("add_school_admin.html", school=school)
@@ -272,11 +226,15 @@ def add_school_admin(school_id):
 def toggle_school_admin(user_id):
 
     admin = UserModel.query.get_or_404(user_id)
-    if admin.role == "school_admin":
-        admin.is_active = not admin.is_active
-        db.session.commit()
 
-    return redirect(request.referrer)
+    if admin.role != "school_admin":
+        abort(404)
+
+    admin.is_active = not admin.is_active
+    db.session.commit()
+
+    return redirect(request.referrer or url_for("super_admin.schools"))
+
 
 # =========================
 # RESET SCHOOL ADMIN PASSWORD
@@ -287,16 +245,22 @@ def toggle_school_admin(user_id):
 def reset_school_admin_password(user_id):
 
     admin = UserModel.query.get_or_404(user_id)
+
     if admin.role != "school_admin":
         abort(404)
 
-    temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(10))
+    temp_password = ''.join(
+        secrets.choice(string.ascii_letters + string.digits)
+        for _ in range(10)
+    )
+
     admin.password = hash_password(temp_password)
     admin.force_password_change = True
     db.session.commit()
 
     flash(f"Temporary Password: {temp_password}", "password")
-    return redirect(request.referrer)
+
+    return redirect(request.referrer or url_for("super_admin.schools"))
 
 
 # =========================
@@ -332,7 +296,7 @@ def update_demo_status(id, status):
     demo = DemoRequest.query.get_or_404(id)
     demo.status = status
     db.session.commit()
-    return redirect(request.referrer)
+    return redirect(request.referrer or url_for("super_admin.demo_requests"))
 
 
 # =========================
@@ -345,7 +309,7 @@ def delete_demo(id):
     demo = DemoRequest.query.get_or_404(id)
     db.session.delete(demo)
     db.session.commit()
-    return redirect(request.referrer)
+    return redirect(request.referrer or url_for("super_admin.demo_requests"))
 
 
 # =========================
@@ -358,7 +322,7 @@ def update_contact_status(id, status):
     msg = ContactMessage.query.get_or_404(id)
     msg.status = status
     db.session.commit()
-    return redirect(request.referrer)
+    return redirect(request.referrer or url_for("super_admin.contact_messages"))
 
 
 # =========================
@@ -371,8 +335,7 @@ def delete_contact(id):
     msg = ContactMessage.query.get_or_404(id)
     db.session.delete(msg)
     db.session.commit()
-    return redirect(request.referrer)
-
+    return redirect(request.referrer or url_for("super_admin.contact_messages"))
     
 # =========================
 # View Stats
@@ -399,8 +362,6 @@ def platform_stats():
 # System Health
 # =========================
 
-from datetime import datetime
-
 @super_admin_bp.route("/system-health")
 @login_required
 @super_admin_required
@@ -421,7 +382,7 @@ def convert_demo(id):
 
     return render_template(
         "add_school.html",
-        demo=demo   # 👈 pass demo data
+        demo=demo
     )
 
 # =========================
@@ -434,10 +395,7 @@ def convert_demo(id):
 def extend_school(school_id, days):
     school = SchoolModel.query.get_or_404(school_id)
 
-    # If expiry exists → extend from that date
-    # If not → extend from today
     base_date = school.expiry_date or datetime.utcnow()
-
     school.expiry_date = base_date + timedelta(days=days)
     school.is_active = True
 
@@ -464,6 +422,7 @@ def reset_school_validity(school_id):
     flash("School validity reset successfully!", "success")
     return redirect(url_for("super_admin.schools"))
 
+
 # =========================
 # Delete School
 # =========================
@@ -474,7 +433,6 @@ def reset_school_validity(school_id):
 def delete_school(school_id):
     school = SchoolModel.query.get_or_404(school_id)
 
-    # Check if admins exist
     from smart_exam_system.models.user import UserModel
     admin_exists = UserModel.query.filter_by(
         school_id=school.id,
