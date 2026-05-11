@@ -19,14 +19,6 @@ import string
 from datetime import datetime, timedelta
 import os
 
-# =========================
-# Temporarily add route
-# =========================
-from smart_exam_system.utils.db_fixes import run_all_fixes
-@super_admin_bp.route("/db-fix-contact-phone")
-def fix_contact_phone():
-    run_all_fixes()
-    return "DB FIX EXECUTED"
 
 # =========================
 # SUPER ADMIN DASHBOARD
