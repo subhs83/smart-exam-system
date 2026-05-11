@@ -1,14 +1,14 @@
 from smart_exam_system.extensions import db
 from smart_exam_system.models.exam import ExamModel
-from smart_exam_system.models.contact import ContactMessage  # adjust if needed
+from smart_exam_system.models.democontact import ContactMessage  # adjust if needed
 from datetime import datetime
-
+from sqlalchemy import inspect, text
 
 def fix_contact_phone_column():
     """
     Ensure phone column exists safely (Render-safe)
     """
-    from sqlalchemy import inspect, text
+   
 
     inspector = inspect(db.engine)
     columns = [c["name"] for c in inspector.get_columns("contact_messages")]

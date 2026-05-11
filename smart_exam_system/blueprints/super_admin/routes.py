@@ -22,11 +22,11 @@ import os
 # =========================
 # Temporarily add route
 # =========================
-@super_admin_bp.route("/run-db-fixes")
-def run_db_fixes():
-    from smart_exam_system.utils.db_fixes import run_all_fixes
+from smart_exam_system.utils.db_fixes import run_all_fixes
+@super_admin_bp.route("/db-fix-contact-phone")
+def fix_contact_phone():
     run_all_fixes()
-    return "DB Fix Completed"
+    return "DB FIX EXECUTED"
 
 # =========================
 # SUPER ADMIN DASHBOARD
