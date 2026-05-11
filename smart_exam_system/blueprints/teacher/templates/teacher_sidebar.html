@@ -23,7 +23,7 @@
         </li>
 
         <!-- ===== EXAMS ===== -->
-        <li class="sidebar-section mt-3 mb-2 text-light" data-spa>Exams</li>
+        <li class="sidebar-section mt-3 mb-2 text-light">Exams</li>
 
         <li class="nav-item">
             <a href="{{ url_for('teacher.create_exam_route') }}"
@@ -34,8 +34,8 @@
 
         <li class="nav-item">
             <a href="{{ url_for('teacher.manage_questions_overview') }}"
-               class="nav-link {% if active_page=='manage_questions' %}active{% endif %}">
-                <i class="fas fa-file-alt me-2"></i> Manage Questions
+               class="nav-link {% if active_page=='manage_questions' %}active{% endif %}" data-spa>
+                <i class="fas fa-file-alt me-2"></i> Manage Questions 
             </a>
         </li>
 
