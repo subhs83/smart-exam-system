@@ -21,6 +21,7 @@ class ContactMessage(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120))
+    phone = db.Column(db.String(20))  # ✅ ADD THIS
     email = db.Column(db.String(120))
     message = db.Column(db.Text)
 

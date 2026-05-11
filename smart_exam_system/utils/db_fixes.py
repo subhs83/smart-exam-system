@@ -1,25 +1,58 @@
-from sqlalchemy import inspect, text
 from smart_exam_system.extensions import db
+from smart_exam_system.models.exam import ExamModel
+from smart_exam_system.models.contact import ContactMessage  # adjust if needed
+from datetime import datetime
 
 
-def ensure_column(table_name, column_name, sql_definition):
+def fix_contact_phone_column():
+    """
+    Ensure phone column exists safely (Render-safe)
+    """
+    from sqlalchemy import inspect, text
 
     inspector = inspect(db.engine)
+    columns = [c["name"] for c in inspector.get_columns("contact_messages")]
 
-    columns = [c["name"] for c in inspector.get_columns(table_name)]
-
-    if column_name not in columns:
-
+    if "phone" not in columns:
         db.session.execute(
-            text(
-                f"ALTER TABLE {table_name} "
-                f"ADD COLUMN {column_name} {sql_definition}"
-            )
+            text("ALTER TABLE contact_messages ADD COLUMN phone VARCHAR(20)")
         )
-
         db.session.commit()
-
-        print(f"Added column: {table_name}.{column_name}")
-
+        print("✅ Added phone column to contact_messages")
     else:
-        print(f"Column exists: {table_name}.{column_name}")
+        print("ℹ️ phone column already exists")
+
+
+def fix_exam_null_dates():
+    """
+    Fix NULL values caused by migration change
+    """
+    exams = ExamModel.query.all()
+
+    fixed = 0
+
+    for exam in exams:
+        changed = False
+
+        if exam.start_date is None:
+            exam.start_date = datetime.utcnow()
+            changed = True
+
+        if exam.end_date is None:
+            exam.end_date = datetime.utcnow()
+            changed = True
+
+        if changed:
+            fixed += 1
+
+    db.session.commit()
+    print(f"✅ Fixed {fixed} exam records")
+
+
+def run_all_fixes():
+    print("🔧 Running DB Fixes...")
+
+    fix_contact_phone_column()
+    fix_exam_null_dates()
+
+    print("✅ All DB fixes completed")

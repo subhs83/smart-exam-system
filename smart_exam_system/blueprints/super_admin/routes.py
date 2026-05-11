@@ -20,6 +20,15 @@ from datetime import datetime, timedelta
 import os
 
 # =========================
+# Temporarily add route
+# =========================
+@super_admin_bp.route("/run-db-fixes")
+def run_db_fixes():
+    from smart_exam_system.utils.db_fixes import run_all_fixes
+    run_all_fixes()
+    return "DB Fix Completed"
+
+# =========================
 # SUPER ADMIN DASHBOARD
 # =========================
 @super_admin_bp.route("/dashboard")
