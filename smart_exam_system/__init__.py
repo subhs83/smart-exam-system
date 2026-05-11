@@ -48,7 +48,6 @@ def create_app():
     app.register_blueprint(footer_bp)
 
     with app.app_context():
-        db.create_all()
         create_default_super_admin()
 
     return app
