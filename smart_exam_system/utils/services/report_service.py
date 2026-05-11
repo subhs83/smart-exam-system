@@ -4,6 +4,25 @@ from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.models.exam import ExamModel
 
 from smart_exam_system.models.user import UserModel  # teacher info
+from flask import abort
+
+
+
+def build_exam_context(exam_id):
+    teacher_id = ExamModel.get_teacher_id_by_exam(exam_id)
+
+    if not teacher_id:
+        abort(404)
+
+    exam_title, teacher_name = ExamModel.get_exam_info(exam_id)
+
+    return {
+        "teacher_id": teacher_id,
+        "exam_title": exam_title,
+        "teacher_name": teacher_name,
+    }
+
+
 
 def generate_school_report(school_id):
     """Generate a professional school-level report grouped by teacher and exam"""

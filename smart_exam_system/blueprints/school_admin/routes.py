@@ -3,13 +3,12 @@ from flask import render_template, redirect, url_for, flash, abort, Response, re
 from flask_login import login_required, current_user
 from smart_exam_system.utils.decorators import school_admin_required
 from smart_exam_system.models.user import UserModel
-from smart_exam_system.models.exam import Exam,ExamModel
-from smart_exam_system.models.result import Result
-from smart_exam_system.models.attempt import Attempt
+from smart_exam_system.models.exam import ExamModel
+from smart_exam_system.utils.services.school_service import build_school_dashboard_data,build_teacher_exam_list
+from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.utils.services.result_service import get_results, generate_leaderboard
-from smart_exam_system.utils.services.report_service import generate_exam_report, generate_school_report
+from smart_exam_system.utils.services.report_service import generate_exam_report, generate_school_report,build_exam_context
 from smart_exam_system.forms.teacher_forms import AddTeacherForm
-from smart_exam_system.utils.security import hash_password, verify_password
 
 
 # --------------------------
@@ -19,23 +18,11 @@ from smart_exam_system.utils.security import hash_password, verify_password
 @login_required
 @school_admin_required
 def dashboard():
-    school_id = current_user.school_id
-
-    # Existing counts
-    total_teachers = UserModel.count_teachers_by_school(school_id)
-    total_exams = Exam.count_by_school(school_id)
-    total_attempts = Attempt.count_by_school(school_id)
-
-    # New: fetch exams for dropdown
-    exams = Exam.get_exams_by_school(school_id)  # ✅ fixed
-
+    dashboard_data = build_school_dashboard_data(current_user.school_id)
     return render_template(
         "school_admin_dashboard.html",
-        total_teachers=total_teachers,
-        total_exams=total_exams,
-        total_attempts=total_attempts,
-        exams=exams,  # pass exams for report dropdown
-        active_page="dashboard"
+        active_page="dashboard",
+        **dashboard_data
     )
 
 # --------------------------
@@ -134,18 +121,10 @@ def teachers():
 # --------------------------
  
 @school_admin_bp.route('/teacher/<int:teacher_id>/exams')
+@login_required
+@school_admin_required
 def teacher_exams(teacher_id):
-    exams = Exam.get_exams_by_teacher(teacher_id)
-
-    exam_list = []
-    for exam in exams:
-        attempts = Attempt.get_attempt_count(exam.id)
-        exam_list.append({
-            "id": exam.id,
-            "title": exam.title,
-            "student_attempts": attempts
-        })
- 
+    exam_list = build_teacher_exam_list(teacher_id)
     return render_template(
         "teacher_exams.html",
         exams=exam_list,
@@ -155,22 +134,19 @@ def teacher_exams(teacher_id):
 # School Admin - Exam Results
 # ---------------------------------
 @school_admin_bp.route('/school_admin/exams/<int:exam_id>/results')
+@login_required
 @school_admin_required
 def admin_exam_results(exam_id):
+
     results = get_results(exam_id)
-    # get teacher id from exam
-    teacher_id = Exam.get_teacher_id_by_exam(exam_id)
-    exam_title, teacher_name = Exam.get_exam_info(exam_id)
-    if not teacher_id:
-        abort(404)
+    exam_context = build_exam_context(exam_id)
+
     return render_template(
         'school_admin_results.html',
         exam_id=exam_id,
         results=results,
-        teacher_id=teacher_id,
-        exam_title = exam_title,
-        teacher_name = teacher_name,
-        active_page="results"
+        active_page="results",
+        **exam_context
     )
 # --------------------------
 # Leaderboard
@@ -180,12 +156,13 @@ def admin_exam_results(exam_id):
 # ---------------------------------
 @school_admin_bp.route('/school-admin/exams/<int:exam_id>/leaderboard')
 @school_admin_required
+@login_required
 def admin_exam_leaderboard(exam_id):
 
     leaderboard = generate_leaderboard(exam_id)
      # get teacher id from exam
-    teacher_id = Exam.get_teacher_id_by_exam(exam_id)
-    exam_title, teacher_name = Exam.get_exam_info(exam_id)
+    teacher_id = ExamModel.get_teacher_id_by_exam(exam_id)
+    exam_title, teacher_name = ExamModel.get_exam_info(exam_id)
     return render_template(
         'school_admin_leaderboard.html',
         exam_id=exam_id,
@@ -221,5 +198,5 @@ def download_report():
 @school_admin_required
 def reports():
     school_id = current_user.school_id
-    exams = Exam.get_exams_by_school(school_id)  # ✅ fixed
+    exams = ExamModel.get_exams_by_school(school_id)  # ✅ fixed
     return render_template("reports.html", exams=exams, active_page="reports")

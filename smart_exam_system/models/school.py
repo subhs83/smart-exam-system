@@ -1,14 +1,4 @@
 from smart_exam_system.extensions import db
-class School:
-    @staticmethod
-    def get(school_id):
-        school = SchoolModel.query.get(school_id)
-        if school:
-            # Return a dictionary similar to what raw SQL returned
-            return {"id": school.id, "name": school.name}
-        return None
-
-
 # =========================
 # School Model
 # =========================
@@ -35,6 +25,14 @@ class SchoolModel(db.Model):
     admins = db.relationship("UserModel", backref="school", lazy="dynamic")
 
     attempts = db.relationship("AttemptModel", backref="school")
- 
+
+    @classmethod
+    def get(cls,school_id):
+        school = SchoolModel.query.get(school_id)
+        if school:
+            # Return a dictionary similar to what raw SQL returned
+            return {"id": school.id, "name": school.name}
+        return None
+    
 
  

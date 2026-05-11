@@ -19,12 +19,12 @@ class UserModel(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # --- Static DB fetch ---
-    @staticmethod
+    @classmethod
     def get(user_id):
         return UserModel.query.get(user_id)
 
     # --- Teacher lifecycle actions (school-aware) ---
-    @staticmethod
+    @classmethod
     def activate_teacher(teacher_id, school_id):
         teacher = UserModel.query.filter_by(
             id=teacher_id, role="teacher", school_id=school_id
@@ -35,7 +35,7 @@ class UserModel(UserMixin, db.Model):
             return True
         return False
 
-    @staticmethod
+    @classmethod
     def deactivate_teacher(teacher_id, school_id):
         teacher = UserModel.query.filter_by(
             id=teacher_id, role="teacher", school_id=school_id
@@ -46,8 +46,8 @@ class UserModel(UserMixin, db.Model):
             return True
         return False
 
-    @staticmethod
-    def reset_teacher_password(teacher_id, school_id, new_password="default123"):
+    @classmethod
+    def reset_teacher_password(cls,teacher_id, school_id, new_password="default123"):
         teacher = UserModel.query.filter_by(
             id=teacher_id, role="teacher", school_id=school_id
         ).first()
@@ -57,16 +57,16 @@ class UserModel(UserMixin, db.Model):
             return True
         return False
 
-    @staticmethod
-    def count_teachers_by_school(school_id):
+    @classmethod
+    def count_teachers_by_school(cls,school_id):
         return UserModel.query.filter_by(role="teacher", school_id=school_id).count()
 
-    @staticmethod
-    def get_teachers_by_school(school_id):
+    @classmethod
+    def get_teachers_by_school(cls,school_id):
         return UserModel.query.filter_by(role="teacher", school_id=school_id).all()
 
-    @staticmethod
-    def toggle_teacher_status(teacher_id, school_id):
+    @classmethod
+    def toggle_teacher_status(cls,teacher_id, school_id):
         teacher = UserModel.query.filter_by(
             id=teacher_id, role="teacher", school_id=school_id
         ).first()
@@ -76,8 +76,8 @@ class UserModel(UserMixin, db.Model):
             return True
         return False
 
-    @staticmethod
-    def add_teacher(name, email, password, school_id):
+    @classmethod
+    def add_teacher(cls,name, email, password, school_id):
         existing = UserModel.query.filter_by(email=email).first()
         if existing:
             return None

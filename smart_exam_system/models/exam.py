@@ -33,34 +33,32 @@ class ExamModel(db.Model):
     def __repr__(self):
         return f"<Exam {self.title}>"
 
-        
-class Exam:
 # ================= NEW SYSTEM =================
-    @staticmethod
-    def count_by_school(school_id):
+    @classmethod
+    def count_by_school(cls,school_id):
         return ExamModel.query.filter_by(
             school_id=school_id
         ).count()
 # ================= NEW SYSTEM =================
-    @staticmethod
-    def get_exams_by_teacher(teacher_id):
+    @classmethod
+    def get_exams_by_teacher(cls,teacher_id):
         return ExamModel.query.filter_by(
             teacher_id=teacher_id
         ).all()
 
 # ================= NEW SYSTEM =================
 
-    @staticmethod
-    def get_teacher_id_by_exam(exam_id):
+    @classmethod
+    def get_teacher_id_by_exam(cls,exam_id):
         exam = ExamModel.query.filter_by(id=exam_id).first()
         return exam.teacher_id if exam else None
 
-    @staticmethod
-    def get_exams_by_school(school_id):
+    @classmethod
+    def get_exams_by_school(cls,school_id):
         return ExamModel.query.filter_by(school_id=school_id).all()
  # ================= NEW SYSTEM =================
-    @staticmethod
-    def get_exam_info(exam_id):
+    @classmethod
+    def get_exam_info(cls,exam_id):
         # Fetch exam object
         exam = ExamModel.query.filter_by(id=exam_id).first()
         if not exam:

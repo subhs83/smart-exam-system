@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
+from smart_exam_system.blueprints.teacher import teacher_bp
 from smart_exam_system.utils.decorators import teacher_required, exam_owner_required
 from smart_exam_system.utils.services.exam_service import ( 
     create_exam, 
@@ -11,6 +12,7 @@ from smart_exam_system.utils.services.exam_service import (
     )
 from smart_exam_system.utils.services.question_service import upload_questions, get_exam_questions
 from smart_exam_system.utils.services.result_service import(
+    get_results,
     generate_leaderboard,
     get_attempt_detailed_report,
     get_student_attempts,
@@ -19,8 +21,6 @@ from smart_exam_system.utils.services.result_service import(
 )
 from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.models.school import SchoolModel
-from smart_exam_system.blueprints.teacher import teacher_bp
-from datetime import datetime,timezone
 
 # ---------------------------------
 # Dashboard
