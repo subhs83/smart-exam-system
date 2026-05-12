@@ -2,7 +2,9 @@ import click
 from smart_exam_system import create_app
 from smart_exam_system.extensions import db
 from smart_exam_system.utils.init_data import create_default_super_admin
-
+from smart_exam_system.models.user import UserModel
+from werkzeug.security import generate_password_hash
+from smart_exam_system.utils.security import hash_password
 app = create_app()
 
 # -------------------------------
@@ -27,8 +29,7 @@ def create_admin():
 # -------------------------------
 
 
-from werkzeug.security import generate_password_hash
-from models.user_model import UserModel
+
 
 
 @app.cli.command("reset-super-admin")
@@ -48,7 +49,7 @@ def reset_super_admin(email, password):
             click.echo("❌ Super admin not found.")
             return
 
-        user.password_hash = generate_password_hash(password)
+        user.password = hash_password(password)
 
         # Optional
         user.force_password_change = True
