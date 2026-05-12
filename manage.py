@@ -21,3 +21,38 @@ def create_admin():
     with app.app_context():
         create_default_super_admin()
         click.echo("✅ Super admin ensured.")
+
+# -------------------------------
+# CLI Reset Password Commands
+# -------------------------------
+
+
+from werkzeug.security import generate_password_hash
+from models.user_model import UserModel
+
+
+@app.cli.command("reset-super-admin")
+@click.option("--email", prompt=True)
+@click.option("--password", prompt=True)
+def reset_super_admin(email, password):
+    """Reset super admin password."""
+
+    with app.app_context():
+
+        user = UserModel.query.filter_by(
+            email=email,
+            role="super_admin"
+        ).first()
+
+        if not user:
+            click.echo("❌ Super admin not found.")
+            return
+
+        user.password_hash = generate_password_hash(password)
+
+        # Optional
+        user.force_password_change = True
+
+        db.session.commit()
+
+        click.echo("✅ Super admin password reset successfully.")

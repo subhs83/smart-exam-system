@@ -31,13 +31,33 @@
     </div>
     
     <!-- Password -->
-    <div class="mb-3">
-        <label class="form-label small text-muted">Password</label>
-        <div class="input-group">
-            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-            <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
-        </div>
+<div class="mb-3">
+    <label class="form-label small text-muted">Password</label>
+
+    <div class="input-group">
+        
+        <!-- Left Lock Icon -->
+        <span class="input-group-text">
+            <i class="fas fa-lock"></i>
+        </span>
+
+        <!-- Password Input -->
+        <input
+            type="password"
+            name="password"
+            id="password"
+            class="form-control"
+            placeholder="Enter your password"
+            required
+        >
+
+        <!-- Eye Toggle -->
+        <span class="input-group-text toggle-password" style="cursor:pointer;">
+            <i class="fas fa-eye" id="toggleIcon"></i>
+        </span>
+
     </div>
+</div>
     
     <!-- Button -->
     <button class="btn btn-primary w-100 fw-semibold mt-2">Login</button>
@@ -65,4 +85,23 @@
 
 </div>
 
+<script>
+    const passwordInput = document.getElementById("password");
+    const toggleIcon = document.getElementById("toggleIcon");
+
+    toggleIcon.parentElement.addEventListener("click", function () {
+
+        const isPassword =
+            passwordInput.getAttribute("type") === "password";
+
+        passwordInput.setAttribute(
+            "type",
+            isPassword ? "text" : "password"
+        );
+
+        toggleIcon.classList.toggle("fa-eye");
+        toggleIcon.classList.toggle("fa-eye-slash");
+
+    });
+</script>
 {% endblock %}
