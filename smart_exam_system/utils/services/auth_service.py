@@ -3,7 +3,7 @@ from smart_exam_system.models.user import UserModel
 from smart_exam_system.utils.security import verify_password,hash_password
 from smart_exam_system.models.login_log import LoginLogModel
 from smart_exam_system.extensions import db
-from datetime import datetime, timezone
+from datetime import datetime, timezone,timedelta
 
 
 
@@ -86,3 +86,24 @@ def validate_login_access(user, expected_role=None):
             return "Your school access has expired. Contact Super Admin."
 
     return None
+
+# -------------------------------------------
+# Login Rate Limiting (Brute Force Protection)
+# -------------------------------
+
+
+login_attempt_cache = {}  # { "email_or_ip": [timestamps] }
+
+
+def is_rate_limited(key, limit=5, window_seconds=60):
+    now = datetime.utcnow()
+
+    attempts = login_attempt_cache.get(key, [])
+
+    # keep only recent attempts
+    attempts = [t for t in attempts if now - t < timedelta(seconds=window_seconds)]
+
+    attempts.append(now)
+    login_attempt_cache[key] = attempts
+
+    return len(attempts) > limit

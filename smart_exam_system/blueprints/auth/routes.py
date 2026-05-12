@@ -1,15 +1,18 @@
 from smart_exam_system.blueprints.auth import auth_bp
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required,current_user
-from smart_exam_system.utils.security import validate_password_strength
+from smart_exam_system.extensions import db
+from smart_exam_system.models.user import UserModel
+from smart_exam_system.utils.security import verify_password,validate_password_strength
 from smart_exam_system.utils.services.auth_service import (
     get_dashboard_redirect,
     authenticate_user,
     validate_login_access,
     change_user_password,
-    log_login_attempt
+    log_login_attempt,
+    is_rate_limited
     )
-from datetime import datetime
+from datetime import datetime,timedelta
 from urllib.parse import urlparse, urljoin
 
 

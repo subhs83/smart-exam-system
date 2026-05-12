@@ -1,8 +1,8 @@
-"""initial schema
+"""initial clean schema
 
-Revision ID: 8dc3b3879e28
+Revision ID: 84501ab0c02b
 Revises: 
-Create Date: 2026-05-12 00:19:09.173592
+Create Date: 2026-05-12 13:25:10.931649
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '8dc3b3879e28'
+revision = '84501ab0c02b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -38,6 +38,16 @@ def upgrade():
     sa.Column('size', sa.String(length=20), nullable=True),
     sa.Column('status', sa.String(length=20), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('login_logs',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('email', sa.String(length=120), nullable=True),
+    sa.Column('success', sa.Boolean(), nullable=True),
+    sa.Column('ip_address', sa.String(length=50), nullable=True),
+    sa.Column('user_agent', sa.String(length=255), nullable=True),
+    sa.Column('timestamp', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('schools',
@@ -82,6 +92,8 @@ def upgrade():
     sa.Column('school_id', sa.Integer(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('force_password_change', sa.Boolean(), nullable=True),
+    sa.Column('failed_login_attempts', sa.Integer(), nullable=False),
+    sa.Column('is_locked', sa.Boolean(), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.ForeignKeyConstraint(['school_id'], ['schools.id'], ),
     sa.PrimaryKeyConstraint('id'),
@@ -170,6 +182,7 @@ def downgrade():
     op.drop_table('users')
     op.drop_table('exams')
     op.drop_table('schools')
+    op.drop_table('login_logs')
     op.drop_table('demo_requests')
     op.drop_table('contact_messages')
     # ### end Alembic commands ###
