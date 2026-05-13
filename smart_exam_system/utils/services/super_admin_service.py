@@ -114,8 +114,14 @@ def build_super_admin_dashboard():
 
 def get_login_stats():
     total = LoginLogModel.query.count()
-    success = LoginLogModel.query.filter_by(success=1).count()
-    failed = LoginLogModel.query.filter_by(success=0).count()
+
+    success = LoginLogModel.query.filter_by(
+        success=True
+    ).count()
+
+    failed = LoginLogModel.query.filter_by(
+        success=False
+    ).count()
 
     return {
         "total": total,

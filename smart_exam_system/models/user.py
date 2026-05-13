@@ -17,8 +17,8 @@ class UserModel(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True)
     force_password_change = db.Column(db.Boolean, default=True)
     failed_login_attempts = db.Column(db.Integer, default=0, nullable=False)
-    locked_until = db.Column(db.DateTime, nullable=True)
     is_locked = db.Column(db.Boolean, default=False)
+    locked_until = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     # --- Static DB fetch ---
