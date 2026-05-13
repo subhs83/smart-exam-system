@@ -4,7 +4,7 @@ from smart_exam_system.models.user import UserModel
 from smart_exam_system.models.school import SchoolModel
 from smart_exam_system.models.exam import ExamModel
 from smart_exam_system.models.attempt import AttemptModel
-from smart_exam_system.extensions import db
+from smart_exam_system.models.login_log import LoginLogModel
 from smart_exam_system.models.democontact import DemoRequest, ContactMessage
 from smart_exam_system.utils.services.school_service import generate_unique_school_slug
 import os
@@ -108,4 +108,17 @@ def build_super_admin_dashboard():
         "total_attempts": total_attempts,
         "total_demo_requests": total_demo_requests,
         "total_contact_messages": total_contact_messages
+    }
+
+
+
+def get_login_stats():
+    total = LoginLogModel.query.count()
+    success = LoginLogModel.query.filter_by(success=1).count()
+    failed = LoginLogModel.query.filter_by(success=0).count()
+
+    return {
+        "total": total,
+        "success": success,
+        "failed": failed
     }

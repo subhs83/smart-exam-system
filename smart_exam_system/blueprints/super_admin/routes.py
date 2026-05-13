@@ -10,9 +10,11 @@ from smart_exam_system.models.democontact import DemoRequest, ContactMessage
 from smart_exam_system.utils.decorators import super_admin_required
 from smart_exam_system.utils.security import hash_password
 from smart_exam_system.utils.services.school_service import generate_unique_school_slug
+from smart_exam_system.models.login_log import LoginLogModel
 from smart_exam_system.utils.services.super_admin_service import (
     build_super_admin_dashboard,
-    create_school_service
+    create_school_service,
+    get_login_stats
 )
 import secrets
 import string
@@ -449,3 +451,13 @@ def delete_school(school_id):
 
     flash("School deleted successfully!", "success")
     return redirect(url_for("super_admin.schools"))
+
+
+@super_admin_bp.route("/login-logs")
+@login_required
+@super_admin_required
+def login_logs():
+    logs = LoginLogModel.query.order_by(LoginLogModel.timestamp.desc()).limit(100).all()
+    stats = get_login_stats()
+
+    return render_template("login_logs.html", logs=logs, stats=stats)
