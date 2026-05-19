@@ -163,7 +163,7 @@ def extract_exam_form_data(form_data):
         "title": form_data.get('title'),
         "duration": form_data.get('duration'),
         "marks": form_data.get('marks'),
-        "negative": form_data.get('negative'),
+        "negative": float(form_data.get('negative') or 0),
         "max_attempts": form_data.get('max_attempts'),
         "start_date": start_date,
         "end_date": end_date

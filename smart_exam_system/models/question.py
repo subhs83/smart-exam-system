@@ -15,7 +15,7 @@ class QuestionModel(db.Model):
     correct_option = db.Column(db.String(1), nullable=False)
 
     marks = db.Column(db.Integer, default=1)
-    negative_marks = db.Column(db.Integer, default=0)
+    negative_marks = db.Column(db.Float, default=0)
 
     ai_generated = db.Column(db.Integer, default=0)
 
