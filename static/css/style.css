@@ -369,9 +369,9 @@ main { flex: 1; }
 }
 /* 🔥 Navbar Glass Effect */
 .navbar-glass {
-    background: linear-gradient(135deg, #1e3a8a, #4f46e5);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: linear-gradient(135deg, #121c30, #2e55c2);;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25x);
 }
 
 /* Modern nav links */
