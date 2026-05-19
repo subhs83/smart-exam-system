@@ -271,11 +271,27 @@ def get_total_questions(exam_id):
 
 def get_student_score(attempt_id):
 
-    return db.session.query(func.count(StudentAnswerModel.id))\
-        .filter(
-            StudentAnswerModel.attempt_id == attempt_id,
-            StudentAnswerModel.is_correct == 1
-        ).scalar()
+    attempt = AttemptModel.query.get(attempt_id)
+
+    if not attempt:
+        return 0
+
+    exam = attempt.exam
+
+    answers = StudentAnswerModel.query.filter_by(
+        attempt_id=attempt_id
+    ).all()
+
+    score = 0
+
+    for answer in answers:
+
+        if answer.is_correct:
+            score += exam.marks_per_question
+        else:
+            score -= exam.negative_marks or 0
+
+    return round(score, 2)
 # ----------------------------------
 # Get student Results
 # ----------------------------------
@@ -323,8 +339,16 @@ def get_student_result(attempt_id):
         attempt_id=attempt_id
     ).count()
 
-    correct_answers = score
-    wrong_answers = max(0, attempted - score)
+    correct_answers = StudentAnswerModel.query.filter_by(
+        attempt_id=attempt_id,
+        is_correct=True
+    ).count()
+
+    wrong_answers = StudentAnswerModel.query.filter_by(
+        attempt_id=attempt_id,
+        is_correct=False
+    ).count()
+
     not_attempted = max(0, total - attempted)
 
     # ===============================
