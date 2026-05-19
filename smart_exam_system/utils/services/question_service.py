@@ -28,14 +28,14 @@ def upload_questions(exam_id, excel_file):
             question, option_a, option_b, option_c, option_d, correct_option = row[:6]
 
             new_question = QuestionModel(
-                exam_id=exam_id,
-                question_text=question,
-                option_a=option_a,
-                option_b=option_b,
-                option_c=option_c,
-                option_d=option_d,
-                correct_option=correct_option.upper()
-            )
+            exam_id=exam_id,
+            question_text=str(question).strip(),
+            option_a=str(option_a).strip(),
+            option_b=str(option_b).strip(),
+            option_c=str(option_c).strip(),
+            option_d=str(option_d).strip(),
+            correct_option=str(correct_option).strip().upper()
+        )
 
             db.session.add(new_question)
             row_count += 1
