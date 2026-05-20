@@ -150,6 +150,32 @@ Start Quiz
     
     });
     
+
+    // -------------------------------
+// Fullscreen before quiz start
+// -------------------------------
+
+const quizForm = document.querySelector("form");
+
+quizForm.addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    try {
+
+        // Enter fullscreen
+        await document.documentElement.requestFullscreen();
+
+    } catch (err) {
+
+        console.log("Fullscreen failed:", err);
+
+    }
+
+    // Submit form after fullscreen
+    quizForm.submit();
+
+});
     </script>
 
 {% endblock %}
