@@ -512,23 +512,35 @@ document.querySelectorAll("a, button").forEach(el => {
 // 🔹 TAB SWITCH
 document.addEventListener("visibilitychange", function () {
 
-    if (isInternalNavigation) return;
+if (isInternalNavigation) return;
 
-    if (document.hidden) {
-        sendViolation("Tab Switch");
-    }
+if (document.hidden) {
+
+    setTimeout(() => {
+
+        // still hidden after delay
+        if (document.hidden) {
+            sendViolation("Tab Switch");
+        }
+
+    }, 1500);
+}
 });
 
-// 🔹 WINDOW BLUR
-window.addEventListener("blur", function () {
-
-    if (isInternalNavigation) return;
-
-    sendViolation("Window Blur");
-});
 
 // 🔹 FULLSCREEN EXIT
+let fullscreenInitialized = false;
+
 document.addEventListener("fullscreenchange", function () {
+
+    // Ignore first initialization event
+    if (!fullscreenInitialized) {
+        fullscreenInitialized = true;
+        return;
+    }
+
+    if (isInternalNavigation) return;
+
     if (!document.fullscreenElement) {
         sendViolation("Fullscreen Exit");
     }

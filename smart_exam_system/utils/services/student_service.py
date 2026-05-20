@@ -493,7 +493,7 @@ def record_violation(attempt_id, reason):
     if attempt.last_violation_time:
         diff = (now - attempt.last_violation_time).total_seconds()
 
-        if diff < 3:
+        if diff < 10:
             return {
                 "violation_count": attempt.violation_count or 0,
                 "auto_submitted": attempt.is_submitted
