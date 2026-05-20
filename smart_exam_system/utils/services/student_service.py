@@ -197,7 +197,7 @@ def save_student_answer(attempt_id, question_id, selected_option):
         QuestionModel.correct_option
     ).filter_by(id=question_id).scalar()
 
-    is_correct = 1 if selected_option == correct_option else 0
+    is_correct = True if selected_option == correct_option else 0
 
     if answer:
         answer.selected_option = selected_option
@@ -504,7 +504,7 @@ def record_violation(attempt_id, reason):
         score = db.session.query(func.count(StudentAnswerModel.id))\
             .filter(
                 StudentAnswerModel.attempt_id == attempt.id,
-                StudentAnswerModel.is_correct == 1
+                StudentAnswerModel.is_correct == True
             ).scalar()
 
         percentage = (score / total * 100) if total else 0

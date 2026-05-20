@@ -18,6 +18,6 @@ class StudentAnswerModel(db.Model):
     )
 
     selected_option = db.Column(db.String(1))
-    is_correct = db.Column(db.Integer, default=0)
+    is_correct = db.Column(db.Boolean, nullable=False, default=False)
 
     answered_at = db.Column(db.DateTime)
