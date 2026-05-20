@@ -311,7 +311,12 @@ def get_student_result(attempt_id):
 
     exam = attempt.exam
 
-    total = get_total_questions(exam.id)
+    total_questions = get_total_questions(exam.id)
+
+    total_marks = (
+        total_questions * (exam.marks_per_question or 1)
+    )
+
     score = get_student_score(attempt_id)
 
 
@@ -321,10 +326,13 @@ def get_student_result(attempt_id):
     # ✅ HANDLE SUBMISSION
     if not attempt.is_submitted:
 
-        percentage = (score / total) * 100 if total > 0 else 0
+        percentage = (
+    (score / total_marks) * 100
+    if total_marks > 0 else 0
+)
 
         attempt.score = score
-        attempt.total_marks = total
+        attempt.total_marks = total_marks
         attempt.percentage = percentage
         attempt.is_submitted = True
         attempt.end_time = datetime.utcnow()
@@ -349,7 +357,7 @@ def get_student_result(attempt_id):
         is_correct=False
     ).count()
 
-    not_attempted = max(0, total - attempted)
+    not_attempted = max(0, total_questions - attempted)
 
     # ===============================
     # TIE-AWARE RANKING
