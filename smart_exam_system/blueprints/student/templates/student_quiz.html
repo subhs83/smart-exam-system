@@ -108,9 +108,9 @@ input[type="radio"]:checked + label {
 }
 
 .palette-title {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -122,15 +122,15 @@ input[type="radio"]:checked + label {
 }
 .palette {
     display: grid;
-    grid-template-columns: repeat(6, 1fr); /* more dense */
+    grid-template-columns: repeat(8, 1fr); /* more dense */
     gap: 4px;
 }
 
 .palette button {
-    height: 32px;              /* fixed height */
+    height: 28px;              /* fixed height */
     padding: 0;
-    font-size: 15px;
-    border-radius: 8px;        /* 🔥 small rounded square */
+    font-size: 12px;
+    border-radius: 4px;        /* 🔥 small rounded square */
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -424,7 +424,41 @@ updateTimer();
     }
     </script>
 
-
+<script>
+    document.addEventListener("DOMContentLoaded", async function () {
+    
+        async function enterFullscreen() {
+    
+            const elem = document.documentElement;
+    
+            try {
+    
+                if (!document.fullscreenElement) {
+    
+                    await elem.requestFullscreen();
+    
+                }
+    
+            } catch (err) {
+    
+                console.log("Fullscreen request blocked:", err);
+            }
+        }
+    
+        // First fullscreen request
+        await enterFullscreen();
+    
+        // Optional: Retry when user clicks anywhere
+        document.addEventListener("click", async function () {
+    
+            if (!document.fullscreenElement) {
+                await enterFullscreen();
+            }
+    
+        }, { once: true });
+    
+    });
+    </script>
 <script>
     let lastViolationTime = 0;
     
@@ -533,7 +567,7 @@ let fullscreenInitialized = false;
 
 document.addEventListener("fullscreenchange", function () {
 
-    // Ignore first initialization event
+    // Ignore first browser event
     if (!fullscreenInitialized) {
         fullscreenInitialized = true;
         return;
@@ -541,8 +575,14 @@ document.addEventListener("fullscreenchange", function () {
 
     if (isInternalNavigation) return;
 
+    // User exited fullscreen
     if (!document.fullscreenElement) {
+
         sendViolation("Fullscreen Exit");
+
+        // Re-enter fullscreen automatically
+        document.documentElement.requestFullscreen()
+            .catch(() => {});
     }
 });
 </script>
