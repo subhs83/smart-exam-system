@@ -402,7 +402,8 @@ def get_student_result(attempt_id):
     percentile = max(0, min(100, percentile))
     return {
         "score": score,
-        "total": total,
+        "total_marks": total_marks,
+        "total_questions": total_questions,
         "percentage": percentage,
 
         "correct_answers": correct_answers,
@@ -421,14 +422,17 @@ def get_student_result(attempt_id):
 # Finalize attempt (update DB)
 # ----------------------------------
 
-def finalize_attempt(attempt_id, score, total):
+def finalize_attempt(attempt_id, score, total_marks):
 
     attempt = AttemptModel.query.get(attempt_id)
 
-    percentage = (score / total * 100) if total else 0
+    percentage = (
+    (score / total_marks) * 100
+    if total_marks > 0 else 0
+)
 
     attempt.score = score
-    attempt.total_marks = total
+    attempt.total_marks = total_marks
     attempt.percentage = percentage
     attempt.end_time = datetime.utcnow()
 
@@ -504,23 +508,25 @@ def record_violation(attempt_id, reason):
     # 🔥 AUTO SUBMIT (FINAL FIX WITH SCORE CALCULATION)
     if attempt.violation_count >= MAX_VIOLATIONS and not attempt.is_submitted:
 
-        # ✅ Calculate score BEFORE submitting
-        total = db.session.query(func.count(QuestionModel.id))\
-            .filter(QuestionModel.exam_id == attempt.exam_id)\
-            .scalar()
+        # ✅ Calculate proper marks-based result
 
-        score = db.session.query(func.count(StudentAnswerModel.id))\
-            .filter(
-                StudentAnswerModel.attempt_id == attempt.id,
-                StudentAnswerModel.is_correct == True
-            ).scalar()
+        total_questions = get_total_questions(attempt.exam_id)
 
-        percentage = (score / total * 100) if total else 0
+        total_marks = (
+            total_questions * (attempt.exam.marks_per_question or 1)
+        )
+
+        score = get_student_score(attempt.id)
+
+        percentage = (
+            (score / total_marks) * 100
+            if total_marks > 0 else 0
+        )
 
         # ✅ Save results
         attempt.score = score
-        attempt.total_marks = total
-        attempt.percentage = percentage
+        attempt.total_marks = total_marks
+        attempt.percentage = round(percentage, 2)
 
         attempt.is_submitted = True
         attempt.auto_submitted_reason = f"Exceeded violations ({attempt.violation_count})"

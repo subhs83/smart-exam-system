@@ -31,7 +31,7 @@ def generate_school_report(school_id):
         AttemptModel.query
         .join(ExamModel, AttemptModel.exam_id == ExamModel.id)
         .join(UserModel, ExamModel.teacher_id == UserModel.id)
-        .filter(ExamModel.school_id == school_id)
+        .filter(ExamModel.school_id == school_id, AttemptModel.is_submitted == True)
         .add_columns(
             UserModel.name.label("Teacher_Name"),
             ExamModel.title.label("Exam_Title"),
@@ -64,6 +64,11 @@ def generate_school_report(school_id):
             "Mobile": a.mobile,
             "Score": a.score,
             "Total Marks": a.total_marks,
+            "Total Questions": (
+            int(a.total_marks / ExamModel.marks_per_question)
+            if a.total_marks and ExamModel.marks_per_question
+            else 0
+        ),
             "Percentage": a.percentage,
             "Attempt No": a.attempt_number,
             "Start Time": a.start_time,
@@ -89,7 +94,7 @@ def generate_school_report(school_id):
 
         # Optional: Auto-adjust column widths
         for i, col in enumerate(df.columns):
-            column_len = max(df[col].astype(str).map(len).max(), len(col)) + 2
+            column_len = max(df[col].astype(str).map(len).max() if not df.empty else 0,len(col)) + 2
             worksheet.set_column(i, i, column_len)
 
     return file_path
@@ -99,7 +104,10 @@ def generate_school_report(school_id):
 def generate_exam_report(exam_id):
     """Generate a professional report for a single exam"""
     # fetch all attempts for the exam
-    attempts = AttemptModel.query.filter_by(exam_id=exam_id).order_by(AttemptModel.roll_number).all()
+    attempts = AttemptModel.query.AttemptModel.query.filter(
+    AttemptModel.exam_id == exam_id,
+    AttemptModel.is_submitted == True
+).order_by(AttemptModel.roll_number).all()
 
     data = []
     for a in attempts:
@@ -111,6 +119,11 @@ def generate_exam_report(exam_id):
             "Mobile": a.mobile,
             "Score": a.score,
             "Total Marks": a.total_marks,
+            "Total Questions": (
+            int(a.total_marks / ExamModel.marks_per_question)
+            if a.total_marks and ExamModel.marks_per_question
+            else 0
+        ),
             "Percentage": a.percentage,
             "Attempt No": a.attempt_number,
             "Start Time": a.start_time,
@@ -136,7 +149,7 @@ def generate_exam_report(exam_id):
 
         # auto-adjust column widths
         for i, col in enumerate(df.columns):
-            column_len = max(df[col].astype(str).map(len).max(), len(col)) + 2
+            column_len = max(df[col].astype(str).map(len).max() if not df.empty else 0,len(col)) + 2
             worksheet.set_column(i, i, column_len)
 
     return file_path

@@ -25,6 +25,17 @@ def create_exam(
     start_date,
     end_date):
     try:
+        if duration <= 0:
+            return False, "Duration must be greater than 0."
+
+        if marks <= 0:
+            return False, "Marks per question must be greater than 0."
+
+        if negative < 0:
+            return False, "Negative marks cannot be negative."
+
+        if max_attempts <= 0:
+            return False, "Max attempts must be at least 1."
         exam = ExamModel(
             title=title,
             duration_minutes=duration,
@@ -52,7 +63,7 @@ def create_exam(
 # -------------------------------
 
 def get_teacher_exams(teacher_id):
-
+    
     exams = db.session.query(
         ExamModel.id,
         ExamModel.title,
@@ -93,6 +104,18 @@ def generate_quiz_code(length=8):
     characters = string.ascii_uppercase + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
 
+def generate_unique_quiz_code():
+
+    while True:
+
+        quiz_code = generate_quiz_code()
+
+        exists = ExamModel.query.filter_by(
+            quiz_code=quiz_code
+        ).first()
+
+        if not exists:
+            return quiz_code
 
 def publish_exam(exam_id):
 
@@ -103,7 +126,7 @@ def publish_exam(exam_id):
     if q_count == 0:
         return False, "Cannot publish exam without questions"
 
-    quiz_code = generate_quiz_code()
+    quiz_code = generate_unique_quiz_code()
 
     exam = ExamModel.query.get(exam_id)
 
@@ -129,14 +152,25 @@ def delete_exam(exam_id):
         return False, "Cannot delete exam with student attempts."
 
     # delete questions
-    QuestionModel.query.filter_by(exam_id=exam_id).delete()
+    try:
 
-    # delete exam
-    ExamModel.query.filter_by(id=exam_id).delete()
+        QuestionModel.query.filter_by(
+            exam_id=exam_id
+        ).delete(synchronize_session=False)
 
-    db.session.commit()
+        ExamModel.query.filter_by(
+            id=exam_id
+        ).delete(synchronize_session=False)
 
-    return True, "Exam deleted successfully."
+        db.session.commit()
+
+        return True, "Exam deleted successfully."
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        return False, f"Error deleting exam: {str(e)}"
 
 
 
@@ -158,13 +192,21 @@ def extract_exam_form_data(form_data):
     end_date = parse_exam_datetime(
         form_data.get('end_date')
     )
-
+    if end_date <= start_date:
+        raise ValueError(
+            "End date must be after start date."
+        )
     return {
         "title": form_data.get('title'),
-        "duration": form_data.get('duration'),
-        "marks": form_data.get('marks'),
+        "duration": int(form_data.get('duration') or 0),
+
+        "marks": float(form_data.get('marks') or 1),
+
         "negative": float(form_data.get('negative') or 0),
-        "max_attempts": form_data.get('max_attempts'),
+
+        "max_attempts": int(
+            form_data.get('max_attempts') or 1
+        ),
         "start_date": start_date,
         "end_date": end_date
     }

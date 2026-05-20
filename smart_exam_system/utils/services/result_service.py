@@ -58,7 +58,7 @@ def get_attempt_detailed_report(attempt_id):
             "correct_option": correct,
             "correct_text": correct_text,
 
-            "is_correct": selected == correct if not is_na else False,
+            "is_correct": bool(answer and answer.is_correct),
 
             "is_na": is_na,   # ⭐ NEW IMPORTANT FLAG
 
@@ -66,12 +66,13 @@ def get_attempt_detailed_report(attempt_id):
         })
 
     return {
-        "student_name": f"{attempt.first_name} {attempt.last_name}",
-        "score": attempt.score,
-        "total": attempt.total_marks,
-        "percentage": attempt.percentage,
-        "questions": report
-    }
+    "student_name": f"{attempt.first_name} {attempt.last_name}",
+    "score": attempt.score,
+    "total_marks": attempt.total_marks,
+    "total_questions": len(report),
+    "percentage": attempt.percentage,
+    "questions": report
+}
 # ---------------------------------
 # Get all attempts for an exam
 # ---------------------------------
@@ -84,9 +85,9 @@ from collections import defaultdict
 def get_results(exam_id):
 
     attempts = AttemptModel.query.filter(
-        AttemptModel.exam_id == exam_id,
-        AttemptModel.end_time.isnot(None)
-    ).all()
+    AttemptModel.exam_id == exam_id,
+    AttemptModel.is_submitted == True
+).all()
 
     grouped = {}
 
@@ -154,8 +155,7 @@ def generate_leaderboard(exam_id):
 
     attempts = AttemptModel.query.filter(
         AttemptModel.exam_id == exam_id,
-        AttemptModel.start_time.isnot(None),
-        AttemptModel.end_time.isnot(None),
+        AttemptModel.is_submitted == True,
         AttemptModel.score.isnot(None),
         AttemptModel.total_marks.isnot(None),
         AttemptModel.percentage.isnot(None)
