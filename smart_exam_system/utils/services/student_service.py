@@ -197,7 +197,7 @@ def save_student_answer(attempt_id, question_id, selected_option):
         QuestionModel.correct_option
     ).filter_by(id=question_id).scalar()
 
-    is_correct = True if selected_option == correct_option else 0
+    is_correct = selected_option == correct_option
 
     if answer:
         answer.selected_option = selected_option
