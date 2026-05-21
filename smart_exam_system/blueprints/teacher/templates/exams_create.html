@@ -64,4 +64,16 @@
     </div>
 </div>
 
+<script>
+
+    document.querySelectorAll('input[type="datetime-local"]').forEach(input => {
+    
+        input.addEventListener("change", function () {
+            this.blur();
+        });
+    
+    });
+    
+    </script>
+
 {% endblock %}
