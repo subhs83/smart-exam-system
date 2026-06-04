@@ -305,7 +305,7 @@
         <div class="score-text">Your Score</div>
 
         <div class="score-sub">
-            <p>Out of  <strong>{{ total }}</strong> questions</p>
+            <p>Out of  <strong>{{ total_marks }}</strong> Marks</p>
         </div>
 
         <div class="accuracy">{{ "%.1f"|format(percentage) }}% Accuracy</div>
@@ -346,7 +346,7 @@
     </div>
 
     <div class="stat-box">
-        <div class="stat-value">{{ total }}</div>
+        <div class="stat-value">{{ total_questions }}</div>
         <div class="stat-label">Total Questions</div>
     </div>
 
@@ -354,7 +354,7 @@
 
 <!-- Attempt insight -->
 <p class="attempt-info">
-    You attempted {{ correct_answers + wrong_answers }} out of {{ total }} questions
+    You attempted {{ correct_answers + wrong_answers }} out of {{ total_questions }} questions
 </p>
 
     <!-- ================= GRADE ================= -->
@@ -394,11 +394,25 @@
     </a>
 
     {% if used_attempts < max_attempts %}
-        <a href="{{ url_for('student.quiz_page', school_slug=school_slug,quiz_code=exam.quiz_code, new_attempt=1) }}"
+        <a href="{{ url_for(
+            'student.continue_quiz_entry',
+            school_slug=school_slug,
+            quiz_code=exam.quiz_code,
+            attempt_id=attempt_id
+        ) }}"
            class="btn btn-success btn-lg">
-            Start Next Attempt
+            Next Attempt
         </a>
     {% endif %}
+
+    <a href="{{ url_for(
+        'student.new_student_entry',
+        school_slug=school_slug,
+        quiz_code=exam.quiz_code
+    ) }}"
+       class="btn btn-outline-secondary btn-lg">
+        Start New Student
+    </a>
 
     {% if used_attempts >= max_attempts %}
         <p class="text-danger mt-3">

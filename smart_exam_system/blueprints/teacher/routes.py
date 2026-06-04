@@ -147,17 +147,19 @@ def delete_exam_route(exam_id):
 # ---------------------------------
 # Student Attempt Overview
 # ---------------------------------
-@teacher_bp.route('/teacher/student/<string:mobile>/<string:roll>/<int:exam_id>')
+@teacher_bp.route('/teacher/student/<string:student_id>/<int:exam_id>')
 @teacher_required
-def student_attempts(mobile, roll, exam_id):
-
-    attempts = get_student_attempts(mobile, roll, exam_id)
+def student_attempts(student_id, exam_id):
+    # ✅ Fetch attempts by student_id + exam_id
+    attempts = get_student_attempts(exam_id, student_id)
 
     if not attempts:
         flash("No attempts found", "danger")
         return redirect(url_for('teacher.results_route', exam_id=exam_id))
-    # find best attempt
+
+    # ✅ Find best attempt
     best_attempt_id = get_best_attempt_id(attempts)
+
     return render_template(
         "student_attempts.html",
         attempts=attempts,
@@ -165,18 +167,19 @@ def student_attempts(mobile, roll, exam_id):
         best_attempt_id=best_attempt_id,
         student=build_student_summary(attempts),
         active_page="results_overview"
-    )    
+    )
+
 
 # ---------------------------------
-# Detailed Student Report)
+# Detailed Student Report
 # ---------------------------------
-
 @teacher_bp.route('/teacher/attempt/<int:attempt_id>')
 @teacher_required
 def attempt_detail(attempt_id):
     report = get_attempt_detailed_report(attempt_id)
     attempt = AttemptModel.query.get(attempt_id)
     exam_id = attempt.exam_id   # ✅ get from DB
+
     if not report:
         flash("Attempt not found", "danger")
         return redirect(url_for('teacher.results_overview'))
@@ -184,11 +187,10 @@ def attempt_detail(attempt_id):
     return render_template(
         'attempt_detail.html',
         report=report,
-         exam_id=exam_id,
+        exam_id=exam_id,
         active_page='results_overview'
     )
 
-# Sidebar Link Routes
 
 # ---------------------------------
 # Manage Questions Overview

@@ -80,70 +80,47 @@ def get_attempt_detailed_report(attempt_id):
 
 from collections import defaultdict
 
-from collections import defaultdict
-
 def get_results(exam_id):
-
     attempts = AttemptModel.query.filter(
-    AttemptModel.exam_id == exam_id,
-    AttemptModel.is_submitted == True
-).all()
+        AttemptModel.exam_id == exam_id,
+        AttemptModel.is_submitted == True
+    ).all()
 
     grouped = {}
 
     for a in attempts:
-
-        key = (a.school_id, a.mobile, a.roll_number)
-
+        key = (a.school_id, a.student_id)
         percentage = float(a.percentage or 0)
 
         if key not in grouped:
-            grouped[key] = {
-                "best": a,
-                "attempts_count": 1
-            }
+            grouped[key] = {"best": a, "attempts_count": 1}
         else:
             data = grouped[key]
             data["attempts_count"] += 1
-
             existing_best = data["best"]
             existing_percentage = float(existing_best.percentage or 0)
-
-            # keep BEST attempt
             if percentage > existing_percentage:
                 data["best"] = a
 
     results = []
-
     for data in grouped.values():
-
         a = data["best"]
-
         results.append({
             "id": a.id,
-
-            # student info
+            "student_id": a.student_id,
             "first_name": a.first_name,
             "last_name": a.last_name,
             "student_class": a.student_class,
             "roll_number": a.roll_number,
-            "mobile": a.mobile,
-
-            # BEST attempt data
             "score": a.score,
             "total_marks": a.total_marks,
             "percentage": float(a.percentage or 0),
-
-            # meta
             "attempts_count": data["attempts_count"],
-
             "start_time": a.start_time,
             "end_time": a.end_time,
-
             "violation_count": a.violation_count,
             "auto_submitted_reason": a.auto_submitted_reason
         })
-
     return results
 
  
@@ -152,7 +129,6 @@ def get_results(exam_id):
 # ---------------------------------
  
 def generate_leaderboard(exam_id):
-
     attempts = AttemptModel.query.filter(
         AttemptModel.exam_id == exam_id,
         AttemptModel.is_submitted == True,
@@ -162,77 +138,49 @@ def generate_leaderboard(exam_id):
     ).all()
 
     grouped = {}
-
     for a in attempts:
-
-        key = (a.school_id, a.mobile, a.roll_number)
+        key = (a.school_id, a.student_id)
         percentage = float(a.percentage or 0)
-
         if key not in grouped:
             grouped[key] = a
         else:
             existing = grouped[key]
-
             existing_percentage = float(existing.percentage or 0)
-
-            # keep BEST attempt
             if percentage > existing_percentage:
                 grouped[key] = a
-
-            # tie-break → faster completion wins
             elif percentage == existing_percentage:
-                if a.end_time and existing.end_time:
-                    if a.end_time < existing.end_time:
-                        grouped[key] = a
+                if a.end_time and existing.end_time and a.end_time < existing.end_time:
+                    grouped[key] = a
 
-    # convert to list
     students = list(grouped.values())
-
-    # final ranking sort
-    students.sort(
-        key=lambda x: (
-            -float(x.percentage or 0),  # highest first
-            x.end_time                  # earlier wins tie
-        )
-    )
+    students.sort(key=lambda x: (-float(x.percentage or 0), x.end_time))
 
     leaderboard = []
     rank = 1
-
-    for a in students[:5]:   # TOP 5 AFTER grouping
-
+    for a in students[:5]:
         start_time = a.start_time if isinstance(a.start_time, datetime) else datetime.utcnow()
         end_time = a.end_time if isinstance(a.end_time, datetime) else datetime.utcnow()
-
         leaderboard.append({
             "rank": rank,
+            "student_id": a.student_id,
             "first_name": a.first_name,
             "last_name": a.last_name,
             "student_class": a.student_class,
             "roll_number": a.roll_number,
-            "mobile": a.mobile,
-
             "score": a.score,
             "total_marks": a.total_marks,
             "percentage": float(a.percentage or 0),
-
             "time_taken": end_time - start_time
         })
-
         rank += 1
-
     return leaderboard
 # ---------------------------------
 # Export Results to Excel
 # ---------------------------------
 def export_results_to_excel(exam_id, file_path):
-
-    attempts = AttemptModel.query.filter_by(
-        exam_id=exam_id
-    ).order_by(
+    attempts = AttemptModel.query.filter_by(exam_id=exam_id).order_by(
         AttemptModel.score.desc()
     ).all()
-
     if not attempts:
         return False, "No attempts found."
 
@@ -241,48 +189,53 @@ def export_results_to_excel(exam_id, file_path):
     ws.title = "Results"
 
     ws.append([
+        "Student ID",
         "First Name",
         "Last Name",
         "Class",
         "Roll Number",
-        "Mobile",
         "Score",
         "Total Marks",
         "Percentage",
         "Start Time",
         "End Time",
-        "IP Address"
+        "Violation Count"
     ])
 
     for row in attempts:
         ws.append([
+            row.student_id,
             row.first_name,
             row.last_name,
             row.student_class,
             row.roll_number,
-            row.mobile,
             row.score,
             row.total_marks,
             row.percentage,
             row.start_time,
             row.end_time,
-            row.ip_address
+            row.violation_count
         ])
 
     wb.save(file_path)
-
     return True, f"Results exported to {file_path}"
 
 
-def get_student_attempts(mobile, roll, exam_id):
-
+def get_student_attempts(exam_id, student_id):
     return AttemptModel.query.filter(
-        AttemptModel.mobile == mobile,
-        AttemptModel.roll_number == roll,
-        AttemptModel.exam_id == exam_id
-    ).order_by(
-        AttemptModel.attempt_number.asc()
-    ).all()
+        AttemptModel.exam_id == exam_id,
+        AttemptModel.student_id == student_id
+    ).order_by(AttemptModel.attempt_number.asc()).all()
+
+
+def build_student_summary(attempts):
+    first_attempt = attempts[0]
+    return {
+        "student_id": first_attempt.student_id,
+        "name": f"{first_attempt.first_name} {first_attempt.last_name}",
+        "class": first_attempt.student_class,
+        "roll": first_attempt.roll_number
+    }
 
 def get_best_attempt_id(attempts):
 
@@ -300,18 +253,3 @@ def get_best_attempt_id(attempts):
 
     return best_attempt_id
 
-
-
-def build_student_summary(attempts):
-
-    first_attempt = attempts[0]
-
-    return {
-        "mobile": first_attempt.mobile,
-        "roll": first_attempt.roll_number,
-        "name": (
-            f"{first_attempt.first_name} "
-            f"{first_attempt.last_name}"
-        ),
-        "class": first_attempt.student_class
-    }

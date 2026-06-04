@@ -126,7 +126,7 @@
                             </td>
                             <td class="text-center">{{ exam.total_questions or 0 }}</td>
                             <td class="text-center">{{ exam.duration_minutes }} min</td>
-                            <td class="text-center">{{ exam.max_attempts_per_mobile }}</td>
+                            <td class="text-center">{{ exam.max_attempts_per_student }}</td>
                             <td>
                                 {% if exam.quiz_code and exam.display_status != 'expired' %}
                                 <div class="d-flex gap-1">

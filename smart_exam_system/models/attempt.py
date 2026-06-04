@@ -8,7 +8,11 @@ class AttemptModel(db.Model):
     __tablename__ = "student_attempts"
 
     id = db.Column(db.Integer, primary_key=True)
-
+    student_id = db.Column(
+        db.String(36),   # UUID string
+        nullable=False,
+        index=True
+    )
     exam_id = db.Column(
         db.Integer,
         db.ForeignKey("exams.id"),

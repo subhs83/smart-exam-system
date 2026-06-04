@@ -11,11 +11,12 @@ class ExamModel(db.Model):
 
     marks_per_question = db.Column(db.Integer, default=1)
     negative_marks = db.Column(db.Float, default=0)
-    max_attempts_per_mobile = db.Column(db.Integer, default=1)
+
+    # ✅ Rename to reflect student_id usage
+    max_attempts_per_student = db.Column(db.Integer, default=1)
 
     status = db.Column(db.String, default="draft")
 
-    school_id = db.Column(db.Integer, nullable=False)
     teacher_id = db.Column(db.Integer, nullable=False)
 
     quiz_code = db.Column(db.String(20), unique=True, nullable=True)
@@ -26,12 +27,16 @@ class ExamModel(db.Model):
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     published_at = db.Column(db.DateTime, nullable=True)
+
     # ✅ Explicit foreign key
     school_id = db.Column(db.Integer, db.ForeignKey("schools.id"), nullable=False)
-    # ✅ Add this relationship
+
+    # ✅ Relationship
     school = db.relationship("SchoolModel", backref="exams")
+
     def __repr__(self):
         return f"<Exam {self.title}>"
+
 
 # ================= NEW SYSTEM =================
     @classmethod

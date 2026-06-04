@@ -41,7 +41,7 @@ def create_exam(
             duration_minutes=duration,
             marks_per_question=marks,
             negative_marks=negative,
-            max_attempts_per_mobile=max_attempts,
+            max_attempts_per_student=max_attempts,
             school_id=school_id,
             teacher_id=teacher_id,
             start_date=start_date,
@@ -70,7 +70,7 @@ def get_teacher_exams(teacher_id):
         ExamModel.duration_minutes,
         ExamModel.status,
         ExamModel.quiz_code,
-        ExamModel.max_attempts_per_mobile,
+        ExamModel.max_attempts_per_student,
         ExamModel.created_at,
         ExamModel.end_date,   # ⚠️ make sure included if used
 

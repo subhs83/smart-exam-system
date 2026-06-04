@@ -1,5 +1,4 @@
-from flask import session,render_template,request
-import random
+from flask import session,render_template,request,make_response
 from sqlalchemy import func
 from datetime import datetime, timezone, timedelta
 from smart_exam_system.extensions import db
@@ -7,8 +6,7 @@ from smart_exam_system.models.attempt import AttemptModel
 from smart_exam_system.models.exam import ExamModel
 from smart_exam_system.models.question import QuestionModel
 from smart_exam_system.models.answer import StudentAnswerModel
-import json
- 
+import uuid, json, random
 # -------------------------------
 # Get Exam by Quiz Code
 # -------------------------------
@@ -45,7 +43,7 @@ def start_student_attempt(exam_id, school_id, form_data, ip_address):
 
     exam = ExamModel.query.get(exam_id)
 
-    if exam.max_attempts_per_mobile and previous_attempts >= exam.max_attempts_per_mobile:
+    if exam.max_attempts_per_student and previous_attempts >= exam.max_attempts_per_student:
         return None, "Maximum attempts reached"
 
     attempt_number = previous_attempts + 1
@@ -400,6 +398,7 @@ def get_student_result(attempt_id):
         percentile = 100
 
     percentile = max(0, min(100, percentile))
+    print("percentage :", percentage, "percentile:", percentile,below_count)
     return {
         "score": score,
         "total_marks": total_marks,
@@ -540,67 +539,131 @@ def record_violation(attempt_id, reason):
     }
 
 
-# student_service.py
+# student_service.py helper ffunctions
 
-def get_submitted_attempts(exam_id, mobile):
-    return AttemptModel.query.filter_by(
+
+def start_student_attempt(exam_id, school_id, form_data, ip_address=None):
+    first_name = form_data.get("first_name")
+    last_name = form_data.get("last_name")
+    student_class = form_data.get("student_class")
+    roll_number = form_data.get("roll_number")
+    mobile = form_data.get("mobile")
+
+    # ✅ Check if student already exists in THIS quiz
+    existing_attempt = AttemptModel.query.filter_by(
         exam_id=exam_id,
         mobile=mobile,
-        is_submitted=True
-    ).order_by(AttemptModel.id.desc()).all()
+        roll_number=roll_number,
+        student_class=student_class
+    ).order_by(AttemptModel.id.desc()).first()
+
+    if existing_attempt:
+        student_id = existing_attempt.student_id
+        # Count how many attempts this student already has in THIS quiz
+        previous_attempts = AttemptModel.query.filter_by(
+            exam_id=exam_id,
+            student_id=student_id
+        ).count()
+
+        exam = ExamModel.query.get(exam_id)
+        if exam.max_attempts_per_student and previous_attempts >= exam.max_attempts_per_student:
+            # ✅ Already exhausted → redirect to last result page
+            return None, existing_attempt.id
+        else:
+            # ✅ Still has attempts left → create NEW attempt row
+            attempt_number = previous_attempts + 1
+    else:
+        # ✅ New student → generate new student_id
+        student_id = str(uuid.uuid4())
+        attempt_number = 1
+
+    # Get questions
+    questions = QuestionModel.query.filter_by(exam_id=exam_id).all()
+    if not questions:
+        return None, "No questions available"
+
+    # Shuffle question order
+    question_ids = [q.id for q in questions]
+    random.shuffle(question_ids)
+    question_order = json.dumps(question_ids)
+
+    # Shuffle option order
+    option_order_map = {}
+    for q in questions:
+        options = ["A", "B", "C", "D"]
+        random.shuffle(options)
+        option_order_map[str(q.id)] = options
+    option_order = json.dumps(option_order_map)
+
+    # Create new attempt
+    new_attempt = AttemptModel(
+        exam_id=exam_id,
+        school_id=school_id,
+        student_id=student_id,
+        first_name=first_name,
+        last_name=last_name,
+        student_class=student_class,
+        roll_number=roll_number,
+        mobile=mobile,
+        ip_address=ip_address,
+        start_time=datetime.utcnow(),
+        end_time=datetime.utcnow(),
+        attempt_number=attempt_number,
+        question_order=question_order,
+        option_order=option_order
+    )
+
+    db.session.add(new_attempt)
+    db.session.commit()
+
+    return new_attempt, None
+
+
+
+def set_student_identity(response, student_id):
+    """
+    Store student_id in both session and cookie.
+    Attach cookie to response so it persists across browser restarts.
+    """
+    session["student_id"] = student_id
+    # Cookie persists for 7 days
+    response.set_cookie("student_id", student_id, max_age=7*24*3600, httponly=True)
+    return response
+
+def get_student_attempts(exam_id, student_id, submitted_only=False):
+    query = AttemptModel.query.filter_by(
+        exam_id=exam_id,
+        student_id=student_id
+    )
+    if submitted_only:
+        query = query.filter_by(is_submitted=True)
+    return query.order_by(AttemptModel.id.desc()).all()
+
+
+
+def get_submitted_attempts(exam_id, student_id):
+    return get_student_attempts(exam_id, student_id, submitted_only=True)
+
 
 # student_service.py
-
-def get_last_attempt_by_ip(exam_id, ip_address):
-    return AttemptModel.query.filter_by(
-        exam_id=exam_id,
-        ip_address=ip_address
-    ).order_by(AttemptModel.id.desc()).first()
 
 
 def can_start_new_attempt(exam, attempts):
-    max_attempts = exam.max_attempts_per_mobile or 1
+    max_attempts = exam.max_attempts_per_student or 1
     return len(attempts) < max_attempts
 
 
-def create_retry_attempt(exam, last_attempt, ip_address):
-
+def create_retry_attempt(exam, last_attempt, ip_address=None):
     student_data = {
+        "student_id": last_attempt.student_id,   # ✅ reuse existing student_id
         "first_name": last_attempt.first_name,
         "last_name": last_attempt.last_name,
         "mobile": last_attempt.mobile,
         "student_class": last_attempt.student_class,
         "roll_number": last_attempt.roll_number,
     }
+    return start_student_attempt(exam.id, exam.school_id, student_data, ip_address)
 
-    return start_student_attempt(
-        exam.id,
-        exam.school_id,
-        student_data,
-        ip_address
-    )
-
-
-def resolve_student_mobile(exam_id, ip_address):
-
-    student_mobile = (
-        session.get("student_mobile")
-        or request.cookies.get("student_mobile")
-    )
-
-    if student_mobile:
-        return student_mobile
-
-    last_attempt = get_last_attempt_by_ip(
-        exam_id,
-        ip_address
-    )
-
-    if last_attempt:
-        session["student_mobile"] = last_attempt.mobile
-        return last_attempt.mobile
-
-    return None
 
 
 def get_attempt_state(exam, attempts):
@@ -622,19 +685,41 @@ def get_attempt_state(exam, attempts):
 
 
 def persist_student_identity(response, attempt):
-
+    session["student_id"] = attempt.student_id
     session["attempt_id"] = attempt.id
-    session["student_mobile"] = attempt.mobile
-
-    response.set_cookie(
-        "student_mobile",
-        attempt.mobile,
-        max_age=30 * 24 * 60 * 60
-    )
-
     return response
 
 
+def get_student_identity():
+    """
+    Retrieve student_id from session first, then fallback to cookie.
+    """
+    student_id = session.get("student_id")
+    if not student_id:
+        student_id = request.cookies.get("student_id")
+        if student_id:
+            # Restore into session for consistency
+            session["student_id"] = student_id
+    return student_id
+
+
+def clear_student_identity(response=None):
+    """
+    Clear student_id from both session and cookie.
+    Useful for 'Register as New Student'.
+    """
+    session.pop("student_id", None)
+    if response:
+        response.set_cookie("student_id", "", expires=0)
+        return response
+    return None
+
+def clear_last_student_identity(response):
+
+    response.delete_cookie("last_student")
+
+    return response
+    
 
 def extract_student_form_data(form_data):
 
@@ -722,16 +807,18 @@ def get_attempt_question_order(attempt):
         "total_questions": len(question_order)
     }
 
-def get_used_attempt_count(exam_id, mobile):
+def get_used_attempt_count(exam_id, student_id):
+    return len(get_submitted_attempts(exam_id, student_id))
 
-    return AttemptModel.query.filter_by(
-        exam_id=exam_id,
-        mobile=mobile,
-        is_submitted=True
-    ).count()
 
 def get_max_attempts(exam):
 
-    return exam.max_attempts_per_mobile or 1
+    return exam.max_attempts_per_student or 1
+
+
+def clear_student_context(response):
+    clear_last_student_identity(response)
+    session.pop("attempt_id", None)
+    session.pop("student_id", None)
 
 

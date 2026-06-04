@@ -15,7 +15,6 @@
             <th>Student</th>
             <th>Class</th>
             <th>Roll</th>
-            <th>Mobile</th>
             <th>Score</th>
             <th>Percentage</th>
             <th>Attempts</th>
@@ -29,15 +28,12 @@
     {% for r in results %}
     
     <tr>
-    
         <!-- Rank -->
-        <td class="fw-bold text-muted">
-            {{ loop.index }}
-        </td>
+        <td class="fw-bold text-muted">{{ loop.index }}</td>
     
         <!-- Student -->
         <td class="p-0">
-            <a href="{{ url_for('teacher.student_attempts', mobile=r.mobile, roll=r.roll_number, exam_id=exam_id) }}"
+            <a href="{{ url_for('teacher.student_attempts', student_id=r.student_id, exam_id=exam_id) }}"
                class="d-block px-2 py-2 text-decoration-none text-dark fw-semibold" data-spa>
                 {{ r.first_name }} {{ r.last_name }}
             </a>
@@ -48,9 +44,6 @@
     
         <!-- Roll -->
         <td>{{ r.roll_number }}</td>
-    
-        <!-- Mobile -->
-        <td>{{ r.mobile }}</td>
     
         <!-- Score -->
         <td class="fw-semibold">
@@ -63,14 +56,14 @@
                 {{ "%.2f"|format(r.percentage or 0) }}%
             </span>
         </td>
-         <!-- Total Attempt -->
-         <td class="fw-semibold text-center">{{ r.attempts_count }}</td>
+        
+        <!-- Total Attempt -->
+        <td class="fw-semibold text-center">{{ r.attempts_count }}</td>
+        
         <!-- Violation -->
         <td>
             {% if r.violation_count %}
-                <span class="badge bg-warning text-dark">
-                    {{ r.violation_count }}
-                </span>
+                <span class="badge bg-warning text-dark">{{ r.violation_count }}</span>
             {% else %}
                 <span class="text-muted">0</span>
             {% endif %}
@@ -79,34 +72,22 @@
         <!-- Auto Submit -->
         <td>
             {% if r.auto_submitted_reason %}
-                <span class="badge bg-danger">
-                    Auto
-                </span>
-                <div class="small text-muted">
-                    {{ r.auto_submitted_reason }}
-                </div>
+                <span class="badge bg-danger">Auto</span>
+                <div class="small text-muted">{{ r.auto_submitted_reason }}</div>
             {% else %}
-                <span class="badge bg-success">
-                    Normal
-                </span>
+                <span class="badge bg-success">Normal</span>
             {% endif %}
         </td>
-    
     </tr>
     
     {% else %}
-    
     <tr>
-        <td colspan="10" class="text-center text-muted">
-            No results found
-        </td>
+        <td colspan="9" class="text-center text-muted">No results found</td>
     </tr>
-    
     {% endfor %}
     
     </tbody>
-    
-    </table>
+</table>
 
 <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-secondary" data-spa>
 Back to Dashboard
